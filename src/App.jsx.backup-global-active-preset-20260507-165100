@@ -923,10 +923,6 @@ export default function App() {
         setSettings(data);
         setSetupEventName(data.event_name || "");
         setSetupVenueName(data.venue_name || "");
-
-        if (data.active_event_display_preset_id) {
-          setActiveEventDisplayId(data.active_event_display_preset_id);
-        }
         setLayoutSettings({
           host_max_rows: clampLayoutValue(data.host_max_rows ?? defaultDisplayLayout.host_max_rows),
           host_max_cols: clampLayoutValue(data.host_max_cols ?? defaultDisplayLayout.host_max_cols),
@@ -1138,7 +1134,6 @@ export default function App() {
       allow_twitter: allowTwitter,
       allow_bluesky: allowBluesky,
       allow_other_platform: allowOtherPlatform,
-      active_event_display_preset_id: activeEventDisplayId || null,
       updated_at: new Date().toISOString(),
     };
 
@@ -1230,72 +1225,6 @@ export default function App() {
     }
 
     return compressed;
-  };
-
-  const updateActiveEventDisplayPreset = async (presetId) => {
-    setActiveEventDisplayId(presetId);
-
-    if (!supabase) {
-      window.localStorage.setItem("activeEventDisplayId", presetId);
-      return;
-    }
-
-    const payload = {
-      event_name: setupEventName || defaultConfig.eventName,
-      venue_name: setupVenueName || defaultConfig.venueName,
-      host_max_rows: clampLayoutValue(displayLayout.host_max_rows),
-      host_max_cols: clampLayoutValue(displayLayout.host_max_cols),
-      dm_max_rows: clampLayoutValue(displayLayout.dm_max_rows),
-      dm_max_cols: clampLayoutValue(displayLayout.dm_max_cols),
-      top_max_rows: clampLayoutValue(displayLayout.top_max_rows),
-      top_max_cols: clampLayoutValue(displayLayout.top_max_cols),
-      bottom_max_rows: clampLayoutValue(displayLayout.bottom_max_rows),
-      bottom_max_cols: clampLayoutValue(displayLayout.bottom_max_cols),
-      switch_max_rows: clampLayoutValue(displayLayout.switch_max_rows),
-      switch_max_cols: clampLayoutValue(displayLayout.switch_max_cols),
-      show_social_handle_field: showSocialHandleField,
-      allow_fetlife: allowFetLife,
-      allow_whappz: allowWhappz,
-      allow_twitter: allowTwitter,
-      allow_bluesky: allowBluesky,
-      allow_other_platform: allowOtherPlatform,
-      active_event_display_preset_id: presetId || null,
-      updated_at: new Date().toISOString(),
-    };
-
-    if (settings?.id) {
-      const { data, error } = await supabase
-        .from("board_settings")
-        .update(payload)
-        .eq("id", settings.id)
-        .select()
-        .single();
-
-      if (error) {
-        setMessage(`Could not update active preset: ${error.message}`);
-        return;
-      }
-
-      setSettings(data);
-      setMessage("Active display preset updated.");
-      setTimeout(() => setMessage(""), 1800);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("board_settings")
-      .insert(payload)
-      .select()
-      .single();
-
-    if (error) {
-      setMessage(`Could not update active preset: ${error.message}`);
-      return;
-    }
-
-    setSettings(data);
-    setMessage("Active display preset updated.");
-    setTimeout(() => setMessage(""), 1800);
   };
 
   const handleDisplayImageUpload = async (event) => {
@@ -1944,7 +1873,7 @@ export default function App() {
                     <label className="mb-2 block text-sm font-semibold">Event display preset</label>
                     <select
                       value={activeEventDisplayId}
-                      onChange={(e) => updateActiveEventDisplayPreset(e.target.value)}
+                      onChange={(e) => setActiveEventDisplayId(e.target.value)}
                       className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-sky-400"
                     >
                       {eventDisplayOptions.map((eventDisplay) => (
