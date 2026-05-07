@@ -1,0 +1,4 @@
+entry: https://live-board-topaz.vercel.app/?mode=entry
+kiosk: https://live-board-topaz.vercel.app/?mode=entry&kiosk=1
+display: https://live-board-topaz.vercel.app/?mode=display
+setup-private: https://live-board-topaz.vercel.app/?mode=setup&key=TKC2026

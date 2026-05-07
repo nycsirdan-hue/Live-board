@@ -1,0 +1,25 @@
+LIVEBOARD EVENT NIGHT CHECKLIST
+
+Entry / QR phone version:
+https://live-board-topaz.vercel.app/?mode=entry
+
+Kiosk / shared tablet version:
+https://live-board-topaz.vercel.app/?mode=entry&kiosk=1
+
+Display:
+https://live-board-topaz.vercel.app/?mode=display
+
+Private Setup:
+https://live-board-topaz.vercel.app/?mode=setup&key=TKC2026
+
+Setup Code:
+TKC2026
+
+EVENT NIGHT FLOW
+
+1. Open Display on the TV or projector.
+2. Open Kiosk on the shared tablet or laptop.
+3. Use Entry as the guest QR code.
+4. Keep Setup private for staff only.
+5. Kiosk should refresh after 10 seconds.
+6. Regular Entry should stay on the success screen.
