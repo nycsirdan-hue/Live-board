@@ -1,0 +1,1466 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const supabase =
+  SUPABASE_URL && SUPABASE_ANON_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+const DISPLAY_LOGO_SRC = "/sanctuary-sessions-logo.png";
+
+const kinkCatalog = {
+  Impact: [
+    "Spanking",
+    "Flogging",
+    "Caning",
+    "Paddling",
+    "Whipping",
+    "Slapping",
+    "Tawse",
+    "Strapping",
+    "Birching",
+    "Punch Play",
+    "Face Slapping",
+    "Corporal Punishment",
+    "Beating",
+    "Rhythm Play",
+    "Crops",
+  ],
+  Bondage: [
+    "Rope Bondage",
+    "Shibari",
+    "Restraints",
+    "Cuffs",
+    "Mummification",
+    "Predicament Bondage",
+    "Hogtie",
+    "Spreader Bars",
+    "Suspension",
+    "Partial Suspension",
+    "Bed Restraints",
+    "Tape Bondage",
+    "Blindfolds",
+    "Gags",
+    "Collars",
+    "Leashes",
+    "Chain Bondage",
+    "Cocooning",
+    "Monobondage",
+  ],
+  Sensation: [
+    "Wax Play",
+    "Ice Play",
+    "Sensory Deprivation",
+    "Sensory Overload",
+    "Tickling",
+    "Wartenberg Wheel",
+    "Feather Play",
+    "Temperature Play",
+    "Electrical Play",
+    "Violet Wand",
+    "TENS",
+    "Scratching",
+    "Nipple Play",
+    "Clothespins",
+    "Pinwheels",
+    "Pressure Play",
+    "Hot Oil Massage",
+    "Texture Play",
+  ],
+  PowerExchange: [
+    "Dominance",
+    "Submission",
+    "Service",
+    "Protocol",
+    "Ritual",
+    "Obedience",
+    "Discipline",
+    "Training",
+    "Ownership",
+    "Collaring",
+    "Authority Transfer",
+    "Bratting",
+    "Brat Taming",
+    "Praise",
+    "Humiliation",
+    "Degradation",
+    "Financial Domination",
+    "Tasking",
+    "Rules and Rituals",
+  ],
+  Roleplay: [
+    "Age Play",
+    "Caregiver/Little",
+    "Teacher/Student",
+    "Boss/Employee",
+    "Medical Roleplay",
+    "Interrogation",
+    "Pet Play",
+    "Pup Play",
+    "Kitten Play",
+    "Pony Play",
+    "Handler Dynamics",
+    "Religious Play",
+    "Uniform Play",
+    "Authority Roleplay",
+    "Objectification",
+    "Doll Play",
+    "Fantasy Roleplay",
+    "Primal Play",
+    "Hunter/Prey",
+  ],
+  BodyWorship: [
+    "Foot Worship",
+    "Boot Worship",
+    "Body Worship",
+    "Ass Worship",
+    "Leg Worship",
+    "Muscle Worship",
+    "Armpit Worship",
+    "Hand Worship",
+    "Face Worship",
+    "Leather Worship",
+    "Scent Worship",
+    "Sock Worship",
+    "Sneaker Worship",
+    "Sweat Worship",
+  ],
+  EroticControl: [
+    "Tease and Denial",
+    "Edging",
+    "Orgasm Control",
+    "Orgasm Denial",
+    "Forced Orgasm",
+    "Chastity",
+    "Ruined Orgasm",
+    "Mutual Masturbation",
+    "JOI",
+    "Cum Control",
+    "Keyholding",
+  ],
+  ToysAndInsertion: [
+    "Plug Training",
+    "Dildos",
+    "Anal Play",
+    "Vaginal Penetration",
+    "Double Penetration",
+    "Sounding",
+    "Fisting",
+    "Double Fisting",
+    "Toy Training",
+    "Prostate Play",
+    "Beads",
+    "Pump Play",
+    "Large Toys",
+    "Speculum Play",
+  ],
+  ExhibitionAndVoyeurism: [
+    "Exhibitionism",
+    "Voyeurism",
+    "Group Scene",
+    "Public-Style Play",
+    "Performance Play",
+    "Audience Play",
+    "Show and Tell",
+    "Camera Play",
+    "Striptease",
+    "Dressing/Undressing",
+  ],
+  FetishMaterials: [
+    "Leather",
+    "Latex",
+    "Rubber",
+    "PVC",
+    "Lycra",
+    "Nylon",
+    "Corsetry",
+    "Lingerie Fetish",
+    "Stockings",
+    "Gloves",
+    "Masks",
+    "Gas Masks",
+    "Uniforms",
+    "Sneaker Fetish",
+    "Onesies",
+    "Plastic Pants",
+    "Pajama Fetish",
+  ],
+  ServiceAndDomestic: [
+    "Domestic Service",
+    "Bootblacking",
+    "Serving",
+    "Protocol Service",
+    "Cleaning Service",
+    "Meal Service",
+    "Personal Attendant",
+    "Acts of Devotion",
+    "Ritual Service",
+    "Caretaking",
+  ],
+  IntimacyAndAffection: [
+    "Cuddling",
+    "Aftercare",
+    "Massage",
+    "Eye Contact",
+    "Breath Sync",
+    "Tantric Touch",
+    "Held Space",
+    "Nonsexual Touch",
+    "Affirmation",
+    "Emotional Submission",
+    "Comforting",
+    "Nurturing",
+    "Emotional Holding",
+  ],
+  MarkingAndAdornment: [
+    "Body Writing",
+    "Temporary Marking",
+    "Bruising",
+    "Bite Marks",
+    "Hickeys",
+    "Scratches",
+    "Collaring",
+    "Adornment",
+    "Piercing Pulls",
+    "Clothing Control",
+  ],
+  WatersportsAndMess: [
+    "Watersports",
+    "Mess Play",
+    "Food Play",
+    "Sploshing",
+    "Diaper Play",
+    "ABDL",
+    "Lactation Play",
+    "Saliva Play",
+    "Wetting",
+    "Simulated Wetting",
+    "Messing",
+    "Simulated Messing",
+    "Messy Diapers",
+    "Changing",
+    "Diaper Check",
+    "Diaper Inspection",
+    "Cleanup After Mess",
+    "Powdering",
+    "Lotioning",
+    "Pudding Play",
+    "Applesauce Play",
+    "Yogurt Play",
+    "Oatmeal Play",
+    "Bananas",
+    "Marshmallows",
+    "Whipped Cream",
+    "Baby Food Play",
+    "Spoon Feeding",
+    "Bottle Feeding",
+    "Smearing",
+    "Hands-On Mess",
+    "Texture Play",
+  ],
+  Other: [
+    "Primal Intensity",
+    "Fear Play",
+    "Kidnapping Fantasy",
+    "Crying in Scene",
+    "Cathartic Release",
+    "Energy Exchange",
+    "Meditative Play",
+    "Breath Play",
+    "Rough Body Play",
+    "Knife Play",
+    "Fire Play",
+    "Public-Style Padding",
+    "Crinkling",
+    "Padding",
+    "Stuffies",
+    "Blankets",
+    "Nursery Vibes",
+    "Bedtime Routine",
+    "Bedtime",
+    "Naptime",
+    "Story Time",
+    "Structure",
+    "Gentle Correction",
+    "Waddling",
+    "Pacifiers",
+    "Bibs",
+    "Sippy Cups",
+  ],
+};
+
+const positionOptions = ["Top", "Bottom", "Switch"];
+
+const searchAliases = {
+  rope: ["Rope Bondage", "Shibari", "Suspension", "Partial Suspension"],
+  flog: ["Flogging"],
+  spank: ["Spanking"],
+  wax: ["Wax Play"],
+  electric: ["Electrical Play", "Violet Wand", "TENS"],
+  feet: ["Foot Worship"],
+  foot: ["Foot Worship"],
+  boot: ["Boot Worship", "Bootblacking"],
+  leather: ["Leather", "Leather Worship"],
+  pup: ["Pup Play", "Pet Play", "Handler Dynamics"],
+  primal: ["Primal Play", "Primal Intensity", "Hunter/Prey"],
+  chastity: ["Chastity", "Keyholding", "Tease and Denial"],
+  edging: ["Edging", "Tease and Denial", "Orgasm Control"],
+  anal: ["Anal Play", "Plug Training", "Fisting", "Double Fisting", "Beads"],
+  plug: ["Plug Training"],
+  fist: ["Fisting", "Double Fisting"],
+  gape: ["Fisting", "Double Fisting", "Anal Play", "Large Toys"],
+  piss: ["Watersports"],
+  pee: ["Watersports"],
+  diaper: ["Diaper Play", "ABDL", "Changing", "Messy Diapers"],
+  abdl: ["ABDL", "Diaper Play", "Changing", "Caregiver/Little"],
+  cuddle: ["Cuddling", "Held Space", "Aftercare"],
+  massage: ["Massage", "Hot Oil Massage"],
+  knife: ["Knife Play"],
+  fire: ["Fire Play"],
+  breath: ["Breath Play", "Breath Sync"],
+  service: ["Service", "Domestic Service", "Protocol Service"],
+  protocol: ["Protocol", "Protocol Service", "Rules and Rituals"],
+  humil: ["Humiliation", "Degradation"],
+  praise: ["Praise", "Affirmation"],
+  banana: ["Bananas"],
+  bananas: ["Bananas"],
+  marshmallow: ["Marshmallows"],
+  marshmallows: ["Marshmallows"],
+  messy: ["Messy Diapers", "Mess Play", "Simulated Messing"],
+  messing: ["Messing", "Simulated Messing", "Messy Diapers"],
+  wetting: ["Wetting", "Simulated Wetting"],
+};
+
+const defaultConfig = {
+  eventName: "Tonight's Board",
+  venueName: "The Kink Collective",
+  requireNickname: true,
+  minSelectedItems: 1,
+  maxSelectedItems: 12,
+};
+
+const catalogSet = new Set(Object.values(kinkCatalog).flat());
+const allCatalogItems = Array.from(catalogSet).sort((a, b) => a.localeCompare(b));
+
+const sectionThemes = {
+  Top: {
+    section: "border-rose-900/80 bg-rose-950/40",
+    card: "border-rose-900/70 bg-rose-950/35",
+    title: "text-rose-100",
+  },
+  Bottom: {
+    section: "border-emerald-900/80 bg-emerald-950/35",
+    card: "border-emerald-900/70 bg-emerald-950/30",
+    title: "text-emerald-100",
+  },
+  Switch: {
+    section: "border-sky-900/80 bg-sky-950/35",
+    card: "border-sky-900/70 bg-sky-950/30",
+    title: "text-sky-100",
+  },
+  DM: {
+    section: "border-slate-800 bg-black",
+    card: "border-slate-800 bg-black",
+    title: "text-slate-100",
+  },
+};
+
+function useMode() {
+  const readMode = () =>
+    new URLSearchParams(window.location.search).get("mode") || "admin";
+  const [mode, setMode] = useState(readMode);
+
+  useEffect(() => {
+    const onPop = () => setMode(readMode());
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  const updateMode = (nextMode) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("mode", nextMode);
+    window.history.pushState({}, "", `${window.location.pathname}?${params.toString()}`);
+    setMode(nextMode);
+  };
+
+  return { mode, updateMode };
+}
+
+function findStrongMatch(rawValue, availableItems) {
+  const term = rawValue.trim().toLowerCase();
+  if (!term) return null;
+
+  const exact = availableItems.find((item) => item.toLowerCase() === term);
+  if (exact) return exact;
+
+  const aliasMatches = searchAliases[term] || [];
+  const aliasItem = aliasMatches.find((item) => availableItems.includes(item));
+  if (aliasItem) return aliasItem;
+
+  const startsWith = availableItems.find((item) => item.toLowerCase().startsWith(term));
+  if (startsWith) return startsWith;
+
+  return null;
+}
+
+function DisplayCard({ name, items, theme }) {
+  return (
+    <div className={`rounded-3xl border p-4 w-full ${theme.card}`}>
+      <div className="text-xl font-bold tracking-tight text-slate-100 break-words">
+        {name}
+      </div>
+      <div className="mt-3 space-y-1">
+        {items.map((item) => (
+          <div key={item} className="text-sm text-slate-200 break-words leading-5">
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DMCard({ name, category, items }) {
+  return (
+    <div className={`rounded-2xl border p-3 w-full ${sectionThemes.DM.card}`}>
+      <div className="text-base font-bold text-slate-100 break-words">{name}</div>
+      {category ? (
+        <div className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400 break-words">
+          {category}
+        </div>
+      ) : null}
+      <div className="mt-2 space-y-1">
+        {items.map((item) => (
+          <div key={item} className="text-xs text-slate-300 break-words leading-5">
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  const { mode, updateMode } = useMode();
+  const isDisplayMode = mode === "display";
+
+  const [entries, setEntries] = useState([]);
+  const [settings, setSettings] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [dmSaving, setDmSaving] = useState(false);
+
+  const [name, setName] = useState("");
+  const [position, setPosition] = useState("");
+  const [itemInput, setItemInput] = useState("");
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  const [dmName, setDmName] = useState("");
+  const [dmCategory, setDmCategory] = useState("");
+  const [dmItemInput, setDmItemInput] = useState("");
+  const [dmSelectedItems, setDmSelectedItems] = useState([]);
+
+  const [entrySearch, setEntrySearch] = useState("");
+  const [message, setMessage] = useState("");
+
+  const [setupEventName, setSetupEventName] = useState("");
+  const [setupVenueName, setSetupVenueName] = useState("");
+
+  const appConfig = {
+    ...defaultConfig,
+    eventName: settings?.event_name || defaultConfig.eventName,
+    venueName: settings?.venue_name || defaultConfig.venueName,
+  };
+
+  const itemSuggestions = useMemo(() => {
+    const term = itemInput.trim().toLowerCase();
+    if (!term) return [];
+
+    const aliasMatches = new Set(searchAliases[term] || []);
+
+    return allCatalogItems
+      .filter((item) => {
+        const lower = item.toLowerCase();
+        return lower.startsWith(term) || aliasMatches.has(item);
+      })
+      .slice(0, 12);
+  }, [itemInput]);
+
+  const dmItemSuggestions = useMemo(() => {
+    const term = dmItemInput.trim().toLowerCase();
+    if (!term) return [];
+
+    const aliasMatches = new Set(searchAliases[term] || []);
+
+    return allCatalogItems
+      .filter((item) => {
+        const lower = item.toLowerCase();
+        return lower.startsWith(term) || aliasMatches.has(item);
+      })
+      .slice(0, 12);
+  }, [dmItemInput]);
+
+  const participantEntries = useMemo(
+    () => entries.filter((entry) => (entry.entry_kind || "participant") === "participant"),
+    [entries]
+  );
+
+  const dmEntries = useMemo(
+    () => entries.filter((entry) => (entry.entry_kind || "participant") === "dm"),
+    [entries]
+  );
+
+  const filteredEntries = useMemo(() => {
+    if (!entrySearch.trim()) return participantEntries;
+    const term = entrySearch.trim().toLowerCase();
+
+    return participantEntries.filter((entry) => {
+      const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+      return (
+        entry.name.toLowerCase().includes(term) ||
+        (entry.position || "").toLowerCase().includes(term) ||
+        mergedItems.some((item) => item.toLowerCase().includes(term))
+      );
+    });
+  }, [participantEntries, entrySearch]);
+
+  const topEntries = useMemo(
+    () => participantEntries.filter((entry) => entry.position === "Top"),
+    [participantEntries]
+  );
+  const bottomEntries = useMemo(
+    () => participantEntries.filter((entry) => entry.position === "Bottom"),
+    [participantEntries]
+  );
+  const switchEntries = useMemo(
+    () => participantEntries.filter((entry) => entry.position === "Switch"),
+    [participantEntries]
+  );
+
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      setSettingsLoading(false);
+      return;
+    }
+
+    let mounted = true;
+
+    const loadSettings = async () => {
+      const { data, error } = await supabase
+        .from("board_settings")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+
+      if (!mounted) return;
+
+      if (!error && data) {
+        setSettings(data);
+        setSetupEventName(data.event_name || "");
+        setSetupVenueName(data.venue_name || "");
+      }
+
+      setSettingsLoading(false);
+    };
+
+    const loadEntries = async () => {
+      const { data, error } = await supabase
+        .from("board_entries")
+        .select(
+          "id, name, position, items, custom_items, entry_kind, dm_category, active, deleted_at, created_at"
+        )
+        .eq("active", true)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+
+      if (!mounted) return;
+
+      if (!error) setEntries(data || []);
+      setLoading(false);
+    };
+
+    loadSettings();
+    loadEntries();
+
+    const channel = supabase
+      .channel("board-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "board_entries" },
+        () => loadEntries()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "board_settings" },
+        () => loadSettings()
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const addItemValue = (rawValue) => {
+    const value = rawValue.trim();
+    if (!value) return;
+
+    if (selectedItems.length >= defaultConfig.maxSelectedItems) {
+      setMessage(`You can only choose up to ${defaultConfig.maxSelectedItems} items.`);
+      return;
+    }
+
+    const strongMatch = findStrongMatch(value, allCatalogItems);
+    const finalValue = strongMatch || value;
+
+    if (!selectedItems.includes(finalValue)) {
+      setSelectedItems((current) => [...current, finalValue]);
+    }
+
+    setItemInput("");
+  };
+
+  const addDmItemValue = (rawValue) => {
+    const value = rawValue.trim();
+    if (!value) return;
+
+    if (dmSelectedItems.length >= defaultConfig.maxSelectedItems) {
+      setMessage(`You can only choose up to ${defaultConfig.maxSelectedItems} items.`);
+      return;
+    }
+
+    const strongMatch = findStrongMatch(value, allCatalogItems);
+    const finalValue = strongMatch || value;
+
+    if (!dmSelectedItems.includes(finalValue)) {
+      setDmSelectedItems((current) => [...current, finalValue]);
+    }
+
+    setDmItemInput("");
+  };
+
+  const removeSelectedItem = (itemToRemove) => {
+    setSelectedItems((current) => current.filter((item) => item !== itemToRemove));
+  };
+
+  const removeDmSelectedItem = (itemToRemove) => {
+    setDmSelectedItems((current) => current.filter((item) => item !== itemToRemove));
+  };
+
+  const resetForm = () => {
+    setName("");
+    setPosition("");
+    setItemInput("");
+    setSelectedItems([]);
+    setMessage("");
+  };
+
+  const resetDmForm = () => {
+    setDmName("");
+    setDmCategory("");
+    setDmItemInput("");
+    setDmSelectedItems([]);
+    setMessage("");
+  };
+
+  const saveSettings = async () => {
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      return;
+    }
+
+    const payload = {
+      event_name: setupEventName || defaultConfig.eventName,
+      venue_name: setupVenueName || defaultConfig.venueName,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (settings?.id) {
+      const { data, error } = await supabase
+        .from("board_settings")
+        .update(payload)
+        .eq("id", settings.id)
+        .select()
+        .single();
+
+      if (error) {
+        setMessage(`Could not save settings: ${error.message}`);
+        return;
+      }
+
+      setSettings(data);
+      setMessage("Settings saved.");
+      setTimeout(() => setMessage(""), 1800);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("board_settings")
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) {
+      setMessage(`Could not save settings: ${error.message}`);
+      return;
+    }
+
+    setSettings(data);
+    setMessage("Settings saved.");
+    setTimeout(() => setMessage(""), 1800);
+  };
+
+  const createEntry = async () => {
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      return;
+    }
+
+    if (!name.trim()) {
+      setMessage("Please enter a display name.");
+      return;
+    }
+
+    if (!position) {
+      setMessage("Please choose Top, Bottom, or Switch.");
+      return;
+    }
+
+    if (selectedItems.length < defaultConfig.minSelectedItems) {
+      setMessage(`Please choose at least ${defaultConfig.minSelectedItems} item.`);
+      return;
+    }
+
+    const standardItems = selectedItems.filter((item) => catalogSet.has(item));
+    const customItems = selectedItems.filter((item) => !catalogSet.has(item));
+
+    setSaving(true);
+
+    const { error } = await supabase.from("board_entries").insert({
+      name: name.trim(),
+      position,
+      items: standardItems.sort((a, b) => a.localeCompare(b)),
+      custom_items: customItems.sort((a, b) => a.localeCompare(b)),
+      entry_kind: "participant",
+      active: true,
+    });
+
+    setSaving(false);
+
+    if (error) {
+      setMessage(`Could not save entry: ${error.message}`);
+      return;
+    }
+
+    resetForm();
+    setMessage("Saved to the board.");
+    setTimeout(() => setMessage(""), 1800);
+  };
+
+  const createDmEntry = async () => {
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      return;
+    }
+
+    if (!dmName.trim()) {
+      setMessage("Please enter a DM / Facilitator name.");
+      return;
+    }
+
+    if (!dmCategory.trim()) {
+      setMessage("Please enter the DM / Facilitator category.");
+      return;
+    }
+
+    if (dmSelectedItems.length < 1) {
+      setMessage("Please add at least one item they are providing.");
+      return;
+    }
+
+    const standardItems = dmSelectedItems.filter((item) => catalogSet.has(item));
+    const customItems = dmSelectedItems.filter((item) => !catalogSet.has(item));
+
+    setDmSaving(true);
+
+    const { error } = await supabase.from("board_entries").insert({
+      name: dmName.trim(),
+      position: null,
+      dm_category: dmCategory.trim(),
+      items: standardItems.sort((a, b) => a.localeCompare(b)),
+      custom_items: customItems.sort((a, b) => a.localeCompare(b)),
+      entry_kind: "dm",
+      active: true,
+    });
+
+    setDmSaving(false);
+
+    if (error) {
+      setMessage(`Could not save DM / Facilitator: ${error.message}`);
+      return;
+    }
+
+    resetDmForm();
+    setMessage("DM / Facilitator saved.");
+    setTimeout(() => setMessage(""), 1800);
+  };
+
+  const removeEntry = async (id) => {
+    if (!supabase) return;
+
+    await supabase
+      .from("board_entries")
+      .update({ active: false, deleted_at: new Date().toISOString() })
+      .eq("id", id);
+  };
+
+  const clearBoard = async () => {
+    if (!supabase) return;
+    if (!window.confirm("Clear the entire board?")) return;
+
+    await supabase
+      .from("board_entries")
+      .update({ active: false, deleted_at: new Date().toISOString() })
+      .eq("active", true);
+  };
+
+  const renderPositionColumn = (title, entriesForColumn) => {
+    const theme = sectionThemes[title];
+
+    return (
+      <section
+        className={`rounded-[28px] border p-5 shadow-2xl h-full ${theme.section}`}
+      >
+        <div className="mb-4">
+          <h3 className={`text-3xl font-semibold tracking-tight ${theme.title}`}>{title}</h3>
+        </div>
+
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,max-content))] gap-3 items-start">
+          {entriesForColumn.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-700 p-4 text-slate-400 w-full max-w-[240px]">
+              Nothing posted yet.
+            </div>
+          ) : (
+            entriesForColumn.map((entry) => {
+              const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])].sort(
+                (a, b) => a.localeCompare(b)
+              );
+              return (
+                <DisplayCard
+                  key={entry.id}
+                  name={entry.name}
+                  items={mergedItems}
+                  theme={theme}
+                />
+              );
+            })
+          )}
+        </div>
+      </section>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className={`mx-auto max-w-[1900px] ${isDisplayMode ? "p-6" : "p-5 md:p-8"}`}>
+        <div className={`mb-6 flex flex-wrap items-start justify-between gap-4 ${isDisplayMode ? "mb-8" : ""}`}>
+          <div>
+            <h1 className={`font-bold tracking-tight ${isDisplayMode ? "text-5xl" : "text-3xl md:text-4xl"}`}>
+              {appConfig.eventName}
+            </h1>
+            {!isDisplayMode && (
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400 md:text-base">
+                Use <span className="font-semibold text-slate-200">?mode=setup</span>,{" "}
+                <span className="font-semibold text-slate-200">?mode=admin</span>, and{" "}
+                <span className="font-semibold text-slate-200">?mode=display</span>.
+              </p>
+            )}
+          </div>
+
+          {isDisplayMode ? (
+            <div className="flex items-start justify-end">
+              <img
+                src={DISPLAY_LOGO_SRC}
+                alt="Sanctuary Sessions logo"
+                className="h-[90px] w-auto object-contain md:h-[110px]"
+              />
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => updateMode("setup")}
+                className={`rounded-2xl border px-4 py-2 font-semibold ${
+                  mode === "setup"
+                    ? "border-sky-400 bg-sky-400 text-slate-950"
+                    : "border-slate-700 bg-slate-900 text-slate-100"
+                }`}
+              >
+                Setup
+              </button>
+
+              <button
+                onClick={() => updateMode("admin")}
+                className={`rounded-2xl border px-4 py-2 font-semibold ${
+                  mode === "admin"
+                    ? "border-amber-400 bg-amber-400 text-slate-950"
+                    : "border-slate-700 bg-slate-900 text-slate-100"
+                }`}
+              >
+                Entry
+              </button>
+
+              <button
+                onClick={() => updateMode("display")}
+                className={`rounded-2xl border px-4 py-2 font-semibold ${
+                  mode === "display"
+                    ? "border-emerald-400 bg-emerald-400 text-slate-950"
+                    : "border-slate-700 bg-slate-900 text-slate-100"
+                }`}
+              >
+                Display
+              </button>
+            </div>
+          )}
+        </div>
+
+        {!supabase && (
+          <div className="mb-6 rounded-3xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm leading-6 text-rose-100">
+            Missing Supabase connection.
+          </div>
+        )}
+
+        {mode === "setup" ? (
+          <div className="grid gap-5 lg:grid-cols-[430px,minmax(0,1fr)]">
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl">
+              <h2 className="text-2xl font-semibold tracking-tight">Setup</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Change the event name and venue name here without editing the script.
+              </p>
+
+              <div className="mt-4 grid gap-4">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold">Event name</label>
+                  <input
+                    value={setupEventName}
+                    onChange={(e) => setSetupEventName(e.target.value)}
+                    placeholder="Tonight's Board"
+                    className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-semibold">Venue name</label>
+                  <input
+                    value={setupVenueName}
+                    onChange={(e) => setSetupVenueName(e.target.value)}
+                    placeholder="The Kink Collective"
+                    className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  onClick={saveSettings}
+                  className="rounded-2xl bg-sky-400 px-5 py-3 font-semibold text-slate-950"
+                >
+                  Save settings
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl">
+              <h2 className="text-2xl font-semibold tracking-tight">DM / Facilitator</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Add Dungeon Monitor(s) or Facilitator(s). Category appears directly below the
+                name. Provided items appear below that.
+              </p>
+
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-semibold">Name</label>
+                <input
+                  value={dmName}
+                  onChange={(e) => setDmName(e.target.value)}
+                  placeholder="Example: Natalie, Cat, Dan"
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                />
+              </div>
+
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-semibold">Category</label>
+                <input
+                  value={dmCategory}
+                  onChange={(e) => setDmCategory(e.target.value)}
+                  placeholder="Example: Safety, Tastings, Monitoring"
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                />
+              </div>
+
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-semibold">Providing</label>
+                <input
+                  value={dmItemInput}
+                  onChange={(e) => setDmItemInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addDmItemValue(dmItemInput);
+                    }
+                  }}
+                  placeholder="Type what they are providing"
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                />
+              </div>
+
+              {dmItemInput.trim() && dmItemSuggestions.length > 0 && (
+                <div className="mt-3 max-h-[220px] overflow-auto rounded-2xl border border-slate-800 bg-slate-950/70 pr-1">
+                  <div className="divide-y divide-slate-800">
+                    {dmItemSuggestions.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => addDmItemValue(item)}
+                        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-slate-900"
+                      >
+                        <div>
+                          <div className="font-medium text-slate-100">{item}</div>
+                          <div className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
+                            {Object.entries(kinkCatalog).find(([, values]) =>
+                              values.includes(item)
+                            )?.[0] || "Custom"}
+                          </div>
+                        </div>
+                        <div className="rounded-full border border-slate-700 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          Add
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4">
+                <div className="mb-2 text-sm font-semibold">Selected items</div>
+                <div className="min-h-[64px] rounded-2xl border border-slate-800 bg-slate-950 p-3">
+                  {dmSelectedItems.length === 0 ? (
+                    <div className="text-sm text-slate-500">
+                      Start typing above, then press Enter or tap a match.
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {dmSelectedItems
+                        .slice()
+                        .sort((a, b) => a.localeCompare(b))
+                        .map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => removeDmSelectedItem(item)}
+                            className="rounded-full border border-sky-400/40 bg-sky-400/10 px-3 py-1.5 text-sm text-sky-100"
+                          >
+                            {item} ×
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  onClick={createDmEntry}
+                  disabled={dmSaving}
+                  className="rounded-2xl bg-sky-400 px-5 py-3 font-semibold text-slate-950 disabled:opacity-60"
+                >
+                  {dmSaving ? "Saving..." : "Add DM / Facilitator"}
+                </button>
+
+                <button
+                  onClick={resetDmForm}
+                  className="rounded-2xl border border-slate-700 bg-slate-950 px-5 py-3 font-semibold"
+                >
+                  Reset
+                </button>
+              </div>
+
+              {dmEntries.length > 0 && (
+                <div className="mt-6 space-y-3">
+                  <div className="text-sm font-semibold">Current DM / Facilitator entries</div>
+                  {dmEntries.map((entry) => {
+                    const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+                    return (
+                      <div
+                        key={entry.id}
+                        className="rounded-2xl border border-slate-800 bg-slate-950 p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-base font-bold">{entry.name}</div>
+                            {entry.dm_category ? (
+                              <div className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                {entry.dm_category}
+                              </div>
+                            ) : null}
+                            <div className="mt-2 space-y-1">
+                              {mergedItems.map((item) => (
+                                <div key={item} className="text-sm text-slate-300">
+                                  {item}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeEntry(entry.id)}
+                            className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-100"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {message && (
+                <div className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+                  {message}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : mode === "admin" ? (
+          <div className="grid gap-5 lg:grid-cols-[430px,minmax(0,1fr)]">
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl">
+              <h2 className="text-2xl font-semibold tracking-tight">Add Entry</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Fill out name, position, and items for the board.
+              </p>
+
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-semibold">Display name</label>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Example: Wolf, Red, Guest 4"
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
+                />
+              </div>
+
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-semibold">Position</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {positionOptions.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setPosition(option)}
+                      className={`rounded-2xl border p-4 text-center font-semibold ${
+                        position === option
+                          ? "border-sky-400 bg-sky-400/10 text-sky-100"
+                          : "border-slate-700 bg-slate-950 text-slate-200"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-semibold">Items</label>
+                <input
+                  value={itemInput}
+                  onChange={(e) => setItemInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addItemValue(itemInput);
+                    }
+                  }}
+                  placeholder="Type what they are into... ex: spank, rope, wax, bananas"
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
+                />
+              </div>
+
+              {itemInput.trim() && itemSuggestions.length > 0 && (
+                <div className="mt-3 max-h-[220px] overflow-auto rounded-2xl border border-slate-800 bg-slate-950/70 pr-1">
+                  <div className="divide-y divide-slate-800">
+                    {itemSuggestions.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => addItemValue(item)}
+                        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-slate-900"
+                      >
+                        <div>
+                          <div className="font-medium text-slate-100">{item}</div>
+                          <div className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
+                            {Object.entries(kinkCatalog).find(([, values]) =>
+                              values.includes(item)
+                            )?.[0] || "Custom"}
+                          </div>
+                        </div>
+                        <div className="rounded-full border border-slate-700 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          Add
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4">
+                <div className="mb-2 flex items-center justify-between gap-3 text-sm font-semibold">
+                  <span>Selected items</span>
+                  <span className="text-slate-500">
+                    {selectedItems.length}/{defaultConfig.maxSelectedItems}
+                  </span>
+                </div>
+
+                <div className="min-h-[64px] rounded-2xl border border-slate-800 bg-slate-950 p-3">
+                  {selectedItems.length === 0 ? (
+                    <div className="text-sm text-slate-500">
+                      Start typing above, then press Enter or tap a match.
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedItems
+                        .slice()
+                        .sort((a, b) => a.localeCompare(b))
+                        .map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => removeSelectedItem(item)}
+                            className="rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 text-sm text-amber-100"
+                          >
+                            {item} ×
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  onClick={createEntry}
+                  disabled={saving}
+                  className="rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 disabled:opacity-60"
+                >
+                  {saving ? "Saving..." : "Add to board"}
+                </button>
+
+                <button
+                  onClick={resetForm}
+                  className="rounded-2xl border border-slate-700 bg-slate-950 px-5 py-3 font-semibold"
+                >
+                  Reset form
+                </button>
+              </div>
+
+              {message && (
+                <div className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+                  {message}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight">Staff View</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    Remove people as needed or clear the board at the end of the night.
+                  </p>
+                </div>
+
+                <button
+                  onClick={clearBoard}
+                  className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-2 font-semibold text-rose-100"
+                >
+                  Clear board
+                </button>
+              </div>
+
+              <div className="mt-5 grid gap-3 md:grid-cols-4">
+                <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                  <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Total</div>
+                  <div className="mt-2 text-3xl font-bold">{participantEntries.length}</div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                  <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Top</div>
+                  <div className="mt-2 text-3xl font-bold text-rose-300">{topEntries.length}</div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                  <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Bottom</div>
+                  <div className="mt-2 text-3xl font-bold text-emerald-300">
+                    {bottomEntries.length}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                  <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Switch</div>
+                  <div className="mt-2 text-3xl font-bold text-sky-300">
+                    {switchEntries.length}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <input
+                  value={entrySearch}
+                  onChange={(e) => setEntrySearch(e.target.value)}
+                  placeholder="Search by name, item, or position"
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
+                />
+              </div>
+
+              <div className="mt-4 max-h-[720px] space-y-3 overflow-auto pr-1">
+                {loading ? (
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-5 text-slate-400">
+                    Loading entries...
+                  </div>
+                ) : filteredEntries.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-700 p-5 text-slate-400">
+                    No entries match that search.
+                  </div>
+                ) : (
+                  filteredEntries.map((entry) => {
+                    const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+
+                    return (
+                      <div
+                        key={entry.id}
+                        className="rounded-2xl border border-slate-800 bg-slate-950 p-4"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <div className="text-lg font-bold">{entry.name}</div>
+                            <div className="mt-2 inline-flex rounded-full border border-slate-700 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                              {entry.position}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => removeEntry(entry.id)}
+                            className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-100"
+                          >
+                            Remove
+                          </button>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {mergedItems.map((item) => (
+                            <span
+                              key={item}
+                              className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-slate-200"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="mb-7">
+              <h2 className="text-5xl font-bold tracking-tight">
+                {appConfig.venueName}
+              </h2>
+            </div>
+
+            <div className="hidden 2xl:grid grid-cols-4 gap-5 items-start">
+              <section
+                className={`rounded-[28px] border p-4 shadow-2xl h-full ${sectionThemes.DM.section}`}
+              >
+                <div className="mb-3">
+                  <h3 className={`text-xl font-semibold tracking-tight ${sectionThemes.DM.title}`}>
+                    Dungeon Monitor(s)
+                  </h3>
+                </div>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,max-content))] gap-3 items-start">
+                  {dmEntries.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-700 p-4 text-slate-400 w-full max-w-[240px]">
+                      Nothing posted yet.
+                    </div>
+                  ) : (
+                    dmEntries.map((entry) => {
+                      const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])].sort(
+                        (a, b) => a.localeCompare(b)
+                      );
+                      return (
+                        <DMCard
+                          key={entry.id}
+                          name={entry.name}
+                          category={entry.dm_category || ""}
+                          items={mergedItems}
+                        />
+                      );
+                    })
+                  )}
+                </div>
+              </section>
+
+              {renderPositionColumn("Top", topEntries)}
+              {renderPositionColumn("Bottom", bottomEntries)}
+              {renderPositionColumn("Switch", switchEntries)}
+            </div>
+
+            <div className="grid gap-5 2xl:hidden">
+              <section
+                className={`rounded-[28px] border p-4 shadow-2xl ${sectionThemes.DM.section}`}
+              >
+                <div className="mb-3">
+                  <h3 className={`text-xl font-semibold tracking-tight ${sectionThemes.DM.title}`}>
+                    Dungeon Monitor(s)
+                  </h3>
+                </div>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,max-content))] gap-3 items-start">
+                  {dmEntries.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-700 p-4 text-slate-400 w-full max-w-[240px]">
+                      Nothing posted yet.
+                    </div>
+                  ) : (
+                    dmEntries.map((entry) => {
+                      const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])].sort(
+                        (a, b) => a.localeCompare(b)
+                      );
+                      return (
+                        <DMCard
+                          key={entry.id}
+                          name={entry.name}
+                          category={entry.dm_category || ""}
+                          items={mergedItems}
+                        />
+                      );
+                    })
+                  )}
+                </div>
+              </section>
+
+              {renderPositionColumn("Top", topEntries)}
+              {renderPositionColumn("Bottom", bottomEntries)}
+              {renderPositionColumn("Switch", switchEntries)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

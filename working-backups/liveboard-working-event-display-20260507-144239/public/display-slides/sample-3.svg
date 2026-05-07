@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <rect width="1920" height="1080" fill="#1f2937"/>
+  <text x="960" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="92" fill="#ffffff">Second Saved Event</text>
+  <text x="960" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#F3EBDD">This proves the dropdown can switch presets.</text>
+</svg>

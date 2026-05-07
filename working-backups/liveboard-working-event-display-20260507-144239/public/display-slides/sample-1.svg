@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <rect width="1920" height="1080" fill="#111111"/>
+  <text x="960" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="96" fill="#ffffff">Sample Event Slide 1</text>
+  <text x="960" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#d8cbb8">This will rotate before the liveboard.</text>
+</svg>

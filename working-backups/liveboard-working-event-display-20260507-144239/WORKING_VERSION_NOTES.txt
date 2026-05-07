@@ -1,0 +1,21 @@
+Liveboard Working Backup
+Created: 20260507-144239
+
+This backup was created after the event display preset system was working correctly.
+
+Working features included:
+- Event display presets
+- Custom uploadable event slides
+- Multiple images per preset
+- Image compression before saving
+- Seconds-based timing
+- Editable saved presets
+- Add/remove images
+- Drag-and-drop slide ordering
+- Hidden/deletable sample presets
+- Transparent preview/edit/delete button styling
+- Automatic active preset selection from dropdown
+- Stable image → liveboard → image loop
+
+Important note:
+Custom presets saved inside the browser are stored in browser localStorage, not inside this backup folder. This backup protects the code/project files in their current working form.
