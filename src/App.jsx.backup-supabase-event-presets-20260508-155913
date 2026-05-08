@@ -10,74 +10,6 @@ const supabase =
     ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-const EVENT_DISPLAY_BUCKET = "event-display-slides";
-
-function slugifyEventDisplay(value) {
-  return String(value || "event-display")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "") || "event-display";
-}
-
-function mapEventDisplayPresetRow(row) {
-  return {
-    id: row.id,
-    eventName: row.event_name || "Untitled Event",
-    eventDescription: row.event_description || "",
-    liveboardDurationSeconds: Number(row.liveboard_duration_seconds) || 300,
-    transitionSeconds: Number(row.transition_seconds) || 0.5,
-    images: Array.isArray(row.images) ? row.images : [],
-    source: "supabase",
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
-
-async function uploadEventDisplayImagesToSupabase(images, presetName) {
-  if (!supabase) return images;
-
-  const presetSlug = slugifyEventDisplay(presetName);
-  const folder = `${presetSlug}-${Date.now()}`;
-  const uploadedImages = [];
-
-  for (const [index, image] of images.entries()) {
-    if (!image?.imageUrl || !String(image.imageUrl).startsWith("data:")) {
-      uploadedImages.push(image);
-      continue;
-    }
-
-    const response = await fetch(image.imageUrl);
-    const blob = await response.blob();
-    const contentType = blob.type || "image/png";
-    const extension = contentType.split("/")[1] || "png";
-    const cleanName = slugifyEventDisplay(image.name || `slide-${index + 1}`);
-    const path = `${folder}/${String(index + 1).padStart(2, "0")}-${cleanName}.${extension}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from(EVENT_DISPLAY_BUCKET)
-      .upload(path, blob, {
-        contentType,
-        upsert: true,
-      });
-
-    if (uploadError) {
-      throw new Error(uploadError.message);
-    }
-
-    const { data } = supabase.storage
-      .from(EVENT_DISPLAY_BUCKET)
-      .getPublicUrl(path);
-
-    uploadedImages.push({
-      ...image,
-      imageUrl: data.publicUrl,
-      storagePath: path,
-    });
-  }
-
-  return uploadedImages;
-}
-
 const DISPLAY_LOGO_SRC = "/sanctuary-sessions-logo.png";
 
 const kinkCatalog = {
@@ -728,7 +660,13 @@ export default function App() {
     return window.localStorage.getItem("activeEventDisplayId") || eventDisplayPresets[0]?.id || "";
   });
 
-  const [savedEventDisplays, setSavedEventDisplays] = useState([]);
+  const [savedEventDisplays, setSavedEventDisplays] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem("savedEventDisplays") || "[]");
+    } catch {
+      return [];
+    }
+  });
 
   const [hiddenBuiltinEventDisplayIds, setHiddenBuiltinEventDisplayIds] = useState(() => {
     try {
@@ -766,15 +704,15 @@ export default function App() {
     switch_max_cols: clampLayoutValue(layoutSettings.switch_max_cols ?? defaultDisplayLayout.switch_max_cols),
   };
 
-  const eventDisplayOptions = useMemo(() => {
-    if (savedEventDisplays.length > 0) {
-      return savedEventDisplays;
-    }
-
-    return eventDisplayPresets.filter(
-      (eventDisplay) => !hiddenBuiltinEventDisplayIds.includes(eventDisplay.id)
-    );
-  }, [hiddenBuiltinEventDisplayIds, savedEventDisplays]);
+  const eventDisplayOptions = useMemo(
+    () => [
+      ...eventDisplayPresets.filter(
+        (eventDisplay) => !hiddenBuiltinEventDisplayIds.includes(eventDisplay.id)
+      ),
+      ...savedEventDisplays,
+    ],
+    [hiddenBuiltinEventDisplayIds, savedEventDisplays]
+  );
 
   const activeEventDisplay =
     eventDisplayOptions.find((eventDisplay) => eventDisplay.id === activeEventDisplayId) ||
@@ -782,7 +720,7 @@ export default function App() {
     null;
 
   useEffect(() => {
-    // Event display presets are now saved in Supabase.
+    window.localStorage.setItem("savedEventDisplays", JSON.stringify(savedEventDisplays));
   }, [savedEventDisplays]);
 
   useEffect(() => {
@@ -808,7 +746,7 @@ export default function App() {
     };
 
     const handleStorageChange = (event) => {
-      if (event.key === "activeEventDisplayId") {
+      if (event.key === "activeEventDisplayId" || event.key === "savedEventDisplays") {
         syncActiveEventDisplay();
       }
     };
@@ -822,167 +760,6 @@ export default function App() {
       window.clearInterval(interval);
     };
   }, [activeEventDisplayId]);
-
-  useEffect(() => {
-    if (!supabase) return;
-
-    let mounted = true;
-
-    const saveActivePresetToSettings = async (presetId) => {
-      if (!presetId) return;
-
-      const { data: existingSettings } = await supabase
-        .from("board_settings")
-        .select("id")
-        .limit(1)
-        .maybeSingle();
-
-      if (existingSettings?.id) {
-        await supabase
-          .from("board_settings")
-          .update({
-            active_event_display_preset_id: presetId,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingSettings.id);
-      } else {
-        await supabase.from("board_settings").insert({
-          event_name: defaultConfig.eventName,
-          venue_name: defaultConfig.venueName,
-          active_event_display_preset_id: presetId,
-          updated_at: new Date().toISOString(),
-        });
-      }
-    };
-
-    const loadEventDisplayPresets = async () => {
-      const { data, error } = await supabase
-        .from("event_display_presets")
-        .select("id, event_name, event_description, liveboard_duration_seconds, transition_seconds, images, active, created_at, updated_at")
-        .eq("active", true)
-        .order("updated_at", { ascending: false });
-
-      if (!mounted) return;
-
-      if (error) {
-        console.error("Could not load event display presets:", error);
-        return;
-      }
-
-      const presets = (data || []).map(mapEventDisplayPresetRow);
-      setSavedEventDisplays(presets);
-
-      if (presets.length > 0 && !presets.some((preset) => preset.id === activeEventDisplayId)) {
-        setActiveEventDisplayId(presets[0].id);
-      }
-    };
-
-    const migrateLocalEventDisplayPresets = async () => {
-      const alreadyMigrated = window.localStorage.getItem("eventDisplayPresetsMigratedToSupabase");
-      const rawLocalPresets = window.localStorage.getItem("savedEventDisplays");
-
-      if (alreadyMigrated === "true" || !rawLocalPresets) {
-        return;
-      }
-
-      let localPresets = [];
-
-      try {
-        localPresets = JSON.parse(rawLocalPresets);
-      } catch {
-        return;
-      }
-
-      if (!Array.isArray(localPresets) || localPresets.length === 0) {
-        window.localStorage.setItem("eventDisplayPresetsMigratedToSupabase", "true");
-        return;
-      }
-
-      setMessage("Migrating saved event display presets to Supabase...");
-
-      const localActiveId = window.localStorage.getItem("activeEventDisplayId");
-      let migratedActivePresetId = "";
-
-      for (const localPreset of localPresets) {
-        if (!localPreset?.eventName || !Array.isArray(localPreset.images) || localPreset.images.length === 0) {
-          continue;
-        }
-
-        const imageDuration =
-          Number(localPreset.images?.[0]?.durationSeconds) ||
-          Number(localPreset.images?.[0]?.durationMinutes) * 60 ||
-          60;
-
-        const liveboardDuration =
-          Number(localPreset.liveboardDurationSeconds) ||
-          Number(localPreset.liveboardDurationMinutes) * 60 ||
-          300;
-
-        const uploadedImages = await uploadEventDisplayImagesToSupabase(
-          localPreset.images.map((image, index) => ({
-            ...image,
-            id: image.id || `${slugifyEventDisplay(localPreset.eventName)}-image-${index + 1}`,
-            durationSeconds:
-              Number(image.durationSeconds) ||
-              Number(image.durationMinutes) * 60 ||
-              imageDuration,
-          })),
-          localPreset.eventName
-        );
-
-        const { data, error } = await supabase
-          .from("event_display_presets")
-          .insert({
-            event_name: localPreset.eventName,
-            event_description: localPreset.eventDescription || "",
-            liveboard_duration_seconds: liveboardDuration,
-            transition_seconds: Number(localPreset.transitionSeconds) || 0.5,
-            images: uploadedImages,
-            active: true,
-            updated_at: new Date().toISOString(),
-          })
-          .select("id, event_name, event_description, liveboard_duration_seconds, transition_seconds, images, active, created_at, updated_at")
-          .single();
-
-        if (error) {
-          console.error("Event display preset migration error:", error);
-          continue;
-        }
-
-        if (localPreset.id === localActiveId) {
-          migratedActivePresetId = data.id;
-        }
-      }
-
-      window.localStorage.setItem("eventDisplayPresetsMigratedToSupabase", "true");
-
-      await loadEventDisplayPresets();
-
-      if (migratedActivePresetId) {
-        setActiveEventDisplayId(migratedActivePresetId);
-        await saveActivePresetToSettings(migratedActivePresetId);
-      }
-
-      setMessage("Event display presets migrated to Supabase.");
-      setTimeout(() => setMessage(""), 3500);
-    };
-
-    loadEventDisplayPresets().then(migrateLocalEventDisplayPresets);
-
-    const channel = supabase
-      .channel("event-display-presets-live")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "event_display_presets" },
-        () => loadEventDisplayPresets()
-      )
-      .subscribe();
-
-    return () => {
-      mounted = false;
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   const appConfig = {
     ...defaultConfig,
@@ -1589,11 +1366,6 @@ export default function App() {
   const saveEventDisplayPreset = async () => {
     const name = displayEventName.trim();
 
-    if (!supabase) {
-      setMessage("Supabase connection is missing.");
-      return;
-    }
-
     if (!name) {
       setMessage("Please enter an event display name.");
       return;
@@ -1604,36 +1376,26 @@ export default function App() {
       return;
     }
 
+    setMessage("Preparing image(s) for saving...");
+    const compressedImages = await compressDisplayImages(displayImages);
+
+    const estimatedSize = JSON.stringify(compressedImages).length;
+    const maxSafeSize = 3500000;
+
+    if (estimatedSize > maxSafeSize) {
+      setMessage(
+        "This preset is still too large for browser storage. Try fewer images or smaller image files."
+      );
+      setTimeout(() => setMessage(""), 7000);
+      return;
+    }
+
     const imageDuration = Number(displayImageDurationSeconds) || 60;
     const liveboardDuration = Number(displayLiveboardDurationSeconds) || 300;
-    const idBase = slugifyEventDisplay(name);
-
-    setMessage("Uploading image(s) to Supabase...");
-
-    let compressedImages = [];
-
-    try {
-      compressedImages = await compressDisplayImages(displayImages);
-    } catch {
-      setMessage("Could not prepare one or more images.");
-      return;
-    }
-
-    let uploadedImages = [];
-
-    try {
-      uploadedImages = await uploadEventDisplayImagesToSupabase(
-        compressedImages.map((image, index) => ({
-          ...image,
-          id: image.id || `${idBase}-image-${index + 1}`,
-          durationSeconds: imageDuration,
-        })),
-        name
-      );
-    } catch (error) {
-      setMessage(`Could not upload image(s): ${error.message}`);
-      return;
-    }
+    const idBase = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "event-display";
 
     if (editingEventDisplayId) {
       const existingPreset = savedEventDisplays.find(
@@ -1641,42 +1403,33 @@ export default function App() {
       );
 
       if (!existingPreset) {
-        setMessage("Only saved Supabase presets can be edited.");
+        setMessage("Only custom saved presets can be edited.");
         setTimeout(() => setMessage(""), 2500);
         return;
       }
 
-      const { data, error } = await supabase
-        .from("event_display_presets")
-        .update({
-          event_name: name,
-          event_description: displayEventDescription.trim(),
-          liveboard_duration_seconds: liveboardDuration,
-          transition_seconds: 0.5,
-          images: uploadedImages,
-          active: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", editingEventDisplayId)
-        .select("id, event_name, event_description, liveboard_duration_seconds, transition_seconds, images, active, created_at, updated_at")
-        .single();
-
-      if (error) {
-        setMessage(`Could not update event display preset: ${error.message}`);
-        return;
-      }
-
-      const updatedPreset = mapEventDisplayPresetRow(data);
+      const updatedPreset = {
+        ...existingPreset,
+        eventName: name,
+        eventDescription: displayEventDescription.trim(),
+        liveboardDurationSeconds: liveboardDuration,
+        transitionSeconds: 0.5,
+        images: compressedImages.map((image, index) => ({
+          ...image,
+          id: image.id || `${idBase}-image-${index + 1}`,
+          durationSeconds: imageDuration,
+        })),
+      };
 
       setSavedEventDisplays((current) =>
         current.map((eventDisplay) =>
-          eventDisplay.id === updatedPreset.id ? updatedPreset : eventDisplay
+          eventDisplay.id === editingEventDisplayId ? updatedPreset : eventDisplay
         )
       );
 
-      await updateActiveEventDisplayPreset(updatedPreset.id);
-
+      setActiveEventDisplayId(updatedPreset.id);
       setEditingEventDisplayId("");
+
       setDisplayEventName("");
       setDisplayEventDescription("");
       setDisplayImageDurationSeconds("60");
@@ -1688,29 +1441,21 @@ export default function App() {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("event_display_presets")
-      .insert({
-        event_name: name,
-        event_description: displayEventDescription.trim(),
-        liveboard_duration_seconds: liveboardDuration,
-        transition_seconds: 0.5,
-        images: uploadedImages,
-        active: true,
-        updated_at: new Date().toISOString(),
-      })
-      .select("id, event_name, event_description, liveboard_duration_seconds, transition_seconds, images, active, created_at, updated_at")
-      .single();
+    const newPreset = {
+      id: `${idBase}-${Date.now()}`,
+      eventName: name,
+      eventDescription: displayEventDescription.trim(),
+      liveboardDurationSeconds: liveboardDuration,
+      transitionSeconds: 0.5,
+      images: compressedImages.map((image, index) => ({
+        ...image,
+        id: image.id || `${idBase}-image-${index + 1}`,
+        durationSeconds: imageDuration,
+      })),
+    };
 
-    if (error) {
-      setMessage(`Could not save event display preset: ${error.message}`);
-      return;
-    }
-
-    const newPreset = mapEventDisplayPresetRow(data);
-
-    setSavedEventDisplays((current) => [newPreset, ...current]);
-    await updateActiveEventDisplayPreset(newPreset.id);
+    setSavedEventDisplays((current) => [...current, newPreset]);
+    setActiveEventDisplayId(newPreset.id);
 
     setDisplayEventName("");
     setDisplayEventDescription("");
@@ -1718,8 +1463,8 @@ export default function App() {
     setDisplayLiveboardDurationSeconds("300");
     setDisplayImages([]);
 
-    setMessage("Event display preset saved to Supabase.");
-    setTimeout(() => setMessage(""), 2500);
+    setMessage("Event display preset saved.");
+    setTimeout(() => setMessage(""), 2000);
   };
 
   const editActiveEventDisplayPreset = () => {
@@ -1766,12 +1511,7 @@ export default function App() {
     setTimeout(() => setMessage(""), 2000);
   };
 
-  const deleteActiveEventDisplayPreset = async () => {
-    if (!supabase) {
-      setMessage("Supabase connection is missing.");
-      return;
-    }
-
+  const deleteActiveEventDisplayPreset = () => {
     const activeCustomPreset = savedEventDisplays.find(
       (eventDisplay) => eventDisplay.id === activeEventDisplayId
     );
@@ -1792,7 +1532,7 @@ export default function App() {
 
     const confirmMessage = isBuiltinPreset
       ? `Hide built-in preset "${activePreset.eventName}" from this browser?`
-      : `Delete event display preset "${activePreset.eventName}" from Supabase?`;
+      : `Delete event display preset "${activePreset.eventName}"?`;
 
     if (!window.confirm(confirmMessage)) return;
 
@@ -1801,48 +1541,42 @@ export default function App() {
         new Set([...hiddenBuiltinEventDisplayIds, activePreset.id])
       );
 
-      const nextOptions = eventDisplayPresets.filter(
-        (eventDisplay) =>
-          eventDisplay.id !== activePreset.id &&
-          !nextHiddenIds.includes(eventDisplay.id)
-      );
+      const nextOptions = [
+        ...eventDisplayPresets.filter(
+          (eventDisplay) =>
+            eventDisplay.id !== activePreset.id &&
+            !nextHiddenIds.includes(eventDisplay.id)
+        ),
+        ...savedEventDisplays,
+      ];
 
       setHiddenBuiltinEventDisplayIds(nextHiddenIds);
-      setActiveEventDisplayId(savedEventDisplays[0]?.id || nextOptions[0]?.id || "");
+      setActiveEventDisplayId(nextOptions[0]?.id || "");
+
+      if (editingEventDisplayId === activeEventDisplayId) {
+        setEditingEventDisplayId("");
+        setDisplayEventName("");
+        setDisplayEventDescription("");
+        setDisplayImageDurationSeconds("60");
+        setDisplayLiveboardDurationSeconds("300");
+        setDisplayImages([]);
+      }
 
       setMessage("Built-in sample preset hidden.");
       setTimeout(() => setMessage(""), 2500);
       return;
     }
 
-    const { error } = await supabase
-      .from("event_display_presets")
-      .delete()
-      .eq("id", activePreset.id);
-
-    if (error) {
-      setMessage(`Could not delete event display preset: ${error.message}`);
-      return;
-    }
-
     const remaining = savedEventDisplays.filter(
-      (eventDisplay) => eventDisplay.id !== activePreset.id
+      (eventDisplay) => eventDisplay.id !== activeEventDisplayId
+    );
+
+    const visibleBuiltins = eventDisplayPresets.filter(
+      (eventDisplay) => !hiddenBuiltinEventDisplayIds.includes(eventDisplay.id)
     );
 
     setSavedEventDisplays(remaining);
-
-    const nextActiveId =
-      remaining[0]?.id ||
-      eventDisplayPresets.find(
-        (eventDisplay) => !hiddenBuiltinEventDisplayIds.includes(eventDisplay.id)
-      )?.id ||
-      "";
-
-    if (nextActiveId) {
-      await updateActiveEventDisplayPreset(nextActiveId);
-    } else {
-      setActiveEventDisplayId("");
-    }
+    setActiveEventDisplayId(visibleBuiltins[0]?.id || remaining[0]?.id || "");
 
     if (editingEventDisplayId === activeEventDisplayId) {
       setEditingEventDisplayId("");
@@ -1853,8 +1587,8 @@ export default function App() {
       setDisplayImages([]);
     }
 
-    setMessage("Event display preset deleted from Supabase.");
-    setTimeout(() => setMessage(""), 2500);
+    setMessage("Event display preset deleted.");
+    setTimeout(() => setMessage(""), 2000);
   };
 
   const createEntry = async () => {
