@@ -991,3 +991,267 @@
     transform-origin: left center;
   }
 }
+
+/* Final iPad landscape placement: full left panel visible, right payment image centered in its side */
+@media (min-width: 1000px) and (max-width: 1400px) and (orientation: landscape) {
+  .kioskStartPageDiaper {
+    background-size: auto 84vh;
+    background-position: 84% center;
+    background-repeat: no-repeat;
+  }
+
+  .kioskStartPageDiaper .kioskPreviewArea {
+    width: 56%;
+    padding-top: 6.2vh;
+    padding-bottom: 4.8vh;
+    padding-left: 2vw;
+    padding-right: 1vw;
+    justify-content: center;
+    gap: 1.35vh;
+  }
+
+  .kioskStartPageDiaper .connectionPreview {
+    transform: scale(0.93);
+    transform-origin: left center;
+    padding: 22px;
+  }
+
+  .kioskStartPageDiaper .displayStyleHeader h1 {
+    font-size: clamp(28px, 2.15vw, 40px);
+    line-height: 1;
+  }
+
+  .kioskStartPageDiaper .displayStyleHeader p {
+    font-size: clamp(13px, 0.95vw, 17px);
+    line-height: 1.18;
+  }
+
+  .kioskStartPageDiaper .previewHeader {
+    margin-bottom: 14px;
+  }
+
+  .kioskStartPageDiaper .previewHeader::after {
+    margin-top: 12px;
+  }
+
+  .kioskStartPageDiaper .previewSupportRow {
+    margin-bottom: 12px;
+  }
+
+  .kioskStartPageDiaper .supportCard {
+    min-height: 76px;
+    padding: 12px 14px;
+  }
+
+  .kioskStartPageDiaper .supportIcon {
+    height: 50px;
+    width: 50px;
+    flex-basis: 50px;
+  }
+
+  .kioskStartPageDiaper .startInfoBox {
+    min-height: 98px;
+    padding: 12px;
+  }
+
+  .kioskStartPageDiaper .roleIcon {
+    height: 42px;
+    width: 42px;
+    flex-basis: 42px;
+  }
+
+  .kioskStartPageDiaper .startInfoBox .roleTextWrap h2 {
+    font-size: clamp(17px, 1.25vw, 23px);
+  }
+
+  .kioskStartPageDiaper .startInfoBox .roleSubLabel {
+    font-size: clamp(11px, 0.78vw, 14px);
+    line-height: 1.18;
+  }
+
+  .kioskStartPageDiaper .exampleEntryBlock {
+    margin-top: 12px;
+    padding: 14px;
+  }
+
+  .kioskStartPageDiaper .exampleEntryCard {
+    padding: 14px 16px;
+  }
+
+  .kioskStartPageDiaper .entryNameLine strong {
+    font-size: clamp(20px, 1.6vw, 30px);
+  }
+
+  .kioskStartPageDiaper .entryNameLine span,
+  .kioskStartPageDiaper .entryIdentityLine,
+  .kioskStartPageDiaper .entryIntention,
+  .kioskStartPageDiaper .entryInterests {
+    font-size: clamp(11px, 0.8vw, 15px);
+  }
+
+  .kioskStartPageDiaper .kioskStartButton {
+    width: min(500px, 74%);
+    max-width: 500px;
+    margin-top: 0.8vh;
+    padding: 15px 24px;
+    transform: translateY(-0.8vh);
+  }
+
+  .kioskStartPageDiaper .kioskStartButton span {
+    font-size: clamp(19px, 1.65vw, 30px);
+  }
+}
+
+/* Final iPad landscape placement: full left panel visible, right payment image centered in its side */
+@media (min-width: 1000px) and (max-width: 1400px) and (orientation: landscape) {
+  .kioskStartPageDiaper {
+    background-size: auto 84vh;
+    background-position: 84% center;
+    background-repeat: no-repeat;
+  }
+
+  .kioskStartPageDiaper .kioskPreviewArea {
+    width: 56%;
+    padding-top: 6.2vh;
+    padding-bottom: 4.8vh;
+    padding-left: 2vw;
+    padding-right: 1vw;
+    justify-content: center;
+    gap: 1.35vh;
+  }
+
+  .kioskStartPageDiaper .connectionPreview {
+    transform: scale(0.93);
+    transform-origin: left center;
+    padding: 22px;
+  }
+
+  .kioskStartPageDiaper .displayStyleHeader h1 {
+    font-size: clamp(28px, 2.15vw, 40px);
+    line-height: 1;
+  }
+
+  .kioskStartPageDiaper .displayStyleHeader p {
+    font-size: clamp(13px, 0.95vw, 17px);
+    line-height: 1.18;
+  }
+
+  .kioskStartPageDiaper .previewHeader {
+    margin-bottom: 14px;
+  }
+
+  .kioskStartPageDiaper .previewHeader::after {
+    margin-top: 12px;
+  }
+
+  .kioskStartPageDiaper .previewSupportRow {
+    margin-bottom: 12px;
+  }
+
+  .kioskStartPageDiaper .supportCard {
+    min-height: 76px;
+    padding: 12px 14px;
+  }
+
+  .kioskStartPageDiaper .supportIcon {
+    height: 50px;
+    width: 50px;
+    flex-basis: 50px;
+  }
+
+  .kioskStartPageDiaper .startInfoBox {
+    min-height: 98px;
+    padding: 12px;
+  }
+
+  .kioskStartPageDiaper .roleIcon {
+    height: 42px;
+    width: 42px;
+    flex-basis: 42px;
+  }
+
+  .kioskStartPageDiaper .startInfoBox .roleTextWrap h2 {
+    font-size: clamp(17px, 1.25vw, 23px);
+  }
+
+  .kioskStartPageDiaper .startInfoBox .roleSubLabel {
+    font-size: clamp(11px, 0.78vw, 14px);
+    line-height: 1.18;
+  }
+
+  .kioskStartPageDiaper .exampleEntryBlock {
+    margin-top: 12px;
+    padding: 14px;
+  }
+
+  .kioskStartPageDiaper .exampleEntryCard {
+    padding: 14px 16px;
+  }
+
+  .kioskStartPageDiaper .entryNameLine strong {
+    font-size: clamp(20px, 1.6vw, 30px);
+  }
+
+  .kioskStartPageDiaper .entryNameLine span,
+  .kioskStartPageDiaper .entryIdentityLine,
+  .kioskStartPageDiaper .entryIntention,
+  .kioskStartPageDiaper .entryInterests {
+    font-size: clamp(11px, 0.8vw, 15px);
+  }
+
+  .kioskStartPageDiaper .kioskStartButton {
+    width: min(500px, 74%);
+    max-width: 500px;
+    margin-top: 0.8vh;
+    padding: 15px 24px;
+    transform: translateY(-0.8vh);
+  }
+
+  .kioskStartPageDiaper .kioskStartButton span {
+    font-size: clamp(19px, 1.65vw, 30px);
+  }
+}
+
+/* FORCE iPad kiosk placement override */
+.kioskStartPageDiaper {
+  background-size: auto 88vh !important;
+  background-position: 76% center !important;
+  background-repeat: no-repeat !important;
+}
+
+.kioskStartPageDiaper .kioskPreviewArea {
+  width: 56.5% !important;
+  padding-top: 3.5vh !important;
+  padding-bottom: 3vh !important;
+  justify-content: center !important;
+}
+
+.kioskStartPageDiaper .connectionPreview {
+  transform: scale(0.94) translateY(0.6vh) !important;
+  transform-origin: left center !important;
+}
+
+.kioskStartPageDiaper .kioskStartButton {
+  margin-top: -4.5vh !important;
+  transform: translateY(-4.5vh) !important;
+  width: min(500px, 74%) !important;
+  max-width: 500px !important;
+  padding: 16px 24px !important;
+}
+
+.kioskStartPageDiaper .kioskStartButton span {
+  white-space: nowrap !important;
+}
+
+/* Stronger iPad/Safari landscape override */
+@media (orientation: landscape) {
+  .kioskStartPageDiaper {
+    background-size: auto 88vh !important;
+    background-position: 74% center !important;
+  }
+
+  .kioskStartPageDiaper .kioskStartButton {
+    margin-top: -5.5vh !important;
+    transform: translateY(-5.5vh) !important;
+  }
+}
