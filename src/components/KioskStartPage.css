@@ -1299,3 +1299,44 @@
     background-position: 74% center !important;
   }
 }
+
+/* Move right-side check-in/payment image more toward center */
+.kioskStartPageDiaper {
+  background-size: auto 88vh !important;
+  background-position: 66% center !important;
+  background-repeat: no-repeat !important;
+}
+
+@media (orientation: landscape) {
+  .kioskStartPageDiaper {
+    background-size: auto 88vh !important;
+    background-position: 66% center !important;
+    background-repeat: no-repeat !important;
+  }
+}
+
+/* Move right-side check-in/payment image more toward center */
+.kioskStartPageDiaper {
+  background-size: auto 88vh !important;
+  background-position: 66% center !important;
+  background-repeat: no-repeat !important;
+}
+
+@media (orientation: landscape) {
+  .kioskStartPageDiaper {
+    background-size: auto 88vh !important;
+    background-position: 66% center !important;
+    background-repeat: no-repeat !important;
+  }
+}
+
+/* Slightly enlarge right-side kiosk background image */
+.kioskStartPageDiaper {
+  background-size: auto 90vh !important;
+}
+
+@media (orientation: landscape) {
+  .kioskStartPageDiaper {
+    background-size: auto 90vh !important;
+  }
+}
