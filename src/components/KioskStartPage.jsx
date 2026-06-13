@@ -1,5 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 import "./KioskStartPage.css";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase =
+  supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 function CrownIcon() {
   return (
@@ -22,31 +28,19 @@ function ShieldIcon() {
   );
 }
 
-function UpArrowIcon() {
+function SparkleIcon() {
   return (
     <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M32 52V12" />
-      <path d="M16 28 32 12l16 16" />
+      <path d="M32 6l5.8 17.5L56 29.5 38.5 36 32 58l-6.5-22L8 29.5l18.2-6L32 6Z" />
+      <path d="M50 8l2.5 7.5L60 18l-7.5 2.5L50 28l-2.5-7.5L40 18l7.5-2.5L50 8Z" />
     </svg>
   );
 }
 
-function DownArrowIcon() {
+function HeartIcon() {
   return (
     <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M32 12v40" />
-      <path d="M16 36l16 16 16-16" />
-    </svg>
-  );
-}
-
-function RotateIcon() {
-  return (
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M48 20a20 20 0 0 0-33 7" />
-      <path d="M14 14v13h13" />
-      <path d="M16 44a20 20 0 0 0 33-7" />
-      <path d="M50 50V37H37" />
+      <path d="M32 55S10 42 10 24c0-8 5.5-14 13-14 4.5 0 7.5 2.4 9 5.2C33.5 12.4 36.5 10 41 10c7.5 0 13 6 13 14 0 18-22 31-22 31Z" />
     </svg>
   );
 }
@@ -60,14 +54,138 @@ function SmallArrowIcon() {
   );
 }
 
+function getPresetFromStorage() {
+  try {
+    return window.localStorage.getItem("entryFormPreset") || "standard";
+  } catch {
+    return "standard";
+  }
+}
+
 export default function KioskStartPage({ onStart }) {
+  const [entryFormPreset, setEntryFormPreset] = useState(getPresetFromStorage);
+  const isDiaperMode = entryFormPreset === "diaper_debauchery_glow";
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPreset() {
+      if (!supabase) return;
+
+      const { data, error } = await supabase
+        .from("board_settings")
+        .select("entry_form_preset, updated_at")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!cancelled && !error && data?.entry_form_preset) {
+        setEntryFormPreset(data.entry_form_preset);
+
+        try {
+          window.localStorage.setItem("entryFormPreset", data.entry_form_preset);
+        } catch {
+          // Ignore localStorage issues.
+        }
+      }
+    }
+
+    loadPreset();
+
+    const interval = window.setInterval(loadPreset, 5000);
+
+    const channel = supabase
+      ? supabase
+          .channel("kiosk-start-entry-form-preset")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "board_settings" },
+            (payload) => {
+              const nextPreset = payload?.new?.entry_form_preset;
+              if (nextPreset) {
+                setEntryFormPreset(nextPreset);
+
+                try {
+                  window.localStorage.setItem("entryFormPreset", nextPreset);
+                } catch {
+                  // Ignore localStorage issues.
+                }
+              }
+            }
+          )
+          .subscribe()
+      : null;
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+
+      if (channel && supabase) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, []);
+
+  const pageCopy = isDiaperMode
+    ? {
+        title: "KrINKles Connection Board",
+        subtitle: "Add your name, vibe, and what you’re open to tonight.",
+        hostTitle: "Hosts & Helpers",
+        hostBody: "Find the people holding the room.",
+        monitorTitle: "Safety & Support",
+        monitorBody: "See who can help if you need anything.",
+        cardOneTitle: "Your Vibe",
+        cardOneBody: "Little, caregiver, messy, playful, shy, social, or anything in between.",
+        cardTwoTitle: "Looking For",
+        cardTwoBody: "Cuddles, changes, play, conversation, connection, or space to just be.",
+        cardThreeTitle: "Kinks & Care Notes",
+        cardThreeBody: "Share the diaper, ABDL, kink, or scene details you want visible.",
+        exampleLabel: "Example ABDL Entry",
+        nameLine: "Your Name / Scene Name",
+        nameSubline: "Little, caregiver, switchy, messy, social, or shy",
+        seekingLeft: "My vibe tonight",
+        seekingRight: "What I’m looking for",
+        orientation: "| Social handles optional",
+        intention: "Open to cuddles, diaper talk, changes, mess play, or just hanging out",
+        interests: "Diaper play, ABDL, caregiver energy, roleplay, cleanup, impact, service",
+        button: "JOIN THE BOARD",
+        buttonSmall: "Add Yourself to the KrINKles Board",
+      }
+    : {
+        title: "The Sanctuary Connection Board",
+        subtitle: "A live connection board for scenes, play, and conversation.",
+        hostTitle: "Host & Co-Host",
+        hostBody: "Find the people holding the event.",
+        monitorTitle: "Dungeon Monitors",
+        monitorBody: "See who is available for safety and support.",
+        cardOneTitle: "Who You Are",
+        cardOneBody: "Add the name and identity details you want people to see.",
+        cardTwoTitle: "What You’re Seeking",
+        cardTwoBody: "Share what kind of connection, scene, or conversation you’re open to.",
+        cardThreeTitle: "Interests & Boundaries",
+        cardThreeBody: "List the kinks, interests, responsibilities, or limits you want visible.",
+        exampleLabel: "Example Entry",
+        nameLine: "Your Name",
+        nameSubline: "Real or Scene",
+        seekingLeft: "How you identify",
+        seekingRight: "What you’re seeking",
+        orientation: "| Orientation optional",
+        intention: "Tonight’s intention",
+        interests: "Your interests, kinks, fetishes, responsibilities, or boundaries",
+        button: "START",
+        buttonSmall: "Add Yourself to the Board",
+      };
+
   return (
-    <main className="kioskStartPage">
+    <main className={`kioskStartPage ${isDiaperMode ? "kioskStartPageDiaper" : "kioskStartPageStandard"}`}>
       <section
         className="kioskPreviewArea kioskPreviewAreaButton"
         role="button"
         tabIndex={0}
-        onClick={(event) => { event.stopPropagation(); onStart(); }}
+        onClick={(event) => {
+          event.stopPropagation();
+          onStart();
+        }}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
@@ -78,85 +196,94 @@ export default function KioskStartPage({ onStart }) {
         <div className="connectionPreview">
           <header className="previewHeader">
             <div className="displayStyleHeader">
-              <h1>The Sanctuary Connection Board</h1>
-              <p>A live connection board for scenes, play, and conversation.</p>
+              <div className="kioskModeBadge">
+                {isDiaperMode ? "ABDL / KrINKles Mode" : "Connection Board Mode"}
+              </div>
+              <h1>{pageCopy.title}</h1>
+              <p>{pageCopy.subtitle}</p>
             </div>
           </header>
 
           <div className="previewSupportRow">
             <div className="supportCard hostCard">
-              <div className="supportIcon crownIcon"><CrownIcon /></div>
+              <div className="supportIcon crownIcon">
+                <CrownIcon />
+              </div>
               <div>
-                <h3>See the Host &amp; Co-Host Here</h3>
-                <p>Their roles and offerings</p>
+                <h3>{pageCopy.hostTitle}</h3>
+                <p>{pageCopy.hostBody}</p>
               </div>
             </div>
 
             <div className="supportCard monitorCard">
-              <div className="supportIcon shieldIcon"><ShieldIcon /></div>
+              <div className="supportIcon shieldIcon">
+                <ShieldIcon />
+              </div>
               <div>
-                <h3>See Dungeon Monitors Here</h3>
-                <p>Their roles and offerings</p>
+                <h3>{pageCopy.monitorTitle}</h3>
+                <p>{pageCopy.monitorBody}</p>
               </div>
             </div>
           </div>
 
-          <div className="roleRow">
-            <div className="roleBox topRole">
-              <div className="roleIcon"><UpArrowIcon /></div>
+          <div className="startInfoRow">
+            <div className="startInfoBox startInfoBoxOne">
+              <div className="roleIcon">
+                <SparkleIcon />
+              </div>
               <div className="roleTextWrap">
-                <h2>Top</h2>
-                <div className="roleSubLabel">Give</div>
+                <h2>{pageCopy.cardOneTitle}</h2>
+                <div className="roleSubLabel">{pageCopy.cardOneBody}</div>
               </div>
             </div>
 
-            <div className="roleBox bottomRole">
-              <div className="roleIcon"><DownArrowIcon /></div>
+            <div className="startInfoBox startInfoBoxTwo">
+              <div className="roleIcon">
+                <HeartIcon />
+              </div>
               <div className="roleTextWrap">
-                <h2>Bottom</h2>
-                <div className="roleSubLabel">Receive</div>
+                <h2>{pageCopy.cardTwoTitle}</h2>
+                <div className="roleSubLabel">{pageCopy.cardTwoBody}</div>
               </div>
             </div>
 
-            <div className="roleBox switchRole">
-              <div className="roleIcon"><RotateIcon /></div>
+            <div className="startInfoBox startInfoBoxThree">
+              <div className="roleIcon">
+                <ShieldIcon />
+              </div>
               <div className="roleTextWrap">
-                <h2>Switch</h2>
-                <div className="roleSubLabel">Both Give &amp; Receive</div>
+                <h2>{pageCopy.cardThreeTitle}</h2>
+                <div className="roleSubLabel">{pageCopy.cardThreeBody}</div>
               </div>
             </div>
           </div>
 
           <div className="exampleEntryBlock">
-            <div className="exampleEntryLabel">Example Entry</div>
+            <div className="exampleEntryLabel">{pageCopy.exampleLabel}</div>
 
             <div className="exampleEntryCard">
               <div className="entryNameLine">
-                <strong>Your Name</strong>
-                <span>| Real or Scene</span>
+                <strong>{pageCopy.nameLine}</strong>
+                <span>| {pageCopy.nameSubline}</span>
               </div>
 
               <div className="entryIdentityLine">
-                <span>How you identify</span>
+                <span>{pageCopy.seekingLeft}</span>
                 <SmallArrowIcon />
-                <span>What you’re seeking</span>
-                <span className="orientationText">| Orientation</span>
+                <span>{pageCopy.seekingRight}</span>
+                <span className="orientationText">{pageCopy.orientation}</span>
               </div>
 
-              <div className="entryIntention">
-                Tonight’s intention
-              </div>
+              <div className="entryIntention">{pageCopy.intention}</div>
 
-              <div className="entryInterests">
-                Your interests, kinks, fetishes, etc.
-              </div>
+              <div className="entryInterests">{pageCopy.interests}</div>
             </div>
           </div>
         </div>
 
         <button className="kioskStartButton" type="button" onClick={onStart}>
-          <span>START</span>
-          <small>Add Yourself to the Board</small>
+          <span>{pageCopy.button}</span>
+          <small>{pageCopy.buttonSmall}</small>
         </button>
       </section>
     </main>
