@@ -11,7 +11,9 @@ export default function KioskEntryShell() {
     Kiosk start page is only for iPad kiosk mode.
     Phone/mobile direct entry, display, and setup bypass the kiosk start page.
   */
-  if (mode === "entry" || mode === "display" || mode === "setup" || mode === "admin") {
+  const isPhoneEntryMode = mode === "entry" && params.get("kiosk") !== "1";
+
+  if (isPhoneEntryMode || mode === "display" || mode === "setup" || mode === "admin") {
     return <App />;
   }
 
