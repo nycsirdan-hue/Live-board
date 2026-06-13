@@ -5450,18 +5450,32 @@ export default function App() {
                   You've been added to the board.
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  {isKioskEntryMode ? "This kiosk will reset in 10 seconds." : "You can close this page now."}
+                  {isKioskEntryMode ? "This kiosk will reset in 10 seconds." : "You can close this page now, or view more events below."}
                 </p>
-                <div className="mt-6">
-                  <a
-                    href="https://kinkcollective.net/Calendar"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-block rounded-2xl border border-slate-700 bg-slate-950 px-5 py-3 font-semibold text-slate-100"
-                  >
-                    For more events, click here for the calendar
-                  </a>
-                </div>
+
+                {!isKioskEntryMode ? (
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                    <a
+                      href="https://kinkcollective.net/Calendar"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-2xl bg-[#fff4c2] px-5 py-3 text-center text-sm font-bold text-slate-950 shadow-lg shadow-black/30"
+                    >
+                      View More Events
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        window.close();
+                        setMessage("You can close this tab now.");
+                      }}
+                      className="rounded-2xl border border-slate-500/60 bg-slate-950 px-5 py-3 text-sm font-bold text-slate-100"
+                    >
+                      Close Page
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           ) : (
