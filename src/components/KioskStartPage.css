@@ -1255,3 +1255,47 @@
     transform: translateY(-5.5vh) !important;
   }
 }
+
+/* Correct kiosk CTA placement: button directly under the left board, not overlapping */
+.kioskStartPageDiaper .kioskPreviewArea {
+  justify-content: center !important;
+  gap: 1.4vh !important;
+}
+
+.kioskStartPageDiaper .connectionPreview {
+  transform: scale(0.94) !important;
+  transform-origin: left center !important;
+  margin-bottom: 0 !important;
+}
+
+.kioskStartPageDiaper .kioskStartButton {
+  margin-top: -1vh !important;
+  transform: none !important;
+  align-self: center !important;
+  width: min(500px, 74%) !important;
+  max-width: 500px !important;
+  padding: 16px 24px !important;
+}
+
+.kioskStartPageDiaper .kioskStartButton span {
+  white-space: nowrap !important;
+}
+
+/* Keep right payment/check-in image pulled inward, but do not affect button */
+.kioskStartPageDiaper {
+  background-size: auto 88vh !important;
+  background-position: 74% center !important;
+  background-repeat: no-repeat !important;
+}
+
+@media (orientation: landscape) {
+  .kioskStartPageDiaper .kioskStartButton {
+    margin-top: -1vh !important;
+    transform: none !important;
+  }
+
+  .kioskStartPageDiaper {
+    background-size: auto 88vh !important;
+    background-position: 74% center !important;
+  }
+}
