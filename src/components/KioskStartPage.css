@@ -1,0 +1,336 @@
+.kioskStartPage {
+  min-height: 100vh;
+  width: 100%;
+  color: #ffffff;
+  background: url("/kiosk-start-bg.jpg"), #000000;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow: hidden;
+}
+
+.kioskPreviewArea {
+  width: 64%;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 4.2vh 2.7vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.2vh;
+}
+
+.connectionPreview {
+  width: 100%;
+  border-radius: 30px;
+  padding: clamp(18px, 2vw, 28px);
+  background:
+    radial-gradient(circle at 14% 18%, rgba(255, 0, 76, 0.16), transparent 34%),
+    radial-gradient(circle at 80% 70%, rgba(0, 112, 255, 0.14), transparent 40%),
+    rgba(2, 6, 18, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(12px);
+}
+
+.previewHeader {
+  margin-bottom: clamp(18px, 2vw, 26px);
+}
+
+.displayStyleHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.displayStyleHeader h1 {
+  margin: 0;
+  font-size: clamp(30px, 2.75vw, 48px);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.displayStyleHeader p {
+  margin: 2px 0 0;
+  color: #b9c7d9;
+  font-size: clamp(14px, 1vw, 18px);
+  line-height: 1.25;
+  max-width: 700px;
+}
+
+.previewSupportRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(12px, 1vw, 16px);
+  margin-bottom: clamp(12px, 1.2vw, 18px);
+}
+
+.supportCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 88px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.035);
+}
+
+.hostCard {
+  border: 1px solid rgba(255, 37, 87, 0.72);
+}
+
+.monitorCard {
+  border: 1px solid rgba(48, 152, 255, 0.62);
+}
+
+.supportIcon {
+  height: 58px;
+  width: 58px;
+  flex: 0 0 58px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid currentColor;
+}
+
+.supportIcon svg,
+.roleIcon svg,
+.smallArrowIcon {
+  width: 68%;
+  height: 68%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.crownIcon {
+  color: #ff245d;
+}
+
+.shieldIcon {
+  color: #2ca7ff;
+}
+
+.supportCard h3 {
+  margin: 0 0 5px;
+  font-size: clamp(15px, 1.1vw, 19px);
+}
+
+.supportCard p {
+  margin: 0;
+  color: #a9b5c6;
+  font-size: clamp(12px, 0.9vw, 15px);
+}
+
+.roleRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(10px, 1vw, 16px);
+}
+
+.roleBox {
+  min-height: 108px;
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: rgba(255,255,255,0.035);
+}
+
+.roleIcon {
+  height: 48px;
+  width: 48px;
+  flex: 0 0 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+
+.roleTextWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.roleTextWrap h2 {
+  margin: 0;
+  font-size: clamp(24px, 1.95vw, 34px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.roleSubLabel {
+  margin-top: 6px;
+  font-size: clamp(13px, 1vw, 16px);
+  line-height: 1.2;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.topRole {
+  color: #ff386c;
+  border: 1px solid rgba(255, 38, 88, 0.72);
+  background: linear-gradient(180deg, rgba(95, 0, 35, 0.48), rgba(22, 0, 16, 0.62));
+}
+
+.bottomRole {
+  color: #00e2ae;
+  border: 1px solid rgba(0, 226, 174, 0.58);
+  background: linear-gradient(180deg, rgba(0, 82, 70, 0.38), rgba(0, 24, 25, 0.62));
+}
+
+.switchRole {
+  color: #3ca3ff;
+  border: 1px solid rgba(48, 152, 255, 0.64);
+  background: linear-gradient(180deg, rgba(0, 55, 130, 0.38), rgba(0, 13, 38, 0.62));
+}
+
+.exampleEntryBlock {
+  margin-top: 18px;
+  border-radius: 22px;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.exampleEntryLabel {
+  color: rgba(255, 255, 255, 0.62);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.exampleEntryCard {
+  border-radius: 18px;
+  padding: 18px 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 31, 88, 0.18), rgba(0, 0, 0, 0.18)),
+    rgba(5, 8, 18, 0.92);
+  border: 1px solid rgba(255, 63, 112, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06) inset,
+    0 16px 34px rgba(0,0,0,0.36);
+}
+
+.entryNameLine {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.entryNameLine strong {
+  font-size: clamp(22px, 2.1vw, 34px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.entryNameLine span {
+  color: #ff8da9;
+  font-size: clamp(14px, 1.15vw, 18px);
+  font-weight: 700;
+}
+
+.entryIdentityLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: #dce6f5;
+  font-size: clamp(14px, 1.15vw, 18px);
+  font-weight: 650;
+  margin-bottom: 12px;
+}
+
+.smallArrowIcon {
+  width: 22px;
+  height: 22px;
+  color: #ff3b70;
+  stroke-width: 2.8;
+}
+
+.orientationText {
+  color: #ff8da9;
+}
+
+.entryIntention {
+  border-top: 1px solid rgba(255,255,255,0.12);
+  padding-top: 12px;
+  margin-top: 8px;
+  color: #ffffff;
+  font-size: clamp(14px, 1.1vw, 17px);
+  font-weight: 700;
+}
+
+.entryInterests {
+  margin-top: 8px;
+  color: #aebed3;
+  font-size: clamp(13px, 1vw, 16px);
+  line-height: 1.35;
+}
+
+.kioskStartButton {
+  align-self: center;
+  width: min(430px, 82%);
+  border: 0;
+  border-radius: 999px;
+  padding: 20px 34px 22px;
+  color: #23180a;
+  cursor: pointer;
+  background: linear-gradient(135deg, #f3d46a, #cfa32a);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.2) inset,
+    0 18px 55px rgba(207, 163, 42, 0.42);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.kioskStartButton:hover,
+.kioskStartButton:focus-visible {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.26) inset,
+    0 24px 70px rgba(207, 163, 42, 0.55);
+  outline: none;
+}
+
+.kioskStartButton span {
+  display: block;
+  font-size: clamp(34px, 3.2vw, 52px);
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: 0.08em;
+}
+
+.kioskStartButton small {
+  display: block;
+  margin-top: 5px;
+  font-size: clamp(15px, 1.2vw, 19px);
+  font-weight: 800;
+}
+
+@media (max-width: 980px) {
+  .kioskPreviewArea {
+    width: 100%;
+    padding: 24px;
+  }
+
+  .previewSupportRow,
+  .roleRow {
+    grid-template-columns: 1fr;
+  }
+
+  .kioskStartPage {
+    overflow: auto;
+  }
+}
