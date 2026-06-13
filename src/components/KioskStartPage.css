@@ -1361,3 +1361,18 @@
     background-position: 64% center !important;
   }
 }
+
+/* Enlarge right-side kiosk image and bias it toward top-right */
+.kioskStartPageDiaper {
+  background-size: auto 94vh !important;
+  background-position: 66% 42% !important;
+  background-repeat: no-repeat !important;
+}
+
+@media (orientation: landscape) {
+  .kioskStartPageDiaper {
+    background-size: auto 94vh !important;
+    background-position: 66% 42% !important;
+    background-repeat: no-repeat !important;
+  }
+}
