@@ -280,7 +280,6 @@ export default function KioskStartPage({ onStart }) {
 
         <button className="kioskStartButton" type="button" onClick={onStart}>
           <span>{pageCopy.button}</span>
-          <small>{pageCopy.buttonSmall}</small>
         </button>
       </section>
     </main>

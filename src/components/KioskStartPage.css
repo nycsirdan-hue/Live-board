@@ -734,3 +734,106 @@
     max-width: 980px;
   }
 }
+
+
+/* Tighter left-side kiosk layout */
+.kioskStartPageDiaper .kioskPreviewArea {
+  width: 54%;
+  max-width: 900px;
+  padding-left: 2vw;
+  padding-right: 1.2vw;
+}
+
+.kioskStartPageDiaper .connectionPreview {
+  padding: 22px 22px 18px;
+}
+
+.kioskStartPageDiaper .displayStyleHeader h1 {
+  font-size: clamp(28px, 2.1vw, 40px);
+  line-height: 0.98;
+}
+
+.kioskStartPageDiaper .displayStyleHeader p {
+  font-size: clamp(14px, 0.95vw, 18px);
+  line-height: 1.2;
+}
+
+.kioskStartPageDiaper .previewHeader::after {
+  margin-top: 14px;
+}
+
+.kioskStartPageDiaper .previewSupportRow {
+  gap: 12px;
+}
+
+.kioskStartPageDiaper .supportCard {
+  padding: 14px 16px;
+}
+
+.kioskStartPageDiaper .startInfoRow {
+  gap: 12px;
+}
+
+.kioskStartPageDiaper .startInfoBox {
+  min-height: 98px;
+  padding: 13px 14px;
+  gap: 10px;
+}
+
+.kioskStartPageDiaper .startInfoBox .roleTextWrap h2 {
+  font-size: clamp(17px, 1.25vw, 23px);
+  line-height: 1.05;
+}
+
+.kioskStartPageDiaper .startInfoBox .roleSubLabel {
+  font-size: clamp(11px, 0.78vw, 14px);
+  line-height: 1.22;
+}
+
+.kioskStartPageDiaper .exampleEntryBlock {
+  margin-top: 12px;
+  padding: 14px 16px 16px;
+}
+
+.kioskStartPageDiaper .exampleEntryCard {
+  padding: 16px;
+}
+
+.kioskStartPageDiaper .entryNameLine {
+  gap: 10px;
+}
+
+.kioskStartPageDiaper .entryNameLine strong {
+  font-size: clamp(20px, 1.7vw, 32px);
+  line-height: 1.02;
+}
+
+.kioskStartPageDiaper .entryIdentityLine {
+  font-size: clamp(11px, 0.82vw, 15px);
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.kioskStartPageDiaper .entryIntention,
+.kioskStartPageDiaper .entryInterests {
+  font-size: clamp(11px, 0.82vw, 15px);
+  line-height: 1.18;
+}
+
+.kioskStartPageDiaper .kioskStartButton {
+  max-width: 470px;
+  width: min(470px, 92%);
+  margin-top: 18px;
+  padding: 18px 22px;
+}
+
+.kioskStartPageDiaper .kioskStartButton span {
+  display: block;
+  white-space: nowrap;
+  font-size: clamp(18px, 1.75vw, 30px);
+  line-height: 1;
+}
+
+.kioskStartPageDiaper .kioskStartButton small {
+  display: none;
+}
