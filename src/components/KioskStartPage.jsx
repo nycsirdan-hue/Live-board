@@ -128,7 +128,7 @@ export default function KioskStartPage({ onStart }) {
 
   const pageCopy = isDiaperMode
     ? {
-        title: "Glow Connection Board",
+        title: "KrINKles Connection Board",
         subtitle: "Come proud. Come playful. Come padded. Add your vibe for tonight.",
         hostTitle: "Hosts & Helpers",
         hostBody: "Find the people holding the room.",
