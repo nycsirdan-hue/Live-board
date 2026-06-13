@@ -128,28 +128,28 @@ export default function KioskStartPage({ onStart }) {
 
   const pageCopy = isDiaperMode
     ? {
-        title: "KrINKles Connection Board",
-        subtitle: "Add your name, vibe, and what you’re open to tonight.",
+        title: "Glow Connection Board",
+        subtitle: "Come proud. Come playful. Come padded. Add your vibe for tonight.",
         hostTitle: "Hosts & Helpers",
         hostBody: "Find the people holding the room.",
         monitorTitle: "Safety & Support",
         monitorBody: "See who can help if you need anything.",
-        cardOneTitle: "Your Vibe",
-        cardOneBody: "Little, caregiver, messy, playful, shy, social, or anything in between.",
-        cardTwoTitle: "Looking For",
-        cardTwoBody: "Cuddles, changes, play, conversation, connection, or space to just be.",
-        cardThreeTitle: "Kinks & Care Notes",
-        cardThreeBody: "Share the diaper, ABDL, kink, or scene details you want visible.",
-        exampleLabel: "Example ABDL Entry",
+        cardOneTitle: "Tonight’s Vibe",
+        cardOneBody: "Padded, playful, proud, messy, social, shy, flirty, or fully feral.",
+        cardTwoTitle: "Open To",
+        cardTwoBody: "Connection, dancing, cuddles, changes, play, conversation, or glow-up chaos.",
+        cardThreeTitle: "Kinks & Notes",
+        cardThreeBody: "Share what you want visible: diaper play, care energy, limits, interests, and scene details.",
+        exampleLabel: "Example Glow Entry",
         nameLine: "Your Name / Scene Name",
-        nameSubline: "Little, caregiver, switchy, messy, social, or shy",
+        nameSubline: "Padded, proud, playful, messy, social, or shy",
         seekingLeft: "My vibe tonight",
-        seekingRight: "What I’m looking for",
+        seekingRight: "What I’m open to",
         orientation: "| Social handles optional",
-        intention: "Open to cuddles, diaper talk, changes, mess play, or just hanging out",
-        interests: "Diaper play, ABDL, caregiver energy, roleplay, cleanup, impact, service",
+        intention: "Open to dancing, cuddles, changes, diaper talk, glow play, or just hanging out",
+        interests: "Diaper play, ABDL, caregiver energy, roleplay, cleanup, impact, service, pride energy",
         button: "JOIN THE BOARD",
-        buttonSmall: "Add Yourself to the KrINKles Board",
+        buttonSmall: "Add Yourself to Tonight’s Glow Board",
       }
     : {
         title: "The Sanctuary Connection Board",
@@ -196,9 +196,6 @@ export default function KioskStartPage({ onStart }) {
         <div className="connectionPreview">
           <header className="previewHeader">
             <div className="displayStyleHeader">
-              <div className="kioskModeBadge">
-                {isDiaperMode ? "ABDL / KrINKles Mode" : "Connection Board Mode"}
-              </div>
               <h1>{pageCopy.title}</h1>
               <p>{pageCopy.subtitle}</p>
             </div>

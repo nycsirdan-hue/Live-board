@@ -494,3 +494,184 @@
     min-height: auto;
   }
 }
+
+
+/* Glow Pride override for Diaper Debauchery / Pride After Dark kiosk mode */
+.kioskStartPageDiaper {
+  background:
+    radial-gradient(circle at 74% 18%, rgba(255, 0, 40, 0.42), transparent 22%),
+    radial-gradient(circle at 86% 34%, rgba(255, 122, 0, 0.34), transparent 20%),
+    radial-gradient(circle at 90% 50%, rgba(255, 238, 0, 0.28), transparent 20%),
+    radial-gradient(circle at 84% 66%, rgba(0, 255, 122, 0.28), transparent 20%),
+    radial-gradient(circle at 72% 80%, rgba(0, 128, 255, 0.34), transparent 22%),
+    radial-gradient(circle at 58% 92%, rgba(151, 71, 255, 0.34), transparent 24%),
+    url("/kiosk-start-bg.jpg"),
+    #020202;
+  background-size: cover;
+  background-position: center;
+}
+
+.kioskStartPageDiaper .connectionPreview {
+  background:
+    linear-gradient(115deg, rgba(255, 0, 40, 0.18), transparent 23%),
+    linear-gradient(135deg, rgba(255, 128, 0, 0.12), transparent 34%),
+    linear-gradient(155deg, rgba(255, 238, 0, 0.1), transparent 44%),
+    linear-gradient(175deg, rgba(0, 255, 122, 0.1), transparent 54%),
+    linear-gradient(195deg, rgba(0, 128, 255, 0.14), transparent 68%),
+    linear-gradient(215deg, rgba(151, 71, 255, 0.15), transparent 82%),
+    rgba(2, 2, 6, 0.9);
+  border: 1px solid rgba(255, 38, 58, 0.7);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.07) inset,
+    0 0 34px rgba(255, 0, 48, 0.32),
+    0 0 72px rgba(0, 128, 255, 0.18),
+    0 28px 90px rgba(0, 0, 0, 0.72);
+}
+
+.kioskStartPageDiaper .displayStyleHeader h1 {
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: -0.06em;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.5),
+    0 0 22px rgba(255, 0, 40, 0.66),
+    0 0 42px rgba(255, 0, 40, 0.42);
+}
+
+.kioskStartPageDiaper .displayStyleHeader p {
+  color: #f3f4f6;
+  font-weight: 750;
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.24),
+    0 0 18px rgba(255,0,48,0.38);
+}
+
+.kioskStartPageDiaper .previewHeader {
+  position: relative;
+}
+
+.kioskStartPageDiaper .previewHeader::after {
+  content: "";
+  display: block;
+  height: 5px;
+  width: min(560px, 100%);
+  margin-top: 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff0038, #ff8a00, #ffee00, #00ff7a, #0080ff, #9747ff, #ff0038);
+  box-shadow:
+    0 0 14px rgba(255, 0, 56, 0.8),
+    0 0 24px rgba(0, 128, 255, 0.45);
+}
+
+.kioskStartPageDiaper .hostCard {
+  border-color: rgba(255, 0, 56, 0.78);
+  background:
+    linear-gradient(135deg, rgba(255, 0, 56, 0.18), rgba(0, 0, 0, 0.2)),
+    rgba(5, 5, 8, 0.72);
+  box-shadow: 0 0 20px rgba(255, 0, 56, 0.16);
+}
+
+.kioskStartPageDiaper .monitorCard {
+  border-color: rgba(0, 128, 255, 0.72);
+  background:
+    linear-gradient(135deg, rgba(0, 128, 255, 0.16), rgba(0, 0, 0, 0.22)),
+    rgba(5, 5, 8, 0.72);
+  box-shadow: 0 0 20px rgba(0, 128, 255, 0.16);
+}
+
+.kioskStartPageDiaper .crownIcon {
+  color: #ff0038;
+}
+
+.kioskStartPageDiaper .shieldIcon {
+  color: #0080ff;
+}
+
+.kioskStartPageDiaper .startInfoBoxOne {
+  color: #ff0038;
+  border-color: rgba(255, 0, 56, 0.78);
+  background:
+    linear-gradient(180deg, rgba(255, 0, 56, 0.2), rgba(0, 0, 0, 0.62));
+  box-shadow: 0 0 22px rgba(255, 0, 56, 0.18);
+}
+
+.kioskStartPageDiaper .startInfoBoxTwo {
+  color: #00ff7a;
+  border-color: rgba(0, 255, 122, 0.58);
+  background:
+    linear-gradient(180deg, rgba(0, 255, 122, 0.14), rgba(0, 0, 0, 0.62));
+  box-shadow: 0 0 22px rgba(0, 255, 122, 0.12);
+}
+
+.kioskStartPageDiaper .startInfoBoxThree {
+  color: #9747ff;
+  border-color: rgba(151, 71, 255, 0.7);
+  background:
+    linear-gradient(180deg, rgba(151, 71, 255, 0.16), rgba(0, 0, 0, 0.62));
+  box-shadow: 0 0 22px rgba(151, 71, 255, 0.14);
+}
+
+.kioskStartPageDiaper .exampleEntryBlock {
+  background:
+    linear-gradient(135deg, rgba(255, 0, 56, 0.1), rgba(0, 128, 255, 0.08)),
+    rgba(0, 0, 0, 0.34);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.kioskStartPageDiaper .exampleEntryLabel {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255, 0, 56, 0.52);
+}
+
+.kioskStartPageDiaper .exampleEntryCard {
+  background:
+    linear-gradient(135deg, rgba(255, 0, 56, 0.22), rgba(0, 128, 255, 0.13), rgba(151, 71, 255, 0.16)),
+    rgba(0, 0, 0, 0.88);
+  border-color: rgba(255, 0, 56, 0.64);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.08) inset,
+    0 0 28px rgba(255,0,56,0.22),
+    0 16px 34px rgba(0,0,0,0.44);
+}
+
+.kioskStartPageDiaper .entryNameLine span {
+  color: #ff8a00;
+  text-shadow: 0 0 10px rgba(255, 138, 0, 0.36);
+}
+
+.kioskStartPageDiaper .smallArrowIcon {
+  color: #00ff7a;
+}
+
+.kioskStartPageDiaper .entryIntention {
+  border-color: rgba(255, 238, 0, 0.36);
+  background: rgba(255, 238, 0, 0.08);
+  color: #ffffff;
+}
+
+.kioskStartPageDiaper .entryInterests {
+  border-color: rgba(0, 128, 255, 0.42);
+  background: rgba(0, 128, 255, 0.09);
+  color: #ffffff;
+}
+
+.kioskStartPageDiaper .kioskStartButton {
+  background:
+    linear-gradient(90deg, #ff0038, #ff8a00, #ffee00, #00ff7a, #0080ff, #9747ff, #ff0038);
+  color: #050505;
+  border: 1px solid rgba(255,255,255,0.36);
+  box-shadow:
+    0 0 18px rgba(255, 0, 56, 0.55),
+    0 0 32px rgba(0, 128, 255, 0.42),
+    0 18px 42px rgba(0, 0, 0, 0.5);
+}
+
+.kioskStartPageDiaper .kioskStartButton span {
+  color: #050505;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.28);
+}
+
+.kioskStartPageDiaper .kioskStartButton small {
+  color: rgba(5, 5, 5, 0.78);
+  font-weight: 900;
+}
