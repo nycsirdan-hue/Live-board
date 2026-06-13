@@ -2685,3 +2685,126 @@ body:has(.displayBoardSurface) #root {
 .diaperGlowKiosk button[type="submit"]:hover {
   filter: brightness(1.08) saturate(1.12);
 }
+
+/* Calm diaper entry form selections: section color, not every button color */
+.diaperGlowKiosk {
+  --entry-red: #ff0038;
+  --entry-orange: #ff8a00;
+  --entry-yellow: #ffee00;
+  --entry-green: #00ff7a;
+  --entry-blue: #0080ff;
+  --entry-purple: #9747ff;
+}
+
+/* Give major visual sections a color identity */
+.diaperGlowKiosk .rounded-3xl,
+.diaperGlowKiosk .rounded-2xl:has(label),
+.diaperGlowKiosk .rounded-2xl:has(.font-semibold) {
+  border-left: 5px solid rgba(255, 0, 56, 0.72) !important;
+}
+
+.diaperGlowKiosk .rounded-2xl:has(label):nth-of-type(6n + 1),
+.diaperGlowKiosk .rounded-2xl:has(.font-semibold):nth-of-type(6n + 1) {
+  border-left-color: rgba(255, 0, 56, 0.8) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 0 18px rgba(255, 0, 56, 0.12) !important;
+}
+
+.diaperGlowKiosk .rounded-2xl:has(label):nth-of-type(6n + 2),
+.diaperGlowKiosk .rounded-2xl:has(.font-semibold):nth-of-type(6n + 2) {
+  border-left-color: rgba(255, 138, 0, 0.8) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 0 18px rgba(255, 138, 0, 0.12) !important;
+}
+
+.diaperGlowKiosk .rounded-2xl:has(label):nth-of-type(6n + 3),
+.diaperGlowKiosk .rounded-2xl:has(.font-semibold):nth-of-type(6n + 3) {
+  border-left-color: rgba(255, 238, 0, 0.72) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 0 18px rgba(255, 238, 0, 0.1) !important;
+}
+
+.diaperGlowKiosk .rounded-2xl:has(label):nth-of-type(6n + 4),
+.diaperGlowKiosk .rounded-2xl:has(.font-semibold):nth-of-type(6n + 4) {
+  border-left-color: rgba(0, 255, 122, 0.72) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 0 18px rgba(0, 255, 122, 0.1) !important;
+}
+
+.diaperGlowKiosk .rounded-2xl:has(label):nth-of-type(6n + 5),
+.diaperGlowKiosk .rounded-2xl:has(.font-semibold):nth-of-type(6n + 5) {
+  border-left-color: rgba(0, 128, 255, 0.78) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 0 18px rgba(0, 128, 255, 0.12) !important;
+}
+
+.diaperGlowKiosk .rounded-2xl:has(label):nth-of-type(6n),
+.diaperGlowKiosk .rounded-2xl:has(.font-semibold):nth-of-type(6n) {
+  border-left-color: rgba(151, 71, 255, 0.8) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 0 18px rgba(151, 71, 255, 0.12) !important;
+}
+
+/* Remove the different color bands/borders from every individual option */
+.diaperGlowKiosk button[type="button"],
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 1),
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 2),
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 3),
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 4),
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 5),
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n) {
+  background: rgba(0, 0, 0, 0.52) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+}
+
+/* Calm hover state */
+.diaperGlowKiosk button[type="button"]:hover,
+.diaperGlowKiosk button[type="button"]:focus-visible {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.38) !important;
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, 0.08),
+    0 0 22px rgba(0, 128, 255, 0.1) !important;
+}
+
+/* Selected options: one clear selected treatment, not rainbow */
+.diaperGlowKiosk button[aria-pressed="true"],
+.diaperGlowKiosk button.bg-amber-300,
+.diaperGlowKiosk button.bg-rose-500,
+.diaperGlowKiosk button.bg-sky-500,
+.diaperGlowKiosk button.bg-emerald-500,
+.diaperGlowKiosk button[class*="bg-amber"],
+.diaperGlowKiosk button[class*="bg-rose"],
+.diaperGlowKiosk button[class*="bg-sky"],
+.diaperGlowKiosk button[class*="bg-emerald"] {
+  background:
+    linear-gradient(135deg, rgba(255, 0, 56, 0.92), rgba(151, 71, 255, 0.88)) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.68) !important;
+  font-weight: 900 !important;
+  box-shadow:
+    0 0 14px rgba(255, 0, 56, 0.34),
+    0 0 24px rgba(151, 71, 255, 0.22) !important;
+}
+
+/* Keep submit button as the main full-rainbow CTA */
+.diaperGlowKiosk button[type="submit"] {
+  background:
+    linear-gradient(90deg, #ff0038, #ff8a00, #ffee00, #00ff7a, #0080ff, #9747ff, #ff0038) !important;
+  color: #050505 !important;
+  border: 1px solid rgba(255,255,255,0.4) !important;
+  font-weight: 950 !important;
+  box-shadow:
+    0 0 18px rgba(255, 0, 56, 0.5),
+    0 0 34px rgba(0, 128, 255, 0.32),
+    0 18px 42px rgba(0,0,0,0.5) !important;
+}
