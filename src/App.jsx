@@ -484,7 +484,7 @@ function EntryLine({
       ) : null}
 
       {intentionText ? (
-        <div className="mt-1 text-sm md:text-base font-semibold text-yellow-100/55 break-words leading-5">
+        <div className="mt-1 text-sm md:text-base font-semibold text-[#fff4c2] break-words leading-5">
           {intentionText}
         </div>
       ) : null}
