@@ -6,3 +6,2361 @@ body,
   margin: 0;
   min-height: 100%;
 }
+/* TV DISPLAY — Sanctuary Connection Board visual theme */
+.displayBoardSurface {
+  min-height: 100vh;
+  position: relative;
+  isolation: isolate;
+}
+
+.displayBoardSurface::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 18%, rgba(255, 36, 93, 0.32), transparent 32%),
+    radial-gradient(circle at 92% 18%, rgba(44, 167, 255, 0.30), transparent 34%),
+    linear-gradient(90deg,
+      rgba(125, 0, 42, 0.42) 0%,
+      rgba(4, 7, 18, 0.96) 38%,
+      rgba(4, 7, 18, 0.96) 62%,
+      rgba(0, 69, 150, 0.44) 100%
+    ),
+    #02050d;
+}
+
+.displayBoardSurface::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 100%, rgba(255,255,255,0.05), transparent 38%),
+    linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.28));
+}
+
+.displaySectionCard {
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 24px 72px rgba(0, 0, 0, 0.44),
+    0 0 0 1px rgba(255,255,255,0.035) inset;
+}
+
+.displaySectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.displaySectionIcon {
+  width: clamp(42px, 3vw, 58px);
+  height: clamp(42px, 3vw, 58px);
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.035);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.25);
+}
+
+.displaySectionIconSvg {
+  width: 68%;
+  height: 68%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.displaySectionTitle {
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+}
+
+.displaySectionSubtitle {
+  margin-top: 0.25rem;
+  color: rgba(216, 226, 242, 0.72);
+  font-size: clamp(0.72rem, 0.9vw, 1rem);
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.displayThemeHost {
+  border-color: rgba(255, 36, 93, 0.72) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 36, 93, 0.18), transparent 44%),
+    linear-gradient(180deg, rgba(96, 0, 34, 0.44), rgba(10, 4, 12, 0.80)) !important;
+}
+
+.displayThemeHostInner {
+  border-color: rgba(255, 74, 122, 0.52) !important;
+  background: rgba(20, 4, 14, 0.62) !important;
+}
+
+.displayThemeHostTitle {
+  color: #ff4a7a !important;
+}
+
+.displayThemeDM {
+  border-color: rgba(44, 167, 255, 0.68) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(44, 167, 255, 0.16), transparent 46%),
+    linear-gradient(180deg, rgba(0, 58, 130, 0.42), rgba(3, 8, 22, 0.82)) !important;
+}
+
+.displayThemeDMInner {
+  border-color: rgba(78, 183, 255, 0.48) !important;
+  background: rgba(3, 12, 30, 0.68) !important;
+}
+
+.displayThemeDMTitle {
+  color: #3ca3ff !important;
+}
+
+.displayThemeTop {
+  border-color: rgba(255, 56, 108, 0.74) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 56, 108, 0.16), transparent 42%),
+    linear-gradient(180deg, rgba(96, 0, 36, 0.46), rgba(22, 0, 16, 0.68)) !important;
+}
+
+.displayThemeTopInner {
+  border-color: rgba(255, 56, 108, 0.54) !important;
+  background: rgba(32, 4, 18, 0.66) !important;
+}
+
+.displayThemeTopTitle {
+  color: #ff386c !important;
+}
+
+.displayThemeBottom {
+  border-color: rgba(0, 226, 174, 0.58) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(0, 226, 174, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(0, 82, 70, 0.38), rgba(0, 24, 25, 0.68)) !important;
+}
+
+.displayThemeBottomInner {
+  border-color: rgba(0, 226, 174, 0.42) !important;
+  background: rgba(0, 28, 28, 0.66) !important;
+}
+
+.displayThemeBottomTitle {
+  color: #00e2ae !important;
+}
+
+.displayThemeSwitch {
+  border-color: rgba(60, 163, 255, 0.66) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(60, 163, 255, 0.14), transparent 44%),
+    linear-gradient(180deg, rgba(0, 55, 130, 0.40), rgba(0, 13, 38, 0.70)) !important;
+}
+
+.displayThemeSwitchInner {
+  border-color: rgba(60, 163, 255, 0.46) !important;
+  background: rgba(2, 15, 42, 0.68) !important;
+}
+
+.displayThemeSwitchTitle {
+  color: #3ca3ff !important;
+}
+
+/* TV DISPLAY — force tighter board layout */
+.displayBoardSurface {
+  min-height: 100vh !important;
+  height: 100vh !important;
+  padding: clamp(18px, 1.6vw, 32px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: clamp(12px, 1vw, 20px) !important;
+  overflow: hidden !important;
+  position: relative;
+  isolation: isolate;
+}
+
+.displayBoardSurface::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 18%, rgba(255, 36, 93, 0.32), transparent 32%),
+    radial-gradient(circle at 92% 18%, rgba(44, 167, 255, 0.30), transparent 34%),
+    linear-gradient(90deg,
+      rgba(125, 0, 42, 0.42) 0%,
+      rgba(4, 7, 18, 0.96) 38%,
+      rgba(4, 7, 18, 0.96) 62%,
+      rgba(0, 69, 150, 0.44) 100%
+    ),
+    #02050d;
+}
+
+.displayBoardSurface::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 100%, rgba(255,255,255,0.05), transparent 38%),
+    linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.28));
+}
+
+.displayBoardHeader {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 24px !important;
+  min-height: clamp(82px, 10vh, 140px) !important;
+}
+
+.displayBoardTitleBlock h1 {
+  margin: 0 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: clamp(12px, 1vw, 18px) !important;
+  white-space: nowrap !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.065em !important;
+  font-size: clamp(52px, 5.5vw, 108px) !important;
+  font-weight: 950 !important;
+  color: #f7f9ff !important;
+}
+
+.displayBoardTitleBlock small {
+  display: inline-block !important;
+  padding-bottom: 0.08em !important;
+  color: rgba(216, 226, 242, 0.72) !important;
+  font-size: clamp(22px, 2vw, 42px) !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1 !important;
+}
+
+.displayBoardTitleDivider {
+  color: rgba(216, 226, 242, 0.55) !important;
+  font-weight: 650 !important;
+  line-height: 0.85 !important;
+}
+
+.displayBoardLogo {
+  height: clamp(70px, 8vw, 132px) !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+.displayStaffRow {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: clamp(8px, 0.65vw, 14px) !important;
+  align-items: start !important;
+}
+
+.displayRoleRow {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: clamp(8px, 0.65vw, 14px) !important;
+  align-items: start !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+.displayBoardSurface .displaySectionCard {
+  width: 100% !important;
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 24px 72px rgba(0, 0, 0, 0.44),
+    0 0 0 1px rgba(255,255,255,0.035) inset;
+}
+
+.displayStaffRow .displaySectionCard {
+  min-height: clamp(110px, 13vh, 180px) !important;
+}
+
+.displayRoleRow .displaySectionCard {
+  min-height: clamp(300px, 58vh, 720px) !important;
+}
+
+.displayBoardSurface .displaySectionHeader {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.8rem !important;
+  margin-bottom: clamp(8px, 0.7vw, 14px) !important;
+}
+
+.displayBoardSurface .displaySectionIcon {
+  width: clamp(42px, 3vw, 58px) !important;
+  height: clamp(42px, 3vw, 58px) !important;
+  flex: 0 0 auto !important;
+}
+
+.displayBoardSurface .displaySectionTitle {
+  font-size: clamp(34px, 3.3vw, 68px) !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.displayStaffRow .displaySectionTitle {
+  font-size: clamp(28px, 2.2vw, 46px) !important;
+}
+
+.displayStaffRow .displaySectionSubtitle {
+  font-size: clamp(12px, 0.85vw, 18px) !important;
+}
+
+.displayRoleRow .displaySectionSubtitle {
+  font-size: clamp(14px, 1vw, 21px) !important;
+}
+
+.displayBoardSurface .rounded-2xl {
+  border-radius: 18px !important;
+}
+
+@media (max-width: 1400px) {
+  .displayBoardTitleBlock h1 {
+    font-size: clamp(46px, 5vw, 86px) !important;
+  }
+
+  .displayBoardLogo {
+    height: clamp(58px, 7vw, 96px) !important;
+  }
+
+  .displayRoleRow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .displayBoardSurface {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: auto !important;
+  }
+}
+
+/* DISPLAY HEADER CLEANUP */
+.displayBoardSurface {
+  padding-top: 10px !important;
+  gap: 10px !important;
+  justify-content: flex-start !important;
+}
+
+.displayBoardHeader {
+  min-height: auto !important;
+  align-items: end !important;
+  gap: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.displayBoardTitleBlock {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.displayBoardTitleBlock h1 {
+  margin: 0 !important;
+  color: #f7f9ff !important;
+  font-size: clamp(46px, 5vw, 98px) !important;
+  font-weight: 850 !important;
+  line-height: 0.94 !important;
+  letter-spacing: -0.055em !important;
+  white-space: nowrap !important;
+}
+
+.displayBoardDescription {
+  margin: 8px 0 0 !important;
+  color: rgba(216, 226, 242, 0.74) !important;
+  font-size: clamp(18px, 1.6vw, 34px) !important;
+  font-weight: 600 !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.015em !important;
+  max-width: 1100px !important;
+  white-space: normal !important;
+}
+
+.displayBoardTitleDivider {
+  display: none !important;
+}
+
+.displayBoardTitleBlock small {
+  display: none !important;
+}
+
+.displayBoardLogo {
+  height: clamp(56px, 6.4vw, 112px) !important;
+  width: auto !important;
+  align-self: flex-start !important;
+}
+
+.displayStaffRow {
+  margin-top: 2px !important;
+}
+
+@media (max-width: 1400px) {
+  .displayBoardTitleBlock h1 {
+    font-size: clamp(40px, 4.6vw, 78px) !important;
+  }
+
+  .displayBoardDescription {
+    font-size: clamp(16px, 1.35vw, 24px) !important;
+  }
+}
+
+/* DISPLAY FIX — inline title | description + move content up */
+.displayBoardSurface {
+  height: 100vh !important;
+  min-height: 100vh !important;
+  padding: 12px 28px 22px !important;
+  margin: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) !important;
+  gap: 10px !important;
+  align-content: start !important;
+  justify-content: stretch !important;
+  overflow: hidden !important;
+}
+
+/* Kill the top dead space from previous display pass */
+.displayBoardSurface > * {
+  transform: translateY(0) !important;
+}
+
+.displayBoardHeader {
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: end !important;
+  column-gap: 22px !important;
+}
+
+.displayBoardTitleBlock {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.displayBoardInlineTitle {
+  margin: 0 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  line-height: 0.92 !important;
+}
+
+.displayBoardEventName {
+  flex: 0 0 auto !important;
+  color: #f7f9ff !important;
+  font-size: clamp(52px, 5vw, 96px) !important;
+  font-weight: 850 !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.06em !important;
+}
+
+.displayBoardTitleDivider {
+  display: inline-block !important;
+  flex: 0 0 auto !important;
+  color: rgba(216, 226, 242, 0.48) !important;
+  font-size: clamp(48px, 4.6vw, 88px) !important;
+  font-weight: 550 !important;
+  line-height: 0.86 !important;
+  transform: translateY(0.02em) !important;
+}
+
+.displayBoardEventDescription {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: 62vw !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: rgba(216, 226, 242, 0.72) !important;
+  font-size: clamp(20px, 1.65vw, 34px) !important;
+  font-weight: 650 !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.025em !important;
+  padding-bottom: 0.07em !important;
+}
+
+.displayBoardLogo {
+  height: clamp(54px, 5.8vw, 104px) !important;
+  width: auto !important;
+  object-fit: contain !important;
+  align-self: end !important;
+  margin-bottom: 2px !important;
+}
+
+/* Bring the cards directly under the header */
+.displayStaffRow {
+  margin-top: 0 !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+}
+
+.displayRoleRow {
+  margin-top: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+}
+
+/* Reduce card heights so the whole board sits higher and fits better */
+.displayStaffRow .displaySectionCard {
+  min-height: 120px !important;
+}
+
+.displayRoleRow .displaySectionCard {
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+/* Slightly reduce oversized section titles */
+.displayBoardSurface .displaySectionTitle {
+  font-size: clamp(32px, 3vw, 58px) !important;
+}
+
+.displayStaffRow .displaySectionTitle {
+  font-size: clamp(26px, 2vw, 42px) !important;
+}
+
+.displayBoardSurface .displaySectionHeader {
+  margin-bottom: 8px !important;
+}
+
+/* Mobile/smaller screen safety */
+@media (max-width: 1400px) {
+  .displayBoardEventName {
+    font-size: clamp(42px, 4.6vw, 76px) !important;
+  }
+
+  .displayBoardEventDescription {
+    font-size: clamp(16px, 1.3vw, 24px) !important;
+    max-width: 52vw !important;
+  }
+
+  .displayBoardLogo {
+    height: clamp(48px, 5.5vw, 82px) !important;
+  }
+}
+
+/* DISPLAY FIX — remove remaining top dead space */
+.displayBoardSurface {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  box-sizing: border-box !important;
+  padding: 10px 28px 20px !important;
+  margin: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) !important;
+  gap: 8px !important;
+  align-content: start !important;
+  justify-content: stretch !important;
+  overflow: hidden !important;
+}
+
+.displayBoardHeader {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  transform: none !important;
+}
+
+.displayStaffRow {
+  margin-top: 0 !important;
+}
+
+.displayRoleRow {
+  margin-top: 0 !important;
+}
+
+/* keep title readable but not oversized now that browser zoom is corrected */
+.displayBoardEventName {
+  font-size: clamp(48px, 4.6vw, 88px) !important;
+}
+
+.displayBoardTitleDivider {
+  font-size: clamp(44px, 4.2vw, 82px) !important;
+}
+
+.displayBoardEventDescription {
+  font-size: clamp(18px, 1.45vw, 30px) !important;
+  max-width: 58vw !important;
+}
+
+.displayBoardLogo {
+  height: clamp(48px, 5vw, 92px) !important;
+}
+
+/* DISPLAY REFINE — larger header, safer spacing, darker Host/DM cards */
+
+.displayBoardSurface {
+  padding: 12px 28px 20px !important;
+  gap: 12px !important;
+}
+
+.displayBoardHeader {
+  margin-bottom: 8px !important;
+  align-items: end !important;
+}
+
+.displayBoardEventName {
+  font-size: clamp(54px, 5.2vw, 98px) !important;
+  font-weight: 875 !important;
+  line-height: 0.94 !important;
+}
+
+.displayBoardTitleDivider {
+  font-size: clamp(50px, 4.8vw, 92px) !important;
+  line-height: 0.9 !important;
+}
+
+.displayBoardEventDescription {
+  font-size: clamp(20px, 1.7vw, 34px) !important;
+  max-width: 60vw !important;
+  padding-bottom: 0.08em !important;
+}
+
+.displayBoardLogo {
+  height: clamp(58px, 6vw, 108px) !important;
+  margin-bottom: 3px !important;
+}
+
+/* More space between title row and Host/DM cards */
+.displayStaffRow {
+  margin-top: 4px !important;
+}
+
+/* Darker Host card so it does not blend into red background */
+.displayThemeHost {
+  border-color: rgba(255, 42, 96, 0.82) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 36, 93, 0.14), transparent 38%),
+    linear-gradient(180deg, rgba(62, 0, 24, 0.92), rgba(13, 0, 10, 0.94)) !important;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 68, 120, 0.08) inset !important;
+}
+
+.displayThemeHostInner {
+  border-color: rgba(255, 74, 122, 0.48) !important;
+  background: rgba(12, 0, 8, 0.78) !important;
+}
+
+/* Darker DM card so it separates from the blue side */
+.displayThemeDM {
+  border-color: rgba(52, 164, 255, 0.82) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(44, 167, 255, 0.12), transparent 40%),
+    linear-gradient(180deg, rgba(0, 32, 78, 0.92), rgba(0, 8, 26, 0.95)) !important;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(78, 183, 255, 0.08) inset !important;
+}
+
+.displayThemeDMInner {
+  border-color: rgba(78, 183, 255, 0.44) !important;
+  background: rgba(0, 8, 28, 0.78) !important;
+}
+
+/* Keep staff cards compact but readable */
+.displayStaffRow .displaySectionCard {
+  min-height: 128px !important;
+  padding-top: 10px !important;
+}
+
+.displayStaffRow .displaySectionHeader {
+  margin-bottom: 10px !important;
+}
+
+.displayStaffRow .displaySectionTitle {
+  font-size: clamp(30px, 2.2vw, 46px) !important;
+}
+
+/* Slightly more comfortable role card spacing */
+.displayRoleRow {
+  margin-top: 2px !important;
+}
+
+/* Prevent header overlap/cropping on browser zoom changes */
+.displayBoardInlineTitle {
+  padding-bottom: 2px !important;
+}
+
+/* SMALL HEADER SPACING TUNE */
+.displayBoardSurface {
+  padding-top: 18px !important;
+}
+
+.displayBoardHeader {
+  margin-bottom: 12px !important;
+}
+
+.displayBoardInlineTitle {
+  padding-top: 2px !important;
+  padding-bottom: 4px !important;
+  overflow: visible !important;
+}
+
+.displayBoardEventName {
+  line-height: 0.98 !important;
+}
+
+.displayBoardTitleDivider {
+  line-height: 0.94 !important;
+}
+
+.displayBoardEventDescription {
+  padding-bottom: 0.1em !important;
+}
+
+/* Top / Bottom / Switch as inline title | description */
+.displaySectionTitlePipe {
+  display: inline-block !important;
+  margin: 0 0.32em !important;
+  color: rgba(216, 226, 242, 0.52) !important;
+  font-weight: 500 !important;
+}
+
+.displaySectionTitleMeta {
+  display: inline-block !important;
+  color: rgba(216, 226, 242, 0.78) !important;
+  font-size: 0.52em !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1 !important;
+  transform: translateY(-0.03em) !important;
+  white-space: nowrap !important;
+}
+
+.displayRoleRow .displaySectionTitle {
+  white-space: nowrap !important;
+}
+
+/* FINAL DISPLAY TUNE — title clearance + darker Host/DM */
+
+/* Give the header text more room so Convergence doesn't clip at the bottom */
+.displayBoardHeader {
+  margin-bottom: 14px !important;
+  overflow: visible !important;
+}
+
+.displayBoardInlineTitle {
+  line-height: 1.08 !important;
+  padding-top: 4px !important;
+  padding-bottom: 10px !important;
+  overflow: visible !important;
+}
+
+.displayBoardEventName {
+  line-height: 1.04 !important;
+  padding-bottom: 2px !important;
+}
+
+.displayBoardTitleDivider {
+  line-height: 1 !important;
+  padding-bottom: 2px !important;
+}
+
+.displayBoardEventDescription {
+  line-height: 1.12 !important;
+  padding-bottom: 7px !important;
+}
+
+/* Keep the board from getting pushed down too much after adding title clearance */
+.displayBoardSurface {
+  padding-top: 14px !important;
+  gap: 8px !important;
+}
+
+/* Darker Host card — more distinct from Top/red role card */
+.displayThemeHost {
+  border-color: rgba(255, 48, 104, 0.82) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 35, 92, 0.10), transparent 34%),
+    linear-gradient(180deg, rgba(38, 0, 16, 0.98), rgba(8, 0, 7, 0.98)) !important;
+  box-shadow:
+    0 18px 52px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 68, 120, 0.08) inset !important;
+}
+
+.displayThemeHostInner {
+  border-color: rgba(255, 74, 122, 0.38) !important;
+  background: rgba(8, 0, 6, 0.88) !important;
+}
+
+.displayThemeHostTitle {
+  color: #ff4f83 !important;
+}
+
+/* Darker DM card — more distinct from Switch/blue role card */
+.displayThemeDM {
+  border-color: rgba(58, 169, 255, 0.82) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(44, 167, 255, 0.09), transparent 34%),
+    linear-gradient(180deg, rgba(0, 22, 56, 0.98), rgba(0, 5, 18, 0.98)) !important;
+  box-shadow:
+    0 18px 52px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(78, 183, 255, 0.08) inset !important;
+}
+
+.displayThemeDMInner {
+  border-color: rgba(78, 183, 255, 0.36) !important;
+  background: rgba(0, 6, 22, 0.88) !important;
+}
+
+.displayThemeDMTitle {
+  color: #3aa9ff !important;
+}
+
+/* Slightly separate the staff row visually from the role row */
+.displayStaffRow .displaySectionCard {
+  background-blend-mode: normal !important;
+}
+
+.displayRoleRow {
+  margin-top: 2px !important;
+}
+
+/* HOST / DM SUPPORT ROW — black outlined cards */
+
+/* Host: dark outline, still carries subtle red identity inside */
+.displayThemeHost {
+  border-color: rgba(0, 0, 0, 0.95) !important;
+  border-width: 2px !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 35, 92, 0.10), transparent 34%),
+    linear-gradient(180deg, rgba(32, 0, 14, 0.98), rgba(7, 0, 6, 0.98)) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.055) inset,
+    0 18px 54px rgba(0, 0, 0, 0.62) !important;
+}
+
+.displayThemeHostInner {
+  border-color: rgba(0, 0, 0, 0.85) !important;
+  background: rgba(6, 0, 5, 0.88) !important;
+}
+
+/* DM: dark outline, still carries subtle blue identity inside */
+.displayThemeDM {
+  border-color: rgba(0, 0, 0, 0.95) !important;
+  border-width: 2px !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(44, 167, 255, 0.10), transparent 34%),
+    linear-gradient(180deg, rgba(0, 18, 48, 0.98), rgba(0, 5, 16, 0.98)) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.055) inset,
+    0 18px 54px rgba(0, 0, 0, 0.62) !important;
+}
+
+.displayThemeDMInner {
+  border-color: rgba(0, 0, 0, 0.85) !important;
+  background: rgba(0, 5, 18, 0.88) !important;
+}
+
+/* Keep the icon/color identity without making the whole card border colored */
+.displayStaffRow .displaySectionIcon {
+  border-width: 1.5px !important;
+}
+
+.displayThemeHost .displaySectionIcon {
+  color: #ff4f83 !important;
+}
+
+.displayThemeDM .displaySectionIcon {
+  color: #3aa9ff !important;
+}
+
+
+
+/* Crown watermark */
+.displayStaffRow .displayThemeHost::before {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 48h44l4-30-15 12-11-18-11 18L6 18l4 30Z'/%3E%3Cpath d='M14 54h36'/%3E%3Ccircle cx='6' cy='18' r='3' fill='white' stroke='none'/%3E%3Ccircle cx='32' cy='12' r='3' fill='white' stroke='none'/%3E%3Ccircle cx='58' cy='18' r='3' fill='white' stroke='none'/%3E%3C/svg%3E");
+}
+
+/* Shield watermark */
+.displayStaffRow .displayThemeDM::before {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M32 6 52 14v17c0 14-8.5 24-20 29C20.5 55 12 45 12 31V14L32 6Z'/%3E%3Cpath d='M32 14v38'/%3E%3C/svg%3E");
+}
+
+
+/* INLINE STAFF ROLE ICONS */
+.displayStaffNameWithIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.displayStaffRoleIcon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: inline-block;
+}
+
+.displayStaffRoleIconHost {
+  color: #ff4f86;
+}
+
+.displayStaffRoleIconDM {
+  color: #39a0ff;
+}
+
+/* RESTORED DISPLAY ROTATION OVERLAY */
+.displayRotationOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.displayRotationOverlayImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #000;
+  image-rendering: auto;
+}
+
+/* If a rotating display item has text but no image */
+.displayRotationOverlayFallback {
+  width: 100%;
+  height: 100%;
+  padding: 6vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(180, 24, 55, 0.35), transparent 34%),
+    radial-gradient(circle at 80% 20%, rgba(28, 110, 190, 0.35), transparent 34%),
+    linear-gradient(135deg, #050507, #11060b 45%, #03101d);
+  color: white;
+  text-align: center;
+}
+
+.displayRotationOverlayTitle {
+  font-size: clamp(3rem, 8vw, 8rem);
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.displayRotationOverlayDescription {
+  margin-top: 1.5rem;
+  max-width: 70vw;
+  font-size: clamp(1.5rem, 3vw, 3.5rem);
+  line-height: 1.05;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+
+/* DISPLAY ROTATION OVERLAY — liveboard to slide cycle */
+.displayRotationOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.displayRotationOverlayImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #000;
+  image-rendering: auto;
+}
+
+
+/* DISPLAY ROTATION OVERLAY — settings controlled */
+.displayRotationOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.displayRotationOverlayImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #000;
+  image-rendering: auto;
+}
+
+/* SOFT CENTER LOGO WATERMARK TEST
+   Keeps the Sanctuary Sessions logo behind the board entries so it brands the screen
+   without competing with names, roles, or open-to text. */
+.displayBoardLogo {
+  position: fixed !important;
+  left: 50% !important;
+  top: 52% !important;
+  transform: translate(-50%, -50%) !important;
+
+  width: min(52vw, 620px) !important;
+  height: auto !important;
+  max-height: none !important;
+
+  opacity: 0.055 !important;
+  filter: grayscale(1) contrast(1.05) brightness(1.2) !important;
+
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+/* Keep all board content above the watermark. */
+.displayBoardHeader,
+.displayStaffRow,
+.displayRoleRow {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Give the board surface a stacking context so the watermark stays behind content. */
+.displayBoardSurface {
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+/* WATERMARK VISIBILITY + DISPLAY TOP SPACE TUNE
+   Keeps the logo out of the header, places it behind entries, and pulls board content upward. */
+
+.displayBoardSurface {
+  position: relative !important;
+  isolation: isolate !important;
+  padding-top: 2.2vh !important;
+}
+
+/* Make the logo visible as a watermark, but keep it behind all readable content. */
+.displayBoardLogo {
+  position: fixed !important;
+  left: 50% !important;
+  top: 56% !important;
+  transform: translate(-50%, -50%) !important;
+
+  width: min(58vw, 720px) !important;
+  height: auto !important;
+  max-height: none !important;
+
+  opacity: 0.085 !important;
+  filter: grayscale(1) contrast(1.05) brightness(1.25) !important;
+
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* Keep board content above the watermark. */
+.displayBoardHeader,
+.displayStaffRow,
+.displayRoleRow {
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+/* Pull the main content closer to the top now that the logo is no longer in the header. */
+.displayBoardHeader {
+  margin-top: 0 !important;
+  margin-bottom: 1.1vh !important;
+}
+
+.displayStaffRow {
+  margin-top: 0 !important;
+  margin-bottom: 1vh !important;
+}
+
+.displayRoleRow {
+  margin-top: 0 !important;
+}
+
+/* FORCE DISPLAY TO TOP + TRUE WATERMARK LAYER
+   The actual header logo image is hidden.
+   The watermark is drawn as its own board overlay so it can sit above the colored panels
+   but below readable content. */
+
+/* Pull the entire display board to the top of the screen. */
+.displayBoardSurface {
+  position: relative !important;
+  isolation: isolate !important;
+
+  min-height: 100vh !important;
+  height: 100vh !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+
+  padding-top: 1vh !important;
+  padding-right: 1.4vw !important;
+  padding-bottom: 1.2vh !important;
+  padding-left: 1.4vw !important;
+
+  gap: 0.8vh !important;
+  overflow: hidden !important;
+}
+
+/* Hide the physical logo from the header. */
+.displayBoardLogo {
+  display: none !important;
+}
+
+/* Replace the old background ::after layer with the logo watermark. */
+.displayBoardSurface::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+
+  background-image: url("/sanctuary-sessions-logo.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: center 58% !important;
+  background-size: min(56vw, 760px) auto !important;
+
+  opacity: 0.12 !important;
+  filter: grayscale(1) contrast(1.08) brightness(1.3) !important;
+
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* Keep the board background below the watermark. */
+.displayBoardSurface::before {
+  z-index: 0 !important;
+}
+
+/* Main layout rows sit above the watermark. */
+.displayBoardHeader,
+.displayStaffRow,
+.displayRoleRow {
+  position: relative !important;
+  z-index: 6 !important;
+}
+
+/* Remove extra top spacing from the layout. */
+.displayBoardHeader {
+  margin-top: 0 !important;
+  margin-bottom: 0.8vh !important;
+  padding-top: 0 !important;
+}
+
+.displayStaffRow {
+  margin-top: 0 !important;
+  margin-bottom: 0.8vh !important;
+}
+
+.displayRoleRow {
+  margin-top: 0 !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+/* Make sure readable content stays visually above the watermark. */
+.displayBoardSurface .displaySectionCard,
+.displayBoardSurface .displaySectionHeader,
+.displayBoardSurface .rounded-2xl,
+.displayBoardSurface h1,
+.displayBoardSurface h2,
+.displayBoardSurface h3,
+.displayBoardSurface p,
+.displayBoardSurface span {
+  position: relative !important;
+  z-index: 7 !important;
+}
+
+/* TIGHTEN DISPLAY TO TOP + BRIGHTEN WATERMARK
+   This override reduces the empty top space and makes the center watermark easier to see
+   while keeping entries above it. */
+
+/* Remove outside spacing that may be pushing the board down. */
+html,
+body,
+#root {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* Force the display board to occupy the full screen from the very top. */
+.displayBoardSurface {
+  position: fixed !important;
+  inset: 0 !important;
+
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+
+  padding-top: 0.35vh !important;
+  padding-right: 1.25vw !important;
+  padding-bottom: 1vh !important;
+  padding-left: 1.25vw !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  gap: 0.55vh !important;
+
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+/* Hide the header logo image. The watermark is now drawn by ::after. */
+.displayBoardLogo {
+  display: none !important;
+}
+
+/* Watermark layer: above colored panels, below readable content. */
+.displayBoardSurface::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+
+  background-image: url("/sanctuary-sessions-logo.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: center 56% !important;
+  background-size: min(62vw, 860px) auto !important;
+
+  opacity: 0.24 !important;
+  filter: grayscale(1) contrast(1.2) brightness(1.45) !important;
+
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* Header/title pulled up tighter. */
+.displayBoardHeader {
+  position: relative !important;
+  z-index: 8 !important;
+
+  margin-top: 0 !important;
+  margin-bottom: 0.35vh !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+
+  min-height: 0 !important;
+}
+
+/* Reduce any large title-block spacing. */
+.displayBoardTitleBlock,
+.displayBoardInlineTitle {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Keep the title readable but stop it from creating too much vertical height. */
+.displayBoardEventName {
+  line-height: 0.92 !important;
+}
+
+.displayBoardEventDescription {
+  line-height: 1 !important;
+}
+
+/* Host/DM row pulled up. */
+.displayStaffRow {
+  position: relative !important;
+  z-index: 8 !important;
+
+  margin-top: 0 !important;
+  margin-bottom: 0.55vh !important;
+  padding-top: 0 !important;
+
+  min-height: 0 !important;
+}
+
+/* Main role row starts higher and uses the remaining height. */
+.displayRoleRow {
+  position: relative !important;
+  z-index: 8 !important;
+
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+/* Keep cards and text above watermark. */
+.displayBoardSurface .displaySectionCard,
+.displayBoardSurface .displaySectionHeader,
+.displayBoardSurface .rounded-2xl,
+.displayBoardSurface h1,
+.displayBoardSurface h2,
+.displayBoardSurface h3,
+.displayBoardSurface p,
+.displayBoardSurface span {
+  position: relative !important;
+  z-index: 9 !important;
+}
+
+/* WATERMARK VISIBILITY TUNE — one step clearer, still behind entries */
+.displayBoardSurface::after {
+  background-image: url("/sanctuary-sessions-logo.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: center 57% !important;
+  background-size: min(68vw, 980px) auto !important;
+
+  opacity: 0.34 !important;
+  filter: grayscale(1) contrast(1.35) brightness(1.75) !important;
+
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* Keep all readable board content above the watermark */
+.displayBoardHeader,
+.displayStaffRow,
+.displayRoleRow,
+.displayBoardSurface .displaySectionCard,
+.displayBoardSurface .displaySectionHeader,
+.displayBoardSurface .rounded-2xl,
+.displayBoardSurface h1,
+.displayBoardSurface h2,
+.displayBoardSurface h3,
+.displayBoardSurface p,
+.displayBoardSurface span {
+  position: relative !important;
+  z-index: 9 !important;
+}
+
+/* WATERMARK ABOVE TILE BACKGROUNDS, BELOW ENTRIES
+   The previous version put the watermark behind the colored section panels.
+   This version lowers the large panels and raises only the text/entry content above the watermark. */
+
+.displayBoardSurface {
+  position: fixed !important;
+  inset: 0 !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+}
+
+/* Hide the physical header logo. */
+.displayBoardLogo {
+  display: none !important;
+}
+
+/* Large colored board panels should sit below the watermark. */
+.displayBoardSurface .displaySectionCard {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Watermark sits above the colored panels. */
+.displayBoardSurface::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+
+  background-image: url("/sanctuary-sessions-logo.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: center 56% !important;
+  background-size: min(70vw, 1040px) auto !important;
+
+  opacity: 0.32 !important;
+  filter: grayscale(1) contrast(1.25) brightness(1.6) !important;
+
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* Header and section titles stay readable above the watermark. */
+.displayBoardHeader,
+.displayBoardTitleBlock,
+.displayBoardInlineTitle,
+.displaySectionHeader,
+.displaySectionTitle,
+.displaySectionIcon,
+.displaySectionIconSvg {
+  position: relative !important;
+  z-index: 8 !important;
+}
+
+/* Actual entry cards and all readable text stay above the watermark. */
+.displayBoardSurface .displaySectionCard > * {
+  position: relative !important;
+  z-index: 8 !important;
+}
+
+/* Entry boxes specifically stay above the watermark. */
+.displayBoardSurface .rounded-2xl {
+  position: relative !important;
+  z-index: 9 !important;
+}
+
+/* But don't let the big section panels themselves cover the watermark. */
+.displayRoleRow > .displaySectionCard,
+.displayStaffRow > .displaySectionCard {
+  z-index: 2 !important;
+}
+
+/* Keep the main rows above the page background but below text layering. */
+.displayStaffRow,
+.displayRoleRow {
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+/* WATERMARK TUNE
+   Lower it a bit, make it slightly smaller, and soften visibility. */
+.displayBoardSurface::after {
+  background-image: url("/sanctuary-sessions-logo.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: center 62% !important;
+  background-size: min(62vw, 900px) auto !important;
+
+  opacity: 0.22 !important;
+  filter: grayscale(1) contrast(1.18) brightness(1.45) !important;
+
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* WATERMARK TUNE
+   Contain the logo visually inside the middle green section area. */
+.displayBoardSurface::after {
+  background-image: url("/sanctuary-sessions-logo.png") !important;
+  background-repeat: no-repeat !important;
+
+  /* keep it centered in the middle board section */
+  background-position: center 66% !important;
+
+  /* smaller so it feels contained in the center panel */
+  background-size: min(34vw, 560px) auto !important;
+
+  /* softer */
+  opacity: 0.16 !important;
+  filter: grayscale(1) contrast(1.12) brightness(1.35) !important;
+
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* WATERMARK TUNE
+   Keep the logo visually contained inside the middle green section. */
+.displayBoardSurface::after {
+  background-image: url("/sanctuary-sessions-logo.png") !important;
+  background-repeat: no-repeat !important;
+
+  /* center of the middle section */
+  background-position: 50% 67% !important;
+
+  /* sized to live mostly within the green middle panel */
+  background-size: min(30vw, 520px) auto !important;
+
+  /* slightly softer */
+  opacity: 0.14 !important;
+  filter: grayscale(1) contrast(1.08) brightness(1.28) !important;
+
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* =========================================================
+   WATERMARK: MIDDLE GREEN SECTION ONLY
+   - Removes the full-board watermark
+   - Places the logo only inside the middle role section
+   - Makes it span the width of the middle green panel
+   - Keeps it behind the entry content
+   ========================================================= */
+
+/* Turn off the full-board watermark */
+.displayBoardSurface::after {
+  content: none !important;
+  background: none !important;
+}
+
+/* Target the middle role section (Top | Bottom | Switch => Bottom is 2nd) */
+.displayRoleRow > .displaySectionCard:nth-child(2) {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+/* Put the watermark inside the middle green section only */
+.displayRoleRow > .displaySectionCard:nth-child(2)::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+
+  background-image: url("/sanctuary-sessions-logo.png") !important;
+  background-repeat: no-repeat !important;
+
+  /* center inside the green panel */
+  background-position: center 62% !important;
+
+  /* wide enough to span the green section only */
+  background-size: 88% auto !important;
+
+  /* visible, but still soft */
+  opacity: 0.14 !important;
+  filter: grayscale(1) contrast(1.08) brightness(1.22) !important;
+
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* Keep everything inside the middle section above the watermark */
+.displayRoleRow > .displaySectionCard:nth-child(2) > * {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Keep the inner participant card readable above the watermark */
+.displayRoleRow > .displaySectionCard:nth-child(2) .rounded-2xl,
+.displayRoleRow > .displaySectionCard:nth-child(2) h1,
+.displayRoleRow > .displaySectionCard:nth-child(2) h2,
+.displayRoleRow > .displaySectionCard:nth-child(2) h3,
+.displayRoleRow > .displaySectionCard:nth-child(2) p,
+.displayRoleRow > .displaySectionCard:nth-child(2) span {
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+/* =========================================================
+   MIDDLE GREEN SECTION WATERMARK — WIDER + MORE VISIBLE
+   Goal:
+   - only inside the middle green section
+   - spans that section visually
+   - does not spill into red or blue
+   - sits behind content
+   ========================================================= */
+
+/* keep the whole-board watermark off */
+.displayBoardSurface::after {
+  content: none !important;
+  background: none !important;
+}
+
+/* middle green section only */
+.displayRoleRow > .displaySectionCard:nth-child(2) {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+/* watermark lives only inside the middle green section */
+.displayRoleRow > .displaySectionCard:nth-child(2)::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+
+  background-image: url("/sanctuary-sessions-logo.png") !important;
+  background-repeat: no-repeat !important;
+
+  /* centered inside the green section */
+  background-position: center 70% !important;
+
+  /* span the middle section width, but stay inside it */
+  background-size: calc(100% - 88px) auto !important;
+
+  /* bring visibility back up a little */
+  opacity: 0.19 !important;
+  filter: grayscale(1) contrast(1.12) brightness(1.3) !important;
+
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* keep all content above the watermark */
+.displayRoleRow > .displaySectionCard:nth-child(2) > * {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.displayRoleRow > .displaySectionCard:nth-child(2) .rounded-2xl,
+.displayRoleRow > .displaySectionCard:nth-child(2) h1,
+.displayRoleRow > .displaySectionCard:nth-child(2) h2,
+.displayRoleRow > .displaySectionCard:nth-child(2) h3,
+.displayRoleRow > .displaySectionCard:nth-child(2) p,
+.displayRoleRow > .displaySectionCard:nth-child(2) span {
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+/* =========================================================
+   SETUP-CONTROLLED DISPLAY TEXT SIZE
+   Range: -8 to +15
+   Positive values now scale upward more naturally.
+   This version targets the inner entry cards so the section headers
+   do not collapse when the size changes.
+   ========================================================= */
+
+.displayBoardSurface {
+  --board-entry-text-step: var(--board-entry-text-step, 0);
+  --staff-text-step: var(--staff-text-step, 0);
+
+  --board-entry-base-size: calc(0.98rem + (var(--board-entry-text-step) * 0.032rem));
+  --board-entry-name-size: calc(1.42rem + (var(--board-entry-text-step) * 0.055rem));
+
+  --staff-base-size: calc(0.92rem + (var(--staff-text-step) * 0.03rem));
+  --staff-name-size: calc(1.12rem + (var(--staff-text-step) * 0.05rem));
+}
+
+/* Participant entry cards only */
+.displayRoleRow .rounded-2xl .rounded-2xl {
+  font-size: var(--board-entry-base-size) !important;
+  line-height: 1.16 !important;
+}
+
+.displayRoleRow .rounded-2xl .rounded-2xl h3,
+.displayRoleRow .rounded-2xl .rounded-2xl .font-semibold:first-child,
+.displayRoleRow .rounded-2xl .rounded-2xl strong:first-child {
+  font-size: var(--board-entry-name-size) !important;
+  line-height: 1.08 !important;
+}
+
+/* Host / DM cards only */
+.displayStaffRow .rounded-2xl {
+  font-size: var(--staff-base-size) !important;
+  line-height: 1.14 !important;
+}
+
+.displayStaffRow .rounded-2xl h3,
+.displayStaffRow .rounded-2xl .font-semibold:first-child,
+.displayStaffRow .rounded-2xl strong:first-child {
+  font-size: var(--staff-name-size) !important;
+  line-height: 1.08 !important;
+}
+
+/* SETUP SCROLL FIX
+   Earlier display-board tuning locked html/body/#root overflow for the TV display.
+   This restores page scrolling for setup/kiosk while the display board itself remains fixed. */
+
+html,
+body,
+#root {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  min-height: 100% !important;
+}
+
+/* Keep only the TV display board locked to the screen. */
+.displayBoardSurface {
+  overflow: hidden !important;
+}
+
+/* =========================================================
+   FINAL SETUP SCROLL FIX
+   Setup and kiosk must be scrollable.
+   Only the TV display board should be locked to the screen.
+   ========================================================= */
+
+html,
+body,
+#root {
+  width: 100% !important;
+  min-height: 100% !important;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+/* When the display board exists, keep only that page locked. */
+body:has(.displayBoardSurface) {
+  overflow: hidden !important;
+}
+
+body:has(.displayBoardSurface) #root {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* The actual TV display board remains fixed/full-screen. */
+.displayBoardSurface {
+  position: fixed !important;
+  inset: 0 !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* =========================================================
+   FINAL LIVE DISPLAY TEXT SIZE OVERRIDE
+   Range: -8 to +15
+   This sits at the bottom so it wins over earlier display CSS.
+   ========================================================= */
+
+.displayBoardSurface {
+  --entry-scale: var(--board-entry-text-step, 0);
+  --staff-scale: var(--staff-text-step, 0);
+}
+
+/* Participant entry content only — Top / Bottom / Switch cards */
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) {
+  font-size: calc(0.86rem + (var(--entry-scale) * 0.045rem)) !important;
+  line-height: 1.14 !important;
+}
+
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) p,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) span,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) div {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+/* Participant names stay larger than the details */
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) h3,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) strong,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) .font-bold,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) .font-semibold:first-child {
+  font-size: calc(1.18rem + (var(--entry-scale) * 0.07rem)) !important;
+  line-height: 1.06 !important;
+}
+
+/* Host / DM support row content only */
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) {
+  font-size: calc(0.76rem + (var(--staff-scale) * 0.04rem)) !important;
+  line-height: 1.12 !important;
+}
+
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) p,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) span,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) div {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) h3,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) strong,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) .font-bold,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) .font-semibold:first-child {
+  font-size: calc(0.98rem + (var(--staff-scale) * 0.06rem)) !important;
+  line-height: 1.06 !important;
+}
+
+/* Keep the TV display locked, but setup/kiosk scrollable. */
+html,
+body,
+#root {
+  width: 100% !important;
+  min-height: 100% !important;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body:has(.displayBoardSurface),
+body:has(.displayBoardSurface) #root {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.displayBoardSurface {
+  position: fixed !important;
+  inset: 0 !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+
+/* =========================================================
+   REBASELINED DISPLAY TEXT SIZE
+   New setup range: -10 to +10
+   0 now equals the old +15 visual size.
+   These variables are computed in App.jsx and applied here.
+   ========================================================= */
+
+/* Participant entries: Top / Bottom / Switch */
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader),
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) p,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) span,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) div {
+  font-size: var(--board-entry-detail-size, 1.535rem) !important;
+  line-height: 1.12 !important;
+}
+
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) h3,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) strong,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) .font-bold,
+.displayRoleRow .displaySectionCard > :not(.displaySectionHeader) .font-semibold:first-child {
+  font-size: var(--board-entry-name-size, 2.23rem) !important;
+  line-height: 1.04 !important;
+}
+
+/* Host / DM entries */
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader),
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) p,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) span,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) div {
+  font-size: var(--staff-detail-size, 1.36rem) !important;
+  line-height: 1.1 !important;
+}
+
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) h3,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) strong,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) .font-bold,
+.displayStaffRow .displaySectionCard > :not(.displaySectionHeader) .font-semibold:first-child {
+  font-size: var(--staff-name-size, 1.88rem) !important;
+  line-height: 1.04 !important;
+}
+
+/* Keep setup/kiosk scrollable while display remains TV-locked. */
+html,
+body,
+#root {
+  width: 100% !important;
+  min-height: 100% !important;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body:has(.displayBoardSurface),
+body:has(.displayBoardSurface) #root {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.displayBoardSurface {
+  position: fixed !important;
+  inset: 0 !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+
+/* =========================================================
+   COMBINED HOST / CO-HOST / DM DISPLAY SECTION
+   One cohesive support-team section instead of separate Host and DM panels.
+   Order is handled by App.jsx: Host, Co-Host, then DMs.
+   ========================================================= */
+
+.displayStaffRowCombined {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+}
+
+.displayStaffRowCombined > .displaySectionCard {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+
+/* Make the combined staff card feel like one cohesive support row. */
+.displayStaffRowCombined .displaySectionCard {
+  border-color: rgba(148, 163, 184, 0.32) !important;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.78)) !important;
+}
+
+/* Keep staff entries flowing across the single section. */
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) {
+  width: 100% !important;
+}
+
+
+/* =========================================================
+   COMBINED STAFF SECTION — TRANSPARENT + CONTINUOUS
+   Host, Co-Host, then DMs flow together with no visual divider.
+   ========================================================= */
+
+/* Make the combined staff section itself transparent. */
+.displayStaffRowCombined .displaySectionCard,
+.displayStaffRowCombined > .displaySectionCard {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Remove extra visual separation inside the combined staff section. */
+.displayStaffRowCombined .displaySectionCard {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Keep the entries themselves readable, but not separated into Host/DM zones. */
+.displayStaffRowCombined .displaySectionCard .rounded-2xl {
+  margin: 0 !important;
+}
+
+/* Tighten the staff row so Host, Co-Host, and DMs read as one continuous line/group. */
+.displayStaffRowCombined {
+  gap: 0 !important;
+  margin-bottom: 0.7vh !important;
+}
+
+/* Make sure there is no leftover staff title/header space. */
+.displayStaffRowCombined .displaySectionHeader {
+  display: none !important;
+}
+
+
+/* =========================================================
+   COMBINED STAFF SUPPORT BAR — LEFT FLOW + SOFT TRANSPARENT BACKING
+   Goal:
+   - one cohesive Host / Co-Host / DM support area
+   - slightly dark transparent section behind staff entries
+   - entries start from the left with no Host/DM gap
+   - Host first, Co-Host second, DMs after
+   ========================================================= */
+
+.displayStaffRowCombined {
+  display: block !important;
+  width: 100% !important;
+  margin-bottom: 0.9vh !important;
+}
+
+/* Bring back a subtle transparent backing behind the whole staff/support team. */
+.displayStaffRowCombined > .displaySectionCard {
+  width: 100% !important;
+  min-height: 4.4vh !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(2, 6, 23, 0.42),
+      rgba(2, 6, 23, 0.26),
+      rgba(2, 6, 23, 0.42)
+    ) !important;
+
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-radius: 1.1rem !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
+
+  padding: 0.55vh 0.75vw !important;
+  overflow: hidden !important;
+}
+
+/* Hide empty staff section header so the row is only the entries. */
+.displayStaffRowCombined .displaySectionHeader {
+  display: none !important;
+}
+
+/* Force the inner entry grid to flow from the left instead of spreading across old Host/DM zones. */
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 0.75vw !important;
+  width: 100% !important;
+}
+
+/* Staff entries should size to content, not split the whole row into wide columns. */
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) > * {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 12.5vw !important;
+  max-width: 22vw !important;
+}
+
+/* The individual Host/DM cards stay readable but become softer and more connected. */
+.displayStaffRowCombined .rounded-2xl {
+  background: rgba(15, 23, 42, 0.34) !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  box-shadow: none !important;
+  padding: 0.45vh 0.75vw !important;
+}
+
+/* Tighten text inside staff entries so the row feels like one support bar. */
+.displayStaffRowCombined .rounded-2xl * {
+  margin-top: 0 !important;
+}
+
+/* Remove any leftover divider-like spacing from the old two-section layout. */
+.displayStaffRowCombined .displayThemeHost,
+.displayStaffRowCombined .displayThemeDM,
+.displayStaffRowCombined .displayThemeHostInner,
+.displayStaffRowCombined .displayThemeDMInner {
+  background: transparent !important;
+}
+
+/* =========================================================
+   SOFT HOST / CO-HOST / DM SECTION BOX
+   Adds a subtle transparent container behind the combined staff row
+   without changing staff ordering or layout.
+   ========================================================= */
+
+.displayStaffRowCombined > .displaySectionCard {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(2, 6, 23, 0.50),
+      rgba(15, 23, 42, 0.34),
+      rgba(2, 6, 23, 0.50)
+    ) !important;
+
+  border: 1px solid rgba(226, 232, 240, 0.14) !important;
+  border-radius: 1.2rem !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 10px 28px rgba(0, 0, 0, 0.16) !important;
+
+  padding: 0.65vh 0.9vw !important;
+}
+
+/* Keep the individual staff cards soft so the whole row reads as one section. */
+.displayStaffRowCombined .rounded-2xl {
+  background: rgba(15, 23, 42, 0.26) !important;
+  border-color: rgba(226, 232, 240, 0.10) !important;
+}
+
+
+/* =========================================================
+   SUPPORT TEAM SETUP FORM
+   One visible setup form for Host / Co-Host / DM.
+   The old second DM form is hidden but left in code for safe rollback.
+   ========================================================= */
+
+.supportTeamSetupGrid {
+  grid-template-columns: 1fr !important;
+}
+
+.supportTeamSetupGrid > .rounded-3xl:nth-child(2) {
+  display: none !important;
+}
+
+.supportTeamSetupGrid .rounded-3xl:first-child {
+  max-width: 100% !important;
+}
+
+/* Slightly distinguish the unified support role buttons when present. */
+.supportTeamSetupGrid button {
+  touch-action: manipulation;
+}
+
+/* =========================================================
+   SUPPORT TEAM DISPLAY SPACING
+   Adds more breathing room between Host / Co-Host / DM entries only.
+   Does not affect Top / Bottom / Switch participant cards.
+   ========================================================= */
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) {
+  gap: 1.6vw !important;
+}
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) > * {
+  margin-right: 0 !important;
+}
+
+
+/* =========================================================
+   SUPPORT TEAM DISPLAY SPACING
+   Adds more breathing room between Host / Co-Host / DM entries only.
+   Does not affect Top / Bottom / Switch participant cards.
+   ========================================================= */
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) {
+  gap: 1.6vw !important;
+}
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) > * {
+  margin-right: 0 !important;
+}
+
+
+/* =========================================================
+   EVEN SUPPORT TEAM SPACING
+   Makes Host / Co-Host / DM entries sit in equal-width slots
+   so spacing stays visually consistent across the row.
+   ========================================================= */
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) {
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: minmax(15.5vw, 15.5vw) !important;
+  justify-content: start !important;
+  align-items: start !important;
+  gap: 1.15vw !important;
+  width: 100% !important;
+}
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) > * {
+  width: 15.5vw !important;
+  min-width: 15.5vw !important;
+  max-width: 15.5vw !important;
+  margin: 0 !important;
+}
+
+/* Keep longer support names readable inside the equal slots. */
+.displayStaffRowCombined .rounded-2xl {
+  overflow-wrap: anywhere !important;
+}
+
+/* =========================================================
+   SUPPORT TEAM LEFT-ALIGNED WITH EVEN GAPS
+   Corrects prior equal-slot spacing.
+   Entries stay grouped from the left with consistent spacing
+   between Host / Co-Host / DM cards.
+   ========================================================= */
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 1.35vw !important;
+  width: 100% !important;
+}
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) > * {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 12.5vw !important;
+  max-width: 21vw !important;
+  margin: 0 !important;
+}
+
+/* Keep long support names readable without forcing huge gaps. */
+.displayStaffRowCombined .rounded-2xl {
+  overflow-wrap: anywhere !important;
+}
+
+/* =========================================================
+   FINAL SUPPORT TEAM NATURAL SPACING
+   What this fixes:
+   - removes invisible equal/min-width boxes around staff entries
+   - keeps entries left justified
+   - creates one consistent visual gap between entries
+   - affects only Host / Co-Host / DM support row
+   ========================================================= */
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  column-gap: 2.2vw !important;
+  row-gap: 0 !important;
+  width: 100% !important;
+}
+
+/* The important part:
+   each staff entry now sizes to its content instead of sitting in a wide invisible slot. */
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) > * {
+  flex: 0 0 auto !important;
+  width: fit-content !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Keep the text itself from creating fake card width. */
+.displayStaffRowCombined .rounded-2xl,
+.displayStaffRowCombined .rounded-2xl > div,
+.displayStaffRowCombined .rounded-2xl .py-2 {
+  width: fit-content !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+/* Let longer names stay readable without spreading the whole row. */
+.displayStaffRowCombined .rounded-2xl {
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+}
+
+/* Keep the small divider under each support entry only as wide as the entry. */
+.displayStaffRowCombined .border-b {
+  width: fit-content !important;
+}
+
+
+/* =========================================================
+   KIOSK START SCREEN CLICKABLE PREVIEW
+   The START button stays at the bottom.
+   The whole sample/preview area can also be tapped to start.
+   ========================================================= */
+
+.kioskPreviewAreaButton {
+  cursor: pointer !important;
+}
+
+.kioskPreviewAreaButton .connectionPreview,
+.kioskPreviewAreaButton .exampleEntryBlock,
+.kioskPreviewAreaButton .exampleEntryCard {
+  cursor: pointer !important;
+}
+
+
+
+
+
+
+
+
+/* =========================================================
+   TEST: FLOATING GLASS DISPLAY CARDS
+   Removes the large colored backing tile from role sections
+   while keeping the section titles/icons and floating glass cards.
+   ========================================================= */
+
+/* Remove/flatten the big Top/Bottom/Switch section backing card. */
+.displayRoleRow > .rounded-2xl {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+/* Keep the role section header/title visible and clean. */
+.displayRoleRow .displaySectionHeader,
+.displayRoleRow .displaySectionTitle,
+.displayRoleRow h2,
+.displayRoleRow h3 {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Make the individual entry cards float like glass tiles. */
+.displayRoleRow .rounded-2xl .rounded-2xl {
+  background: rgba(2, 6, 23, 0.48) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.22) !important;
+  backdrop-filter: blur(3px) !important;
+}
+
+/* Keep text readable inside the glass cards. */
+.displayRoleRow .rounded-2xl .rounded-2xl,
+.displayRoleRow .rounded-2xl .rounded-2xl * {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+}
+
+
+
+/* DIAPER DEBAUCHERY GLOW CONNECTION MODE */
+
+.diaperGlowKiosk > .rounded-3xl {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(217, 70, 239, 0.45) !important;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(236, 72, 153, 0.30), transparent 30%),
+    radial-gradient(circle at 88% 18%, rgba(34, 211, 238, 0.22), transparent 34%),
+    radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.24), transparent 38%),
+    rgba(2, 6, 23, 0.92) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 42px rgba(217, 70, 239, 0.18),
+    0 0 90px rgba(34, 211, 238, 0.10);
+}
+
+.diaperGlowKiosk h2 {
+  color: #fdf4ff;
+  text-shadow:
+    0 0 14px rgba(217, 70, 239, 0.65),
+    0 0 28px rgba(34, 211, 238, 0.22);
+}
+
+.diaperGlowKiosk .rounded-2xl {
+  box-shadow: 0 0 22px rgba(217, 70, 239, 0.045);
+}
+
+.diaperGlowDisplayBoard {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(236, 72, 153, 0.28), transparent 28%),
+    radial-gradient(circle at 86% 16%, rgba(34, 211, 238, 0.22), transparent 32%),
+    radial-gradient(circle at 50% 105%, rgba(250, 204, 21, 0.14), transparent 38%),
+    linear-gradient(135deg, #020617 0%, #090018 42%, #020617 100%) !important;
+}
+
+.diaperGlowDisplayBoard::before {
+  opacity: 0.42 !important;
+  background:
+    linear-gradient(90deg, rgba(236,72,153,0.16), rgba(34,211,238,0.08), rgba(250,204,21,0.10)),
+    radial-gradient(circle at 20% 30%, rgba(217,70,239,0.22), transparent 24%),
+    radial-gradient(circle at 80% 35%, rgba(34,211,238,0.18), transparent 24%) !important;
+}
+
+.diaperGlowDisplayBoard .displayBoardEventName {
+  color: #fdf4ff !important;
+  text-shadow:
+    0 0 18px rgba(217, 70, 239, 0.85),
+    0 0 36px rgba(34, 211, 238, 0.26);
+}
+
+.diaperGlowDisplayBoard .displayBoardTitleDivider {
+  color: rgba(34, 211, 238, 0.85) !important;
+  text-shadow: 0 0 18px rgba(34, 211, 238, 0.65);
+}
+
+.diaperGlowDisplayBoard .displayBoardEventDescription {
+  color: rgba(253, 244, 255, 0.78) !important;
+}
+
+.diaperGlowDisplayBoard .displayConnectionRow {
+  grid-template-columns: 1fr !important;
+  gap: 0.75rem !important;
+}
+
+.diaperGlowDisplayBoard .displayConnectionRow > .displaySectionCard {
+  min-height: 0 !important;
+  border-color: rgba(217, 70, 239, 0.28) !important;
+  background:
+    linear-gradient(135deg, rgba(2, 6, 23, 0.36), rgba(30, 0, 45, 0.30)),
+    rgba(2, 6, 23, 0.30) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.035),
+    0 0 34px rgba(217,70,239,0.10),
+    0 0 72px rgba(34,211,238,0.06) !important;
+}
+
+.diaperGlowDisplayBoard .displayConnectionRow .displaySectionTitle {
+  color: #f0abfc !important;
+  text-shadow:
+    0 0 14px rgba(217, 70, 239, 0.55),
+    0 0 26px rgba(34, 211, 238, 0.22);
+}
+
+.diaperGlowDisplayBoard .displayConnectionRow .rounded-2xl {
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.70), rgba(88, 28, 135, 0.22)),
+    rgba(2, 6, 23, 0.48) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.035),
+    0 0 22px rgba(217, 70, 239, 0.08) !important;
+}
+
+.diaperGlowDisplayBoard .displayStaffRowCombined > .displaySectionCard {
+  border-color: rgba(34, 211, 238, 0.22) !important;
+  background: rgba(2, 6, 23, 0.40) !important;
+}
+
+
+/* DIAPER GLOW SOCIAL HANDLE LINE BREAK FIX */
+.diaperGlowDisplayBoard .text-sky-200 {
+  white-space: pre-line !important;
+}

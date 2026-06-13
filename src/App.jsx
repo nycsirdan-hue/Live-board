@@ -130,10 +130,76 @@ const kinkCatalog = {
 
 const positionOptions = ["Top", "Bottom", "Switch"];
 const identityOptions = ["Male", "Female", "Other"];
-const seekingOptions = ["Male", "Female", "Other"];
+const seekingOptions = ["Male", "Female", "Open", "Other"];
 const orientationOptions = ["Straight", "Bi", "Gay", "Queer", "Pan", "Other"];
-const quickTagOptions = ["New here", "Partnered", "Scenes planned", "Open to play", "Learn New Skills", "Watching"];
-const handlePlatformOptions = ["FetLife", "Whappz", "Twitter", "Bluesky", "Other"];
+
+const defaultSexualPreferenceOptions = [
+  "No Sex",
+  "Discuss Sex First",
+  "No Sex / Not Sexual",
+  "Sex",
+  "Oral",
+  "Anal",
+  "Fisting",
+  "Condoms",
+  "Safe Only",
+];
+
+const defaultInterestOptions = [
+  "BDSM",
+  "Impact Play",
+  "Spanking",
+  "Bondage",
+  "Rope",
+  "Electro",
+  "Floggers",
+  "Paddles",
+  "Canes",
+  "Crops",
+  "Straps",
+  "Open-Hand Impact",
+  "Closed-Hand Impact",
+  "Light Impact",
+  "Heavy Impact",
+  "Warm-Up Needed",
+];
+const quickTagOptions = ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"];
+
+const diaperDebaucheryVibeOptions = [
+  "Little",
+  "Middle",
+  "Big",
+  "Caregiver",
+  "Mommy",
+  "Daddy",
+  "Kinky",
+  "Switchy",
+  "Open to connect",
+  "Open to play",
+];
+
+const diaperDebaucheryLookingForOptions = [
+  "Friends",
+  "Chat",
+  "Cuddles",
+  "Movie buddy",
+  "Playtime",
+  "Scene partner",
+  "Diaper change",
+  "Caregiver connection",
+  "Social only",
+  "Ask me first",
+];
+
+const diaperDebaucherySexualPreferenceOptions = [
+  "No Sex",
+  "Discuss Sex First",
+  "Safe Only",
+  "Buzzy Time",
+  "Diaper Sexual",
+];
+
+const handlePlatformOptions = ["FetLife", "Whappz", "Twitter", "Bluesky", "Instagram", "Other"];
 
 const searchAliases = {
   rope: ["Rope Bondage", "Shibari", "Suspension", "Partial Suspension"],
@@ -199,25 +265,30 @@ const catalogSet = new Set(Object.values(kinkCatalog).flat());
 const allCatalogItems = Array.from(catalogSet).sort((a, b) => a.localeCompare(b));
 
 const sectionThemes = {
+  Host: {
+    section: "displayThemeHost",
+    inner: "displayThemeHostInner",
+    title: "displayThemeHostTitle",
+  },
   Top: {
-    section: "border-rose-900/80 bg-rose-950/40",
-    inner: "border-rose-900/60 bg-rose-950/25",
-    title: "text-rose-100",
+    section: "displayThemeTop",
+    inner: "displayThemeTopInner",
+    title: "displayThemeTopTitle",
   },
   Bottom: {
-    section: "border-emerald-900/80 bg-emerald-950/35",
-    inner: "border-emerald-900/60 bg-emerald-950/20",
-    title: "text-emerald-100",
+    section: "displayThemeBottom",
+    inner: "displayThemeBottomInner",
+    title: "displayThemeBottomTitle",
   },
   Switch: {
-    section: "border-sky-900/80 bg-sky-950/35",
-    inner: "border-sky-900/60 bg-sky-950/20",
-    title: "text-sky-100",
+    section: "displayThemeSwitch",
+    inner: "displayThemeSwitchInner",
+    title: "displayThemeSwitchTitle",
   },
   DM: {
-    section: "border-slate-800 bg-black",
-    inner: "border-slate-800 bg-black",
-    title: "text-slate-100",
+    section: "displayThemeDM",
+    inner: "displayThemeDMInner",
+    title: "displayThemeDMTitle",
   },
 };
 
@@ -227,6 +298,7 @@ function useMode() {
     if (urlMode === "setup" || urlMode === "display" || urlMode === "entry") {
       return urlMode;
     }
+    if (urlMode === "setup-tabs") return "setup";
     if (urlMode === "admin") return "setup";
     return "entry";
   };
@@ -277,6 +349,26 @@ function joinItems(items, limit = 8) {
   return `${items.slice(0, limit).join(", ")}, +${items.length - limit} more`;
 }
 
+function sortDisplayItemsByConfiguredOrder(items = []) {
+  const configuredOrder = [
+    ...defaultSexualPreferenceOptions,
+    ...defaultInterestOptions,
+  ];
+
+  return [...items].sort((a, b) => {
+    const aIndex = configuredOrder.indexOf(a);
+    const bIndex = configuredOrder.indexOf(b);
+
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+
+    return 0;
+  });
+}
+
+
+
 function getSectionGrid(entriesCount, maxRows, maxCols) {
   const rowLimit = Math.max(1, Number(maxRows) || 1);
   const colLimit = Math.max(1, Number(maxCols) || 1);
@@ -314,6 +406,16 @@ function EntryLine({
 }) {
   const rawItems = items || [];
 
+  const cleanDisplayItem = (item) =>
+    typeof item === "string"
+      ? item
+          .replace(/^Interests:\s*/i, "")
+          .replace(/^Interest:\s*/i, "")
+          .replace(/^Sexual:\s*/i, "")
+          .replace(/^Sexual Preference:\s*/i, "")
+          .trim()
+      : item;
+
   const intentionTags = rawItems
     .filter((item) => typeof item === "string" && item.startsWith("Quick Tag: "))
     .map((item) =>
@@ -326,16 +428,42 @@ function EntryLine({
     .find((item) => typeof item === "string" && item.startsWith("Orientation: "))
     ?.replace("Orientation: ", "");
 
-  const displayItems = rawItems.filter(
-    (item) =>
-      !(
-        typeof item === "string" &&
-        (item.startsWith("Quick Tag: ") || item.startsWith("Orientation: "))
-      )
+  const displayItems = rawItems
+    .filter(
+      (item) =>
+        !(
+          typeof item === "string" &&
+          (item.startsWith("Quick Tag: ") || item.startsWith("Orientation: "))
+        )
+    )
+    .map(cleanDisplayItem)
+    .filter(Boolean);
+
+  const orderByList = (list, configuredOrder) =>
+    [...list].sort((a, b) => {
+      const aIndex = configuredOrder.indexOf(a);
+      const bIndex = configuredOrder.indexOf(b);
+
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+
+      return 0;
+    });
+
+  const sexualPreferenceItems = orderByList(
+    displayItems.filter((item) => defaultSexualPreferenceOptions.includes(item)),
+    defaultSexualPreferenceOptions
+  );
+
+  const interestItems = orderByList(
+    displayItems.filter((item) => !defaultSexualPreferenceOptions.includes(item)),
+    defaultInterestOptions
   );
 
   const intentionText = intentionTags.join(", ");
-  const itemText = joinItems(displayItems, itemLimit);
+  const sexualPreferenceText = joinItems(sexualPreferenceItems, itemLimit);
+  const interestText = joinItems(interestItems, itemLimit);
 
   return (
     <div className="py-2">
@@ -362,31 +490,361 @@ function EntryLine({
       ) : null}
 
       {(isDM || isHost) && category ? (
-        <div className="mt-0.5 text-sm md:text-base font-semibold uppercase tracking-[0.14em] text-slate-400 break-words">
+        <div className={`${compact ? "text-sm md:text-lg" : "text-base md:text-xl"} mt-1 text-slate-100 break-words leading-5`}>
           {category}
         </div>
       ) : null}
 
-      {displayItems.length > 0 ? (
-        <div className={`${compact ? "text-sm md:text-lg" : "text-base md:text-xl"} mt-0.5 text-slate-300 break-words leading-5`}>
-          {itemText}
+      {sexualPreferenceItems.length > 0 ? (
+        <div className={`${compact ? "text-sm md:text-lg" : "text-base md:text-xl"} mt-1 font-semibold text-rose-400/80 break-words leading-5`}>
+          {sexualPreferenceText}
+        </div>
+      ) : null}
+
+      {interestItems.length > 0 ? (
+        <div className={`${compact ? "text-sm md:text-lg" : "text-base md:text-xl"} ${sexualPreferenceItems.length > 0 ? "mt-1.5" : "mt-0.5"} text-slate-300 break-words leading-5`}>
+          {interestText}
         </div>
       ) : null}
     </div>
   );
 }
 
+function DisplayCrownIcon() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true" className="displaySectionIconSvg">
+      <path d="M10 48h44l4-30-15 12-11-18-11 18L6 18l4 30Z" />
+      <path d="M14 54h36" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="32" cy="12" r="3" />
+      <circle cx="58" cy="18" r="3" />
+    </svg>
+  );
+}
+
+function DisplayShieldIcon() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true" className="displaySectionIconSvg">
+      <path d="M32 6 52 14v17c0 14-8.5 24-20 29C20.5 55 12 45 12 31V14L32 6Z" />
+      <path d="M32 14v38" />
+    </svg>
+  );
+}
+
+function DisplayUpArrowIcon() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true" className="displaySectionIconSvg">
+      <path d="M32 52V12" />
+      <path d="M16 28 32 12l16 16" />
+    </svg>
+  );
+}
+
+function DisplayDownArrowIcon() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true" className="displaySectionIconSvg">
+      <path d="M32 12v40" />
+      <path d="M16 36l16 16 16-16" />
+    </svg>
+  );
+}
+
+function DisplayRotateIcon() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true" className="displaySectionIconSvg">
+      <path d="M48 20a20 20 0 0 0-33 7" />
+      <path d="M14 14v13h13" />
+      <path d="M16 44a20 20 0 0 0 33-7" />
+      <path d="M50 50V37H37" />
+    </svg>
+  );
+}
+
+function getDisplaySectionMeta(title) {
+  if (title === "Hosts") {
+    return { icon: <DisplayCrownIcon />, subtitle: "Room leaders, offerings, tastings, and guidance" };
+  }
+
+  if (title === "Dungeon Monitors") {
+    return { icon: <DisplayShieldIcon />, subtitle: "Safety, support, and room care" };
+  }
+
+  if (title === "Top") {
+    return { icon: <DisplayUpArrowIcon />, subtitle: "Give" };
+  }
+
+  if (title === "Bottom") {
+    return { icon: <DisplayDownArrowIcon />, subtitle: "Receive" };
+  }
+
+  if (title === "Switch") {
+    return { icon: <DisplayRotateIcon />, subtitle: "Both Give & Receive" };
+  }
+
+  return { icon: null, subtitle: "" };
+}
+
+function normalizeEventDisplayPreset(preset) {
+  if (!preset) return null;
+
+  const rawImages =
+    preset.images ||
+    preset.display_images ||
+    preset.displayImages ||
+    preset.slides ||
+    [];
+
+  const imageDurationSeconds =
+    Number(preset.imageDurationSeconds) ||
+    Number(preset.image_duration_seconds) ||
+    Number(preset.displayImageDurationSeconds) ||
+    Number(preset.display_image_duration_seconds) ||
+    Number(rawImages?.[0]?.durationSeconds) ||
+    Number(rawImages?.[0]?.duration_seconds) ||
+    60;
+
+  const liveboardDurationSeconds =
+    Number(preset.liveboardDurationSeconds) ||
+    Number(preset.liveboard_duration_seconds) ||
+    Number(preset.displayLiveboardDurationSeconds) ||
+    Number(preset.display_liveboard_duration_seconds) ||
+    300;
+
+  const images = Array.isArray(rawImages)
+    ? rawImages
+        .map((image, index) => {
+          if (!image) return null;
+
+          if (typeof image === "string") {
+            return {
+              id: `image-${index}`,
+              src: image,
+              url: image,
+              imageUrl: image,
+              durationSeconds: imageDurationSeconds,
+            };
+          }
+
+          const src =
+            image.src ||
+            image.url ||
+            image.imageUrl ||
+            image.image_url ||
+            image.publicUrl ||
+            image.public_url ||
+            image.dataUrl ||
+            image.data_url ||
+            "";
+
+          if (!src) return null;
+
+          return {
+            ...image,
+            id: image.id || `image-${index}`,
+            src,
+            url: src,
+            imageUrl: src,
+            image_url: src,
+            durationSeconds:
+              Number(image.durationSeconds) ||
+              Number(image.duration_seconds) ||
+              imageDurationSeconds,
+            duration_seconds:
+              Number(image.duration_seconds) ||
+              Number(image.durationSeconds) ||
+              imageDurationSeconds,
+          };
+        })
+        .filter(Boolean)
+    : [];
+
+  return {
+    ...preset,
+    id: preset.id,
+    name: preset.name || preset.event_name || preset.eventName || preset.title || "",
+    title: preset.title || preset.event_name || preset.eventName || preset.name || "",
+    eventName: preset.eventName || preset.event_name || preset.name || preset.title || "",
+    event_name: preset.event_name || preset.eventName || preset.name || preset.title || "",
+    eventDescription:
+      preset.eventDescription ||
+      preset.event_description ||
+      preset.description ||
+      "",
+    event_description:
+      preset.event_description ||
+      preset.eventDescription ||
+      preset.description ||
+      "",
+    images,
+    displayImages: images,
+    display_images: images,
+    imageDurationSeconds,
+    image_duration_seconds: imageDurationSeconds,
+    displayImageDurationSeconds: imageDurationSeconds,
+    display_image_duration_seconds: imageDurationSeconds,
+    liveboardDurationSeconds,
+    liveboard_duration_seconds: liveboardDurationSeconds,
+    displayLiveboardDurationSeconds: liveboardDurationSeconds,
+    display_liveboard_duration_seconds: liveboardDurationSeconds,
+  };
+}
+
+function DisplayRotationOverlay({ eventDisplay }) {
+  const normalizedEventDisplay = useMemo(
+    () => normalizeEventDisplayPreset(eventDisplay),
+    [eventDisplay]
+  );
+
+  const images = normalizedEventDisplay?.images || [];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showImage, setShowImage] = useState(false);
+  const [loadedImages, setLoadedImages] = useState({});
+
+  const activeImage = images[currentImageIndex % Math.max(images.length, 1)];
+
+  const imageSignature = images
+    .map((image) => `${image.id || ""}:${image.src || ""}:${image.durationSeconds || ""}`)
+    .join("|");
+
+  const liveboardDurationSeconds =
+    Number(normalizedEventDisplay?.liveboardDurationSeconds) || 300;
+
+  const imageDurationSeconds =
+    Number(activeImage?.durationSeconds) ||
+    Number(normalizedEventDisplay?.imageDurationSeconds) ||
+    60;
+
+  useEffect(() => {
+    setCurrentImageIndex(0);
+    setShowImage(false);
+    setLoadedImages({});
+  }, [normalizedEventDisplay?.id, imageSignature]);
+
+  useEffect(() => {
+    if (!images.length) return;
+
+    let cancelled = false;
+
+    images.forEach((image) => {
+      if (!image?.src) return;
+
+      const loader = new Image();
+
+      loader.onload = () => {
+        if (cancelled) return;
+        setLoadedImages((current) => ({
+          ...current,
+          [image.src]: true,
+        }));
+      };
+
+      loader.onerror = () => {
+        if (cancelled) return;
+        setLoadedImages((current) => ({
+          ...current,
+          [image.src]: false,
+        }));
+      };
+
+      loader.src = image.src;
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [imageSignature]);
+
+  const activeImageIsLoaded = activeImage?.src && loadedImages[activeImage.src] === true;
+
+  useEffect(() => {
+    if (!normalizedEventDisplay || images.length === 0) {
+      setShowImage(false);
+      return;
+    }
+
+    if (showImage && !activeImageIsLoaded) {
+      return;
+    }
+
+    const durationMs = showImage
+      ? Math.max(1000, imageDurationSeconds * 1000)
+      : Math.max(1000, liveboardDurationSeconds * 1000);
+
+    const timer = window.setTimeout(() => {
+      if (showImage) {
+        setShowImage(false);
+        setCurrentImageIndex((current) => (current + 1) % images.length);
+      } else {
+        setShowImage(true);
+      }
+    }, durationMs);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    normalizedEventDisplay?.id,
+    images.length,
+    imageSignature,
+    showImage,
+    activeImageIsLoaded,
+    imageDurationSeconds,
+    liveboardDurationSeconds,
+  ]);
+
+  if (
+    !normalizedEventDisplay ||
+    images.length === 0 ||
+    !showImage ||
+    !activeImage?.src ||
+    !activeImageIsLoaded
+  ) {
+    return null;
+  }
+
+  return (
+    <div className="displayRotationOverlay">
+      <img
+        src={activeImage.src}
+        alt={normalizedEventDisplay.eventName || normalizedEventDisplay.name || "Event display slide"}
+        className="displayRotationOverlayImage"
+        draggable="false"
+      />
+    </div>
+  );
+}
 
 function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false }) {
   const { rows, cols } = getSectionGrid(entries.length, maxRows, maxCols);
   const compact = rows >= 4 || cols >= 3 || entries.length > 8;
+  const sectionMeta = getDisplaySectionMeta(title);
+  const showInlineRoleSubtitle = ["Top", "Bottom", "Switch"].includes(title);
 
   return (
-    <section className={`self-start rounded-2xl border px-2.5 pt-2.5 pb-1 shadow-2xl min-h-[120px] ${theme.section}`}>
-      <div className={title ? "mb-2" : "mb-0"}>
-        <h3 className={`text-4xl md:text-5xl font-semibold tracking-tight ${theme.title}`}>
-          {title}
-        </h3>
+    <section className={`displaySectionCard self-start rounded-2xl border px-2.5 pt-2.5 pb-1 shadow-2xl min-h-[120px] ${theme.section}`}>
+      <div className={title ? "displaySectionHeader mb-2" : "mb-0"}>
+        {sectionMeta.icon ? (
+          <div className={`displaySectionIcon ${theme.title}`}>
+            {sectionMeta.icon}
+          </div>
+        ) : null}
+
+        <div className="min-w-0">
+          <h3 className={`displaySectionTitle text-4xl md:text-5xl font-semibold tracking-tight ${theme.title}`}>
+            {title}
+
+            {showInlineRoleSubtitle && sectionMeta.subtitle ? (
+              <>
+                <span className="displaySectionTitlePipe">|</span>
+                <span className="displaySectionTitleMeta">{sectionMeta.subtitle}</span>
+              </>
+            ) : null}
+          </h3>
+
+          {!showInlineRoleSubtitle && sectionMeta.subtitle ? (
+            <div className="displaySectionSubtitle">
+              {sectionMeta.subtitle}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {entries.length === 0 ? (
@@ -404,9 +862,10 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false 
           }}
         >
           {entries.map((entry, index) => {
-            const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])].sort(
-              (a, b) => a.localeCompare(b)
-            );
+            const mergedItems = sortDisplayItemsByConfiguredOrder([
+              ...(entry.items || []),
+              ...(entry.custom_items || []),
+            ]);
             const placement = gridPlacement(index, cols);
 
             return (
@@ -416,15 +875,28 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false 
                 className="min-h-0 self-start border-b border-slate-700/40 last:border-b-0"
               >
                 <EntryLine
-                  name={entry.entry_kind === "host" && (entry.dm_category || entry.position)
-  ? `${entry.name} | ${entry.dm_category || entry.position}`
-  : entry.name}
+                  name={entry.entry_kind === "host"
+                    ? `${entry.name} | ${entry.position || "Host"}`
+                    : entry.entry_kind === "dm"
+                      ? `${entry.name} | DM`
+                      : entry.name}
                   socialHandle={entry.social_handle || ""}
                   socialPlatform={entry.social_platform || ""}
                   whoAmI={entry.who_am_i_text || ""}
                   seeking={entry.seeking_text || ""}
                   items={mergedItems}
-                  category={entry.dm_category || ""}
+                  category={
+                    entry.entry_kind === "host"
+                      ? (
+                          entry.host_function ||
+                          (
+                            entry.dm_category !== "Host" && entry.dm_category !== "Co-Host"
+                              ? entry.dm_category
+                              : ""
+                          )
+                        )
+                      : entry.dm_category || ""
+                  }
                   compact={compact}
                   itemLimit={compact ? 8 : 10}
                   isDM
@@ -445,9 +917,10 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false 
             }}
           >
             {entries.map((entry, index) => {
-              const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])].sort(
-                (a, b) => a.localeCompare(b)
-              );
+              const mergedItems = sortDisplayItemsByConfiguredOrder([
+                ...(entry.items || []),
+                ...(entry.custom_items || []),
+              ]);
               const placement = gridPlacement(index, cols);
 
               return (
@@ -479,22 +952,87 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false 
   );
 }
 
+
+function StaffNameCrownIcon({ className = "" }) {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className={className}
+      aria-hidden="true"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10 48h44l4-30-15 12-11-18-11 18L6 18l4 30Z"
+        stroke="currentColor"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 54h36"
+        stroke="currentColor"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+      />
+      <circle cx="6" cy="18" r="3" fill="currentColor" />
+      <circle cx="32" cy="12" r="3" fill="currentColor" />
+      <circle cx="58" cy="18" r="3" fill="currentColor" />
+    </svg>
+  );
+}
+
+function StaffNameShieldIcon({ className = "" }) {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className={className}
+      aria-hidden="true"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M32 6 52 14v17c0 14-8.5 24-20 29C20.5 55 12 45 12 31V14L32 6Z"
+        stroke="currentColor"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M32 14v38"
+        stroke="currentColor"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function VerticalStaffSection({
   title,
   entries,
-  maxRows = 1,
-  maxCols = 1,
-  theme = {
-    outer: "border-slate-800 bg-black",
-    inner: "border-slate-800 bg-black",
-  },
+  maxRows,
+  maxCols,
+  theme,
+  isDM = false,
 }) {
   const { rows, cols } = getSectionGrid(entries.length, maxRows, maxCols);
+  const compact = rows >= 2 || cols >= 2 || entries.length > 2;
 
   return (
-    <div className={`self-start rounded-2xl border px-2.5 pt-2.5 pb-1 min-h-[120px] ${theme.inner}`}>
+    <section className={`displaySectionCard self-start rounded-2xl border px-2.5 pt-2.5 pb-1 shadow-2xl min-h-[120px] ${theme.outer}`}>
+      {title ? (
+        <div className="mb-2">
+          <h3 className="text-4xl md:text-5xl font-semibold tracking-tight text-white">
+            {title}
+          </h3>
+        </div>
+      ) : null}
+
       {entries.length === 0 ? (
-        <div className="text-xs text-slate-500">Nothing posted yet.</div>
+        <div className="rounded-2xl border border-dashed border-slate-700 p-4 text-slate-400">
+          Nothing posted yet.
+        </div>
       ) : (
         <div
           className="grid gap-x-4 gap-y-1 items-start content-start"
@@ -506,180 +1044,86 @@ function VerticalStaffSection({
           }}
         >
           {entries.map((entry, index) => {
-            const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])].sort(
-              (a, b) => a.localeCompare(b)
-            );
+            const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])]
+              .filter(Boolean)
+              .sort((a, b) => a.localeCompare(b));
+
+            const itemText = mergedItems.join(", ");
             const placement = gridPlacement(index, cols);
+            const isHostEntry = (entry.entry_kind || "") === "host";
+            const isDmEntry = (entry.entry_kind || "") === "dm";
+
+            const hostRole =
+              entry.position === "Host" || entry.position === "Co-Host"
+                ? entry.position
+                : entry.dm_category === "Host" || entry.dm_category === "Co-Host"
+                  ? entry.dm_category
+                  : "Host";
+
+            const displayName = isHostEntry
+              ? `${entry.name} | ${hostRole}`
+              : entry.name;
+
+            const functionText =
+              entry.host_function ||
+              (
+                isHostEntry && entry.dm_category !== "Host" && entry.dm_category !== "Co-Host"
+                  ? entry.dm_category
+                  : ""
+              ) ||
+              (
+                isDmEntry
+                  ? entry.dm_category
+                  : ""
+              );
 
             return (
               <div
                 key={entry.id}
                 style={placement}
-                className="min-h-0 self-start border-b border-slate-700/40 pb-1.5 last:border-b-0 last:pb-0"
+                className={`min-h-0 self-start ${theme.inner} rounded-2xl border p-3`}
               >
-                <div className="text-3xl md:text-4xl font-bold text-white break-words">
-                  {entry.name}{(entry.dm_category || entry.position) ? ` | ${entry.dm_category || entry.position}` : ""}
+                <div className={`${compact ? "text-xl md:text-2xl" : "text-2xl md:text-4xl"} font-bold text-white break-words leading-none`}>
+                  {displayName}
                 </div>
-                {entry.host_function ? (
-                  <div className="mt-0.5 text-sm md:text-base font-semibold uppercase tracking-[0.14em] text-slate-400 break-words">
-                    {entry.host_function}
+
+                {functionText ? (
+                  <div className={`${compact ? "text-sm md:text-lg" : "text-base md:text-xl"} mt-1 text-slate-100 break-words leading-5`}>
+                    <span className="font-bold text-slate-300">Function:</span> {functionText}
                   </div>
                 ) : null}
-                <div className="mt-0.5 text-base md:text-xl text-slate-300 break-words leading-5">
-                  {mergedItems.join(", ")}
-                </div>
+
+                {itemText ? (
+                  <div className={`${compact ? "text-sm md:text-lg" : "text-base md:text-xl"} mt-0.5 text-slate-300 break-words leading-5`}>
+                    {itemText}
+                  </div>
+                ) : null}
               </div>
             );
           })}
         </div>
       )}
-    </div>
+    </section>
   );
 }
 
-
-function DisplayRotationOverlay({ eventDisplay }) {
-  const playlist = useMemo(() => {
-    if (!eventDisplay) return [];
-
-    const imageItems = (eventDisplay.images || [])
-      .filter((image) => image?.imageUrl)
-      .map((image, index) => ({
-        type: "image",
-        id: image.id || `image-${index}`,
-        name: image.name || `Image ${index + 1}`,
-        imageUrl: image.imageUrl,
-        durationSeconds:
-          Number(image.durationSeconds) ||
-          Number(image.durationMinutes) * 60 ||
-          60,
-      }));
-
-    const liveboardDurationSeconds =
-      Number(eventDisplay.liveboardDurationSeconds) ||
-      Number(eventDisplay.liveboardDurationMinutes) * 60 ||
-      300;
-
-    return [
-      ...imageItems,
-      {
-        type: "liveboard",
-        id: "liveboard",
-        name: "Liveboard",
-        durationSeconds: liveboardDurationSeconds,
-      },
-    ];
-  }, [eventDisplay]);
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isOverlayVisible, setIsOverlayVisible] = useState(true);
-
-  const currentItem = playlist[currentIndex] || null;
-  const nextIndex = playlist.length ? (currentIndex + 1) % playlist.length : 0;
-  const nextItem = playlist[nextIndex] || null;
-
-  const transitionSeconds = Number(eventDisplay?.transitionSeconds ?? 0.5);
-  const transitionMs = Math.max(0, transitionSeconds * 1000);
-
-  useEffect(() => {
-    setCurrentIndex(0);
-    setIsOverlayVisible(true);
-  }, [eventDisplay?.id]);
-
-  useEffect(() => {
-    if (!playlist.length || !currentItem) return;
-
-    const durationMs = Math.max(1000, Number(currentItem.durationSeconds || 60) * 1000);
-
-    console.log(
-      "[Liveboard Playlist]",
-      eventDisplay?.eventName,
-      "showing:",
-      currentItem.type,
-      currentItem.name,
-      "for",
-      currentItem.durationSeconds,
-      "seconds",
-      "next:",
-      nextItem?.type
-    );
-
-    let fadeTimer;
-    let advanceTimer;
-    let revealTimer;
-
-    if (currentItem.type === "image") {
-      setIsOverlayVisible(true);
-
-      if (nextItem?.type === "liveboard") {
-        fadeTimer = window.setTimeout(() => {
-          setIsOverlayVisible(false);
-        }, Math.max(0, durationMs - transitionMs));
-      }
-
-      advanceTimer = window.setTimeout(() => {
-        setCurrentIndex(nextIndex);
-      }, durationMs);
-    }
-
-    if (currentItem.type === "liveboard") {
-      setIsOverlayVisible(false);
-
-      advanceTimer = window.setTimeout(() => {
-        setCurrentIndex(nextIndex);
-
-        revealTimer = window.setTimeout(() => {
-          setIsOverlayVisible(true);
-        }, 50);
-      }, durationMs);
-    }
-
-    return () => {
-      window.clearTimeout(fadeTimer);
-      window.clearTimeout(advanceTimer);
-      window.clearTimeout(revealTimer);
-    };
-  }, [
-    currentIndex,
-    eventDisplay?.id,
-    currentItem?.id,
-    currentItem?.type,
-    currentItem?.durationSeconds,
-    nextIndex,
-    nextItem?.type,
-    playlist.length,
-    transitionMs,
-  ]);
-
-  if (!eventDisplay || !currentItem || currentItem.type !== "image") {
-    return null;
-  }
-
-  return (
-    <div
-      className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-opacity duration-500 ${
-        isOverlayVisible ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      <img
-        src={currentItem.imageUrl}
-        alt={currentItem.name || eventDisplay.eventName || "Event slide"}
-        className="w-full h-full object-contain"
-      />
-
-    </div>
-  );
-}
 
 export default function App() {
+
   const { mode, updateMode } = useMode();
   const isDisplayMode = mode === "display";
   const isEntryMode = mode === "entry";
   const isSetupMode = mode === "setup";
+  const isSetupTabsMode =
+    isSetupMode && new URLSearchParams(window.location.search).get("view") === "tabs";
+
+  const setupTabOptions = ["Events", "Hosts & DMs", "Entry Form", "Display Sizing", "Entries"];
+  const [activeSetupTab, setActiveSetupTab] = useState("Events");
   const isKioskEntryMode =
     isEntryMode && new URLSearchParams(window.location.search).get("kiosk") === "1";
 
   const [entries, setEntries] = useState([]);
+  const [lastRemovedEntry, setLastRemovedEntry] = useState(null);
   const [settings, setSettings] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -692,6 +1136,9 @@ export default function App() {
   const [name, setName] = useState("");
   const [socialHandle, setSocialHandle] = useState("");
   const [socialPlatform, setSocialPlatform] = useState("FetLife");
+  const [socialHandleDraftPlatform, setSocialHandleDraftPlatform] = useState("FetLife");
+  const [socialHandleDraftValue, setSocialHandleDraftValue] = useState("");
+  const [socialHandleItems, setSocialHandleItems] = useState([]);
   const [position, setPosition] = useState("");
   const [whoAmIInput, setWhoAmIInput] = useState("");
   const [seekingInput, setSeekingInput] = useState("");
@@ -703,6 +1150,11 @@ export default function App() {
   const [orientationOther, setOrientationOther] = useState("");
   const [itemInput, setItemInput] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
+  const [sexualPreferenceInput, setSexualPreferenceInput] = useState("");
+  const [sexualPreferenceItems, setSexualPreferenceItems] = useState([]);
+  const [interestInput, setInterestInput] = useState("");
+  const [interestItems, setInterestItems] = useState([]);
+  const [lookingForItems, setLookingForItems] = useState([]);
   const [quickTags, setQuickTags] = useState([]);
   const [message, setMessage] = useState("");
   const [entrySuccess, setEntrySuccess] = useState(false);
@@ -752,6 +1204,60 @@ export default function App() {
   const [allowTwitter, setAllowTwitter] = useState(true);
   const [allowBluesky, setAllowBluesky] = useState(true);
   const [allowOtherPlatform, setAllowOtherPlatform] = useState(true);
+  const [entryFormPreset, setEntryFormPreset] = useState(() => {
+    try {
+      return window.localStorage.getItem("entryFormPreset") || "standard";
+    } catch {
+      return "standard";
+    }
+  });
+
+  const [visibleSexualPreferenceOptions, setVisibleSexualPreferenceOptions] = useState(() => {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem("visibleSexualPreferenceOptions") || "null");
+      return Array.isArray(stored) && stored.length ? stored : defaultSexualPreferenceOptions;
+    } catch {
+      return defaultSexualPreferenceOptions;
+    }
+  });
+
+  const [visibleInterestOptions, setVisibleInterestOptions] = useState(() => {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem("visibleInterestOptions") || "null");
+      return Array.isArray(stored) && stored.length ? stored : defaultInterestOptions;
+    } catch {
+      return defaultInterestOptions;
+    }
+  });
+
+  const [customInterestOptions, setCustomInterestOptions] = useState(() => {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem("customInterestOptions") || "[]");
+      return Array.isArray(stored) ? stored.filter(Boolean) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [customInterestOptionInput, setCustomInterestOptionInput] = useState("");
+
+  const [boardEntryTextSize, setBoardEntryTextSize] = useState(() => {
+    try {
+      const stored = Number(window.localStorage.getItem("boardEntryTextSize") || 0);
+      return stored > 10 ? 0 : stored;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [staffTextSize, setStaffTextSize] = useState(() => {
+    try {
+      const stored = Number(window.localStorage.getItem("staffTextSize") || 0);
+      return stored > 10 ? 0 : stored;
+    } catch {
+      return 0;
+    }
+  });
 
   const displayLayout = {
     host_max_rows: clampLayoutValue(layoutSettings.host_max_rows ?? defaultDisplayLayout.host_max_rows),
@@ -766,14 +1272,34 @@ export default function App() {
     switch_max_cols: clampLayoutValue(layoutSettings.switch_max_cols ?? defaultDisplayLayout.switch_max_cols),
   };
 
-  const eventDisplayOptions = useMemo(() => {
-    if (savedEventDisplays.length > 0) {
-      return savedEventDisplays;
-    }
+  const isMenOnlyEntryForm = entryFormPreset === "men_only";
+  const isDiaperDebaucheryEntryForm = entryFormPreset === "diaper_debauchery_glow";
+  const isConnectionEntryForm = isDiaperDebaucheryEntryForm;
 
-    return eventDisplayPresets.filter(
-      (eventDisplay) => !hiddenBuiltinEventDisplayIds.includes(eventDisplay.id)
-    );
+  const allInterestOptions = useMemo(
+    () => Array.from(new Set([...defaultInterestOptions, ...customInterestOptions])).filter(Boolean),
+    [customInterestOptions]
+  );
+
+  const clampTextSizeStep = (value) => Math.max(-10, Math.min(10, Number(value) || 0));
+
+  const updateBoardEntryTextSize = (direction) => {
+    setBoardEntryTextSize((current) => clampTextSizeStep(current + direction));
+  };
+
+  const updateStaffTextSize = (direction) => {
+    setStaffTextSize((current) => clampTextSizeStep(current + direction));
+  };
+
+  const eventDisplayOptions = useMemo(() => {
+    const options =
+      savedEventDisplays.length > 0
+        ? savedEventDisplays
+        : eventDisplayPresets.filter(
+            (eventDisplay) => !hiddenBuiltinEventDisplayIds.includes(eventDisplay.id)
+          );
+
+    return options.map(normalizeEventDisplayPreset).filter(Boolean);
   }, [hiddenBuiltinEventDisplayIds, savedEventDisplays]);
 
   const activeEventDisplay =
@@ -781,9 +1307,43 @@ export default function App() {
     eventDisplayOptions[0] ||
     null;
 
+  const [pendingEventDisplayId, setPendingEventDisplayId] = useState("");
+
+  const pendingEventDisplay =
+    eventDisplayOptions.find((eventDisplay) => eventDisplay.id === pendingEventDisplayId) ||
+    activeEventDisplay;
+
   useEffect(() => {
     // Event display presets are now saved in Supabase.
   }, [savedEventDisplays]);
+
+  useEffect(() => {
+    if (activeEventDisplayId) {
+      setPendingEventDisplayId(activeEventDisplayId);
+    }
+  }, [activeEventDisplayId]);
+
+  useEffect(() => {
+    if (!isSetupTabsMode || activeSetupTab !== "Events" || !activeEventDisplay) return;
+
+    setEditingEventDisplayId(activeEventDisplay.id);
+    setDisplayEventName(activeEventDisplay.eventName || "");
+    setDisplayEventDescription(activeEventDisplay.eventDescription || "");
+    setDisplayImages(Array.isArray(activeEventDisplay.images) ? activeEventDisplay.images : []);
+
+    const imageDuration =
+      Number(activeEventDisplay.images?.[0]?.durationSeconds) ||
+      Number(activeEventDisplay.images?.[0]?.durationMinutes) * 60 ||
+      60;
+
+    const liveboardDuration =
+      Number(activeEventDisplay.liveboardDurationSeconds) ||
+      Number(activeEventDisplay.liveboardDurationMinutes) * 60 ||
+      300;
+
+    setDisplayImageDurationSeconds(String(imageDuration));
+    setDisplayLiveboardDurationSeconds(String(liveboardDuration));
+  }, [isSetupTabsMode, activeSetupTab, activeEventDisplayId]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -797,6 +1357,161 @@ export default function App() {
       window.localStorage.setItem("activeEventDisplayId", activeEventDisplayId);
     }
   }, [activeEventDisplayId]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("entryFormPreset", entryFormPreset);
+    } catch {
+      // Local storage may be unavailable in some browser privacy modes.
+    }
+  }, [entryFormPreset]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        "visibleSexualPreferenceOptions",
+        JSON.stringify(visibleSexualPreferenceOptions)
+      );
+    } catch {
+      // Local storage may be unavailable in some browser privacy modes.
+    }
+  }, [visibleSexualPreferenceOptions]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        "visibleInterestOptions",
+        JSON.stringify(visibleInterestOptions)
+      );
+    } catch {
+      // Local storage may be unavailable in some browser privacy modes.
+    }
+  }, [visibleInterestOptions]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        "customInterestOptions",
+        JSON.stringify(customInterestOptions)
+      );
+    } catch {
+      // Local storage may be unavailable in some browser privacy modes.
+    }
+  }, [customInterestOptions]);
+
+  // LIVE ENTRY FORM SETTINGS SYNC
+  // Keeps kiosk/setup/display pages in the same browser updated after Entry Form settings change.
+  useEffect(() => {
+    const readEntryFormSettings = () => {
+      try {
+        const storedPreset = window.localStorage.getItem("entryFormPreset") || "standard";
+
+        const storedSexualPreferenceOptions = JSON.parse(
+          window.localStorage.getItem("visibleSexualPreferenceOptions") || "null"
+        );
+
+        const storedInterestOptions = JSON.parse(
+          window.localStorage.getItem("visibleInterestOptions") || "null"
+        );
+
+        const storedCustomInterestOptions = JSON.parse(
+          window.localStorage.getItem("customInterestOptions") || "[]"
+        );
+
+        if (storedPreset && storedPreset !== entryFormPreset) {
+          setEntryFormPreset(storedPreset);
+        }
+
+        if (
+          Array.isArray(storedSexualPreferenceOptions) &&
+          JSON.stringify(storedSexualPreferenceOptions) !== JSON.stringify(visibleSexualPreferenceOptions)
+        ) {
+          setVisibleSexualPreferenceOptions(storedSexualPreferenceOptions);
+        }
+
+        if (
+          Array.isArray(storedInterestOptions) &&
+          JSON.stringify(storedInterestOptions) !== JSON.stringify(visibleInterestOptions)
+        ) {
+          setVisibleInterestOptions(storedInterestOptions);
+        }
+
+        if (
+          Array.isArray(storedCustomInterestOptions) &&
+          JSON.stringify(storedCustomInterestOptions) !== JSON.stringify(customInterestOptions)
+        ) {
+          setCustomInterestOptions(storedCustomInterestOptions);
+        }
+      } catch {
+        // Ignore localStorage read errors.
+      }
+    };
+
+    const intervalId = window.setInterval(readEntryFormSettings, 1000);
+    window.addEventListener("storage", readEntryFormSettings);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("storage", readEntryFormSettings);
+    };
+  }, [
+    entryFormPreset,
+    visibleSexualPreferenceOptions,
+    visibleInterestOptions,
+    customInterestOptions,
+  ]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("boardEntryTextSize", String(clampTextSizeStep(boardEntryTextSize)));
+    } catch {
+      // Local storage may be unavailable in some browser privacy modes.
+    }
+  }, [boardEntryTextSize]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("staffTextSize", String(clampTextSizeStep(staffTextSize)));
+    } catch {
+      // Local storage may be unavailable in some browser privacy modes.
+    }
+  }, [staffTextSize]);
+
+  // LIVE DISPLAY TEXT SIZE SYNC
+  // The setup page changes localStorage. The display page needs to re-read it live.
+  useEffect(() => {
+    if (mode !== "display") return;
+
+    const readDisplayTextSizeSettings = () => {
+      try {
+        const nextBoardSize = clampTextSizeStep(
+          Number(window.localStorage.getItem("boardEntryTextSize") || 0)
+        );
+        const nextStaffSize = clampTextSizeStep(
+          Number(window.localStorage.getItem("staffTextSize") || 0)
+        );
+
+        setBoardEntryTextSize((current) =>
+          current === nextBoardSize ? current : nextBoardSize
+        );
+        setStaffTextSize((current) =>
+          current === nextStaffSize ? current : nextStaffSize
+        );
+      } catch {
+        // Ignore localStorage read errors.
+      }
+    };
+
+    readDisplayTextSizeSettings();
+
+    const intervalId = window.setInterval(readDisplayTextSizeSettings, 1000);
+    window.addEventListener("storage", readDisplayTextSizeSettings);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("storage", readDisplayTextSizeSettings);
+    };
+  }, [mode]);
 
   useEffect(() => {
     const syncActiveEventDisplay = () => {
@@ -978,8 +1693,14 @@ export default function App() {
       )
       .subscribe();
 
+    const eventDisplayPresetRefreshInterval = window.setInterval(
+      loadEventDisplayPresets,
+      5000
+    );
+
     return () => {
       mounted = false;
+      window.clearInterval(eventDisplayPresetRefreshInterval);
       supabase.removeChannel(channel);
     };
   }, []);
@@ -1069,8 +1790,9 @@ export default function App() {
         .filter((entry) => (entry.entry_kind || "participant") === "host")
         .sort((a, b) => {
           const rank = (entry) => {
-            if ((entry.dm_category || entry.position) === "Host") return 0;
-            if ((entry.dm_category || entry.position) === "Co-Host") return 1;
+            const role = entry.position || entry.dm_category;
+            if (role === "Host") return 0;
+            if (role === "Co-Host") return 1;
             return 99;
           };
 
@@ -1262,6 +1984,79 @@ export default function App() {
     setSelectedItems((current) => current.filter((item) => item !== itemToRemove));
   };
 
+  const toggleOpenToItem = (item) => {
+    setSelectedItems((current) =>
+      current.includes(item)
+        ? current.filter((value) => value !== item)
+        : [...current, item]
+    );
+  };
+
+  const toggleSexualPreferenceItem = (item) => {
+    setSexualPreferenceItems((current) =>
+      current.includes(item)
+        ? current.filter((value) => value !== item)
+        : [...current, item]
+    );
+  };
+
+  const toggleInterestItem = (item) => {
+    setInterestItems((current) =>
+      current.includes(item)
+        ? current.filter((value) => value !== item)
+        : [...current, item]
+    );
+  };
+
+  const toggleVisibleSexualPreferenceOption = (item) => {
+    setVisibleSexualPreferenceOptions((current) =>
+      current.includes(item)
+        ? current.filter((value) => value !== item)
+        : [...current, item]
+    );
+  };
+
+  const toggleVisibleInterestOption = (item) => {
+    setVisibleInterestOptions((current) =>
+      current.includes(item)
+        ? current.filter((value) => value !== item)
+        : [...current, item]
+    );
+  };
+
+  const addCustomInterestOption = () => {
+    const value = customInterestOptionInput.trim();
+
+    if (!value) return;
+
+    const alreadyExists = allInterestOptions.some(
+      (option) => option.toLowerCase() === value.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      setMessage(`${value} already exists as an Interest option.`);
+      setCustomInterestOptionInput("");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    setCustomInterestOptions((current) => [...current, value]);
+    setVisibleInterestOptions((current) =>
+      current.includes(value) ? current : [...current, value]
+    );
+    setCustomInterestOptionInput("");
+    setMessage(`${value} added to Interest Buttons.`);
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const removeCustomInterestOption = (item) => {
+    setCustomInterestOptions((current) => current.filter((value) => value !== item));
+    setVisibleInterestOptions((current) => current.filter((value) => value !== item));
+    setInterestItems((current) => current.filter((value) => value !== item));
+    setMessage(`${item} removed from custom Interest options.`);
+    setTimeout(() => setMessage(""), 2500);
+  };
+
   const toggleQuickTag = (tag) => {
     setQuickTags((current) =>
       current.includes(tag)
@@ -1294,6 +2089,11 @@ export default function App() {
     setQuickTags([]);
     setItemInput("");
     setSelectedItems([]);
+    setSexualPreferenceInput("");
+    setSexualPreferenceItems([]);
+    setInterestInput("");
+    setInterestItems([]);
+    setLookingForItems([]);
     setMessage("");
     setEntrySuccess(false);
   };
@@ -1674,6 +2474,11 @@ export default function App() {
         )
       );
 
+      window.localStorage.setItem(
+        "eventDisplayPresetsUpdatedAt",
+        new Date().toISOString()
+      );
+
       await updateActiveEventDisplayPreset(updatedPreset.id);
 
       setEditingEventDisplayId("");
@@ -1857,6 +2662,68 @@ export default function App() {
     setTimeout(() => setMessage(""), 2500);
   };
 
+
+  const toggleLookingForItem = (item) => {
+    setLookingForItems((current) =>
+      current.includes(item) ? current.filter((value) => value !== item) : [...current, item]
+    );
+  };
+
+  const formatSocialHandleLine = (platform, value) => {
+    const cleanPlatform = String(platform || "").trim();
+    const cleanValue = String(value || "").trim();
+
+    if (!cleanValue) return "";
+
+    const platformNames = ["FetLife", "Bluesky", "X", "Instagram", "Twitter", "Whappz"];
+
+    const normalizeHandleLines = (rawValue) => {
+      let normalized = String(rawValue || "");
+
+      platformNames.forEach((name) => {
+        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        normalized = normalized.replace(
+          new RegExp(`\\s+(${escaped}\\s*:)`, "gi"),
+          "\\n$1"
+        );
+      });
+
+      return normalized
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .join("\n");
+    };
+
+    const cleanLines = normalizeHandleLines(cleanValue);
+
+    if (!cleanPlatform || cleanPlatform === "Other") return cleanLines;
+
+    if (new RegExp(`^${cleanPlatform}\\s*:`, "i").test(cleanLines)) {
+      return cleanLines;
+    }
+
+    return `${cleanPlatform}: ${cleanLines}`;
+  };
+
+  const addSocialHandleItem = () => {
+    const line = formatSocialHandleLine(socialHandleDraftPlatform, socialHandleDraftValue);
+
+    if (!line) {
+      setMessage("Please type a handle before adding it.");
+      return;
+    }
+
+    setSocialHandleItems((current) =>
+      current.includes(line) ? current : [...current, line]
+    );
+    setSocialHandleDraftValue("");
+  };
+
+  const removeSocialHandleItem = (line) => {
+    setSocialHandleItems((current) => current.filter((item) => item !== line));
+  };
+
   const createEntry = async () => {
     if (!supabase) {
       setMessage("Supabase connection is missing.");
@@ -1868,47 +2735,82 @@ export default function App() {
       return;
     }
 
-    if (!position) {
+    if (!isConnectionEntryForm && !position) {
       setMessage("Please choose Top, Bottom, or Switch.");
       return;
     }
 
-    const finalWhoAmI =
-      identityChoice === "Other" ? identityOther.trim() : identityChoice;
+    const finalWhoAmI = isDiaperDebaucheryEntryForm
+      ? quickTags.join(" • ")
+      : isMenOnlyEntryForm
+        ? ""
+        : identityChoice === "Other"
+          ? identityOther.trim()
+          : identityChoice;
 
-    const finalSeeking =
-      seekingChoice === "Other" ? seekingOther.trim() : seekingChoice;
+    const finalSeeking = isDiaperDebaucheryEntryForm
+      ? lookingForItems.join(", ")
+      : isMenOnlyEntryForm
+        ? ""
+        : seekingChoice === "Other"
+          ? seekingOther.trim()
+          : seekingChoice;
 
-    const finalOrientation =
-      orientationChoice === "Other" ? orientationOther.trim() : orientationChoice;
+    const finalOrientation = isMenOnlyEntryForm || isConnectionEntryForm
+      ? ""
+      : orientationChoice === "Other"
+        ? orientationOther.trim()
+        : orientationChoice;
 
-    if (!finalWhoAmI) {
+    if (!isMenOnlyEntryForm && !isConnectionEntryForm && !finalWhoAmI) {
       setMessage("Please choose how you identify.");
       return;
     }
 
-    if (!finalSeeking) {
+    if (!isMenOnlyEntryForm && !isConnectionEntryForm && !finalSeeking) {
       setMessage("Please choose who you are seeking.");
       return;
     }
 
-    const parsedOpenToItems = itemInput
+    const parsedSexualPreferenceItems = sexualPreferenceInput
       .split(/[\n,;]+/)
       .map((item) => item.trim())
       .filter(Boolean);
 
-    const finalOpenToItems = Array.from(new Set([
-      ...selectedItems,
-      ...parsedOpenToItems,
+    const parsedInterestItems = interestInput
+      .split(/[\n,;]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    const finalSexualPreferenceItems = Array.from(new Set([
+      ...sexualPreferenceItems.filter((item) => item !== "Other"),
+      ...parsedSexualPreferenceItems,
     ]));
 
-    if (finalOpenToItems.length < 1) {
-      setMessage("Please add at least one kink, fetish, or scene interest.");
+    const finalInterestItems = Array.from(new Set([
+      ...interestItems.filter((item) => item !== "Other"),
+      ...parsedInterestItems,
+    ]));
+
+    if (
+      finalSexualPreferenceItems.length < 1 &&
+      finalInterestItems.length < 1 &&
+      !isDiaperDebaucheryEntryForm
+    ) {
+      setMessage("Please add at least one sexual preference or interest.");
       return;
     }
 
-    const standardItems = finalOpenToItems.filter((item) => catalogSet.has(item));
-    const customItems = finalOpenToItems.filter((item) => !catalogSet.has(item));
+    const taggedSexualPreferenceItems = finalSexualPreferenceItems.map((item) => `Sexual: ${item}`);
+    const taggedInterestItems = finalInterestItems.map((item) => `Interests: ${item}`);
+
+    const finalOpenToItems = [
+      ...taggedSexualPreferenceItems,
+      ...taggedInterestItems,
+    ];
+
+    const standardItems = [];
+    const customItems = finalOpenToItems;
     const orientationItem = finalOrientation ? [`Orientation: ${finalOrientation}`] : [];
     const quickTagItems = quickTags.map((tag) =>
       `Quick Tag: ${tag === "Learn New Skills" ? "Learning" : tag}`
@@ -1917,19 +2819,41 @@ export default function App() {
 
     setSaving(true);
 
-    const handleValue = showSocialHandleField ? socialHandle.trim() : null;
+    const draftSocialHandleLine = formatSocialHandleLine(
+      socialHandleDraftPlatform,
+      socialHandleDraftValue
+    );
+
+    const finalDiaperSocialHandles = Array.from(
+      new Set(
+        [...socialHandleItems, draftSocialHandleLine]
+          .filter(Boolean)
+          .flatMap((line) => String(line).split(/\n+/))
+          .map((line) => line.trim())
+          .filter(Boolean)
+      )
+    );
+
+    const handleValue = showSocialHandleField
+      ? isDiaperDebaucheryEntryForm
+        ? finalDiaperSocialHandles.join("\n")
+        : socialHandle.trim()
+      : null;
+
     const platformValue =
-      showSocialHandleField && handleValue && availableHandlePlatforms.includes(socialPlatform)
-        ? socialPlatform
-        : null;
+      isDiaperDebaucheryEntryForm
+        ? null
+        : showSocialHandleField && handleValue && availableHandlePlatforms.includes(socialPlatform)
+          ? socialPlatform
+          : null;
 
     const { error } = await supabase.from("board_entries").insert({
       name: name.trim(),
       social_handle: handleValue || null,
       social_platform: platformValue || null,
-      position,
-      who_am_i_text: finalWhoAmI,
-      seeking_text: finalSeeking,
+      position: isConnectionEntryForm ? "Switch" : position,
+      who_am_i_text: finalWhoAmI || null,
+      seeking_text: finalSeeking || null,
       items: standardItems.sort((a, b) => a.localeCompare(b)),
       custom_items: finalCustomItems.sort((a, b) => a.localeCompare(b)),
       entry_kind: "participant",
@@ -1945,6 +2869,71 @@ export default function App() {
 
     resetEntryForm();
     setEntrySuccess(true);
+  };
+
+  const createSupportTeamEntry = async () => {
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      return;
+    }
+
+    if (!hostName.trim()) {
+      setMessage("Please enter a support team name.");
+      return;
+    }
+
+    if (!hostRole) {
+      setMessage("Please choose Host, Co-Host, or DM.");
+      return;
+    }
+
+    if (hostFunctions.length < 1) {
+      setMessage("Please choose at least one support function.");
+      return;
+    }
+
+    const parsedSupportItems = hostItemInput
+      .split(/[\n,;]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    const finalSupportItems = Array.from(new Set([
+      ...hostSelectedItems,
+      ...parsedSupportItems,
+    ]));
+
+    const standardItems = finalSupportItems.filter((item) => catalogSet.has(item));
+    const customItems = finalSupportItems.filter((item) => !catalogSet.has(item));
+
+    setHostSaving(true);
+
+    const isDmRole = hostRole === "DM";
+
+    const { error } = await supabase.from("board_entries").insert({
+      name: hostName.trim(),
+      social_handle: null,
+      social_platform: null,
+      who_am_i_text: null,
+      seeking_text: null,
+      position: isDmRole ? null : hostRole,
+      dm_category: isDmRole ? hostFunctions.join(", ") : null,
+      host_function: isDmRole ? null : hostFunctions.join(", "),
+      items: standardItems.sort((a, b) => a.localeCompare(b)),
+      custom_items: customItems.sort((a, b) => a.localeCompare(b)),
+      entry_kind: isDmRole ? "dm" : "host",
+      active: true,
+    });
+
+    setHostSaving(false);
+
+    if (error) {
+      setMessage(`Could not save support team entry: ${error.message}`);
+      return;
+    }
+
+    resetHostForm();
+    setMessage("Support team entry added.");
+    setTimeout(() => setMessage(""), 2000);
   };
 
   const createDmEntry = async () => {
@@ -1963,13 +2952,18 @@ export default function App() {
       return;
     }
 
-    if (dmSelectedItems.length < 1) {
-      setMessage("Please add at least one kink or fetish they are providing.");
-      return;
-    }
+    const parsedDmItems = dmItemInput
+      .split(/[\n,;]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
 
-    const standardItems = dmSelectedItems.filter((item) => catalogSet.has(item));
-    const customItems = dmSelectedItems.filter((item) => !catalogSet.has(item));
+    const finalDmItems = Array.from(new Set([
+      ...dmSelectedItems,
+      ...parsedDmItems,
+    ]));
+
+    const standardItems = finalDmItems.filter((item) => catalogSet.has(item));
+    const customItems = finalDmItems.filter((item) => !catalogSet.has(item));
 
     setDmSaving(true);
 
@@ -2014,11 +3008,6 @@ export default function App() {
       return;
     }
 
-    if (hostSelectedItems.length < 1) {
-      setMessage("Please add at least one kink or fetish they are providing.");
-      return;
-    }
-
     const standardItems = hostSelectedItems.filter((item) => catalogSet.has(item));
     const customItems = hostSelectedItems.filter((item) => !catalogSet.has(item));
 
@@ -2030,7 +3019,8 @@ export default function App() {
       social_platform: null,
       who_am_i_text: null,
       seeking_text: null,
-      dm_category: hostRole.trim(),
+      position: hostRole.trim(),
+      dm_category: hostFunctions.join(", "),
       host_function: hostFunctions.length ? hostFunctions.join(", ") : null,
       items: standardItems.sort((a, b) => a.localeCompare(b)),
       custom_items: customItems.sort((a, b) => a.localeCompare(b)),
@@ -2053,10 +3043,50 @@ export default function App() {
   const removeEntry = async (id) => {
     if (!supabase) return;
 
-    await supabase
+    const entryToRemove = entries.find((entry) => entry.id === id) || null;
+    const removedAt = new Date().toISOString();
+
+    const { error } = await supabase
       .from("board_entries")
-      .update({ active: false, deleted_at: new Date().toISOString() })
+      .update({ active: false, deleted_at: removedAt })
       .eq("id", id);
+
+    if (error) {
+      setMessage(`Could not remove entry: ${error.message}`);
+      return;
+    }
+
+    if (entryToRemove) {
+      setLastRemovedEntry(entryToRemove);
+      setMessage(`${entryToRemove.name} removed.`);
+    } else {
+      setLastRemovedEntry({ id, name: "Entry" });
+      setMessage("Entry removed.");
+    }
+
+    setTimeout(() => {
+      setMessage((current) =>
+        current.includes("removed") ? "" : current
+      );
+    }, 8000);
+  };
+
+  const undoRemoveEntry = async () => {
+    if (!supabase || !lastRemovedEntry?.id) return;
+
+    const { error } = await supabase
+      .from("board_entries")
+      .update({ active: true, deleted_at: null })
+      .eq("id", lastRemovedEntry.id);
+
+    if (error) {
+      setMessage(`Could not undo removal: ${error.message}`);
+      return;
+    }
+
+    setMessage(`${lastRemovedEntry.name || "Entry"} restored.`);
+    setLastRemovedEntry(null);
+    setTimeout(() => setMessage(""), 2500);
   };
 
   const clearBoard = async () => {
@@ -2067,6 +3097,10 @@ export default function App() {
       .from("board_entries")
       .update({ active: false, deleted_at: new Date().toISOString() })
       .eq("active", true);
+
+    setLastRemovedEntry(null);
+    setMessage("Board cleared.");
+    setTimeout(() => setMessage(""), 2500);
   };
 
   if (settingsLoading && isSetupMode) {
@@ -2105,17 +3139,17 @@ export default function App() {
 
               <div className="min-w-0">
                 <VerticalStaffSection
-                    title=""
+                    title="Hosts"
                     entries={hostEntries}
                     maxRows={displayLayout.host_max_rows}
                     maxCols={displayLayout.host_max_cols}
-                    theme={{ outer: "border-slate-800 bg-black", inner: "border-slate-800 bg-black" }}
+                    theme={{ outer: "displayThemeHost", inner: "displayThemeHostInner" }}
                   />
               </div>
 
               <div className="min-w-0 xl:col-span-2">
                 <DisplaySection
-                  title=""
+                  title="Dungeon Monitors"
                   entries={dmEntries}
                   theme={sectionThemes.DM}
                   maxRows={displayLayout.dm_max_rows}
@@ -2153,13 +3187,33 @@ export default function App() {
                 )}
               </div>
 
-              {isSetupMode ? (
+              {isSetupMode || isSetupTabsMode ? (
                 <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => updateMode("setup")}
-                    className="rounded-2xl border border-sky-400 bg-sky-400 px-4 py-2 font-semibold text-slate-950"
+                    onClick={() => {
+                      window.history.pushState({}, "", `${window.location.pathname}?mode=setup`);
+                      window.dispatchEvent(new PopStateEvent("popstate"));
+                    }}
+                    className={`rounded-2xl border px-4 py-2 font-semibold ${
+                      isSetupMode
+                        ? "border-sky-400 bg-sky-400 text-slate-950"
+                        : "border-slate-700 bg-slate-900 text-slate-100"
+                    }`}
                   >
                     Setup
+                  </button>
+                  <button
+                    onClick={() => {
+                      window.history.pushState({}, "", `${window.location.pathname}?mode=setup&view=tabs`);
+                      window.dispatchEvent(new PopStateEvent("popstate"));
+                    }}
+                    className={`rounded-2xl border px-4 py-2 font-semibold ${
+                      isSetupTabsMode
+                        ? "border-sky-400 bg-sky-400 text-slate-950"
+                        : "border-slate-700 bg-slate-900 text-slate-100"
+                    }`}
+                  >
+                    Setup Tabs
                   </button>
                   <button
                     onClick={() => updateMode("entry")}
@@ -2185,7 +3239,1095 @@ export default function App() {
           </div>
         )}
 
-        {isSetupMode ? (
+        {isSetupTabsMode ? (
+          <div className="mx-auto max-w-6xl rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="text-3xl font-semibold tracking-tight text-slate-100">
+                  Setup Tabs
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+                  This is the separate test setup screen. The current setup screen is still available at ?mode=setup.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.history.pushState({}, "", `${window.location.pathname}?mode=setup`);
+                  window.dispatchEvent(new PopStateEvent("popstate"));
+                }}
+                className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-2 font-semibold text-slate-100"
+              >
+                Open Current Setup
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-3 md:grid-cols-4">
+              {setupTabOptions.map((tab) => {
+                const active = activeSetupTab === tab;
+
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveSetupTab(tab)}
+                    className={`rounded-2xl border px-4 py-4 text-left font-semibold transition ${
+                      active
+                        ? "border-sky-300 bg-sky-400 text-slate-950"
+                        : "border-sky-400/30 bg-sky-400/10 text-sky-100"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950 p-5">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300/80">
+                Active Tab
+              </div>
+              <div className="mt-2 text-2xl font-semibold text-slate-100">
+                {activeSetupTab}
+              </div>
+
+              {activeSetupTab === "Events" ? (
+                <div className="mt-5 space-y-5">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-2xl font-semibold tracking-tight text-slate-100">
+                      Events
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      Choose or create the event display preset, slides, and timing used by the TV display.
+                    </p>
+
+                    <div className="mt-4">
+                      <label className="mb-2 block text-sm font-semibold">Event display preset</label>
+                      <select
+                        value={pendingEventDisplayId || activeEventDisplayId}
+                        onChange={(e) => setPendingEventDisplayId(e.target.value)}
+                        className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-sky-400"
+                      >
+                        {eventDisplayOptions.map((eventDisplay) => (
+                          <option key={eventDisplay.id} value={eventDisplay.id}>
+                            {eventDisplay.eventName}
+                          </option>
+                        ))}
+                      </select>
+
+                      {pendingEventDisplay ? (
+                        <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-950 p-3 text-sm leading-6 text-slate-300">
+                          <div className="font-semibold text-slate-100">
+                            {pendingEventDisplay.eventName}
+                          </div>
+                          <div className="mt-1 text-slate-400">
+                            {pendingEventDisplay.eventDescription}
+                          </div>
+                          <div className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-500">
+                            {pendingEventDisplay.id === activeEventDisplayId ? "Active display preset" : "Selected but not active yet"} · {pendingEventDisplay.images?.length || 0} image(s) · liveboard {pendingEventDisplay.liveboardDurationSeconds ?? ((pendingEventDisplay.liveboardDurationMinutes || 1) * 60)} second(s) · fade {pendingEventDisplay.transitionSeconds}s
+                          </div>
+                        </div>
+                      ) : null}
+
+                      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                        <button
+                          type="button"
+                          onClick={() => updateActiveEventDisplayPreset(pendingEventDisplayId || activeEventDisplayId)}
+                          disabled={!pendingEventDisplayId || pendingEventDisplayId === activeEventDisplayId}
+                          className="rounded-2xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Activate Selected Event
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEventDisplayEdit}
+                          className="rounded-2xl border border-sky-400/40 bg-sky-400/10 px-4 py-3 text-sm font-semibold text-sky-100"
+                        >
+                          New Event
+                        </button>
+<button
+                          type="button"
+                          onClick={deleteActiveEventDisplayPreset}
+                          className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-100"
+                        >
+                          Delete / hide selected preset
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-lg font-semibold text-white">
+                      {editingEventDisplayId ? "Edit Event Display" : "Create Event Display"}
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
+                      {editingEventDisplayId
+                        ? "Update this saved event display preset."
+                        : "Save an event with its own name and description. Image and timing controls will be added to this tab next."}
+                    </p>
+
+                    <div className="mt-4 grid gap-4">
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold">Event display name</label>
+                        <input
+                          value={displayEventName}
+                          onChange={(e) => setDisplayEventName(e.target.value)}
+                          placeholder="Example: CORROSION NYC"
+                          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold">Event description</label>
+                        <textarea
+                          value={displayEventDescription}
+                          onChange={(e) => setDisplayEventDescription(e.target.value)}
+                          placeholder="A short line that appears with the event slides."
+                          rows={3}
+                          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                        />
+                      </div>
+
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <button
+                          type="button"
+                          onClick={saveEventDisplayPreset}
+                          className="rounded-2xl bg-sky-400 px-5 py-3 font-semibold text-slate-950"
+                        >
+                          {editingEventDisplayId ? "Save Changes" : "Save Event Display"}
+                        </button>
+
+                        {editingEventDisplayId ? (
+                          <button
+                            type="button"
+                            onClick={cancelEventDisplayEdit}
+                            className="rounded-2xl border border-slate-700 bg-slate-950 px-5 py-3 font-semibold text-slate-100"
+                          >
+                            Cancel Edit
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-lg font-semibold text-white">
+                      Images & Timing
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
+                      Add slides, set how long each image stays up, and set how long the liveboard appears.
+                    </p>
+
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold">Image duration, in seconds</label>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={displayImageDurationSeconds}
+                          onChange={(e) => setDisplayImageDurationSeconds(e.target.value)}
+                          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-sky-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold">Liveboard duration, in seconds</label>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={displayLiveboardDurationSeconds}
+                          onChange={(e) => setDisplayLiveboardDurationSeconds(e.target.value)}
+                          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-sky-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="mb-2 block text-sm font-semibold">Add images</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleDisplayImageUpload}
+                        className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-300 file:mr-4 file:rounded-xl file:border-0 file:bg-sky-400 file:px-4 file:py-2 file:font-semibold file:text-slate-950"
+                      />
+                      <p className="mt-2 text-xs leading-5 text-slate-500">
+                        Transition is automatically set to a 0.5 second fade. Images are compressed before saving.
+                      </p>
+                    </div>
+
+                    {displayImages.length > 0 ? (
+                      <div className="mt-4 grid gap-2">
+                        <div className="text-xs leading-5 text-slate-500">
+                          Images play in this order before the liveboard appears. Rearrange slides by dragging images into the order you want, then click Save Changes when finished.
+                        </div>
+
+                        {displayImages.map((image, index) => (
+                          <div
+                            key={image.id}
+                            draggable
+                            onDragStart={() => setDraggedDisplayImageId(image.id)}
+                            onDragOver={(event) => event.preventDefault()}
+                            onDrop={() => {
+                              reorderDisplayImage(draggedDisplayImageId, image.id);
+                              setDraggedDisplayImageId("");
+                            }}
+                            onDragEnd={() => setDraggedDisplayImageId("")}
+                            className={`flex items-center justify-between gap-3 rounded-2xl border p-3 transition ${
+                              draggedDisplayImageId === image.id
+                                ? "border-sky-400 bg-sky-400/10"
+                                : "border-slate-800 bg-black"
+                            }`}
+                          >
+                            <div className="flex min-w-0 items-center gap-3">
+                              <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
+                                <img
+                                  src={image.imageUrl}
+                                  alt={image.name || `Image ${index + 1}`}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+
+                              <div className="min-w-0">
+                                <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                                  Slide {index + 1}
+                                </div>
+
+                                <div className="truncate text-sm font-semibold text-slate-100">
+                                  {image.name}
+                                </div>
+
+                                <div className="text-xs text-slate-500">
+                                  {displayImageDurationSeconds || 1} second(s)
+                                </div>
+
+                                <div className="mt-1 text-xs text-slate-600">
+                                  Drag to rearrange slides, then click Save Changes when finished.
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => removeDisplayImage(image.id)}
+                                className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-100"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={saveEventDisplayPreset}
+                        className="rounded-2xl bg-sky-400 px-5 py-3 font-semibold text-slate-950"
+                      >
+                        {editingEventDisplayId ? "Save Changes" : "Save Event Display"}
+                      </button>
+
+                      {editingEventDisplayId ? (
+                        <button
+                          type="button"
+                          onClick={cancelEventDisplayEdit}
+                          className="rounded-2xl border border-slate-700 bg-slate-950 px-5 py-3 font-semibold text-slate-100"
+                        >
+                          Cancel Edit
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+</div>
+              ) : activeSetupTab === "Display Sizing" ? (
+                <div className="mt-5 space-y-5">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-2xl font-semibold tracking-tight text-slate-100">
+                      Display Sizing
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      Control the board layout, section limits, and readability from across the room.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-lg font-semibold text-white">
+                      Automatic Display Limits
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
+                      Control how many rows and columns each display section can use.
+                    </p>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5 items-start">
+                      {[
+                        {
+                          title: "Host",
+                          rowsKey: "host_max_rows",
+                          colsKey: "host_max_cols",
+                          rowsValue: displayLayout.host_max_rows,
+                          colsValue: displayLayout.host_max_cols,
+                          cardClass: "border-slate-800 bg-black",
+                          textClass: "text-white",
+                        },
+                        {
+                          title: "Dungeon Monitor",
+                          rowsKey: "dm_max_rows",
+                          colsKey: "dm_max_cols",
+                          rowsValue: displayLayout.dm_max_rows,
+                          colsValue: displayLayout.dm_max_cols,
+                          cardClass: "border-slate-800 bg-black",
+                          textClass: "text-white",
+                        },
+                        {
+                          title: "Top",
+                          rowsKey: "top_max_rows",
+                          colsKey: "top_max_cols",
+                          rowsValue: displayLayout.top_max_rows,
+                          colsValue: displayLayout.top_max_cols,
+                          cardClass: "border-rose-900/80 bg-rose-950/40",
+                          textClass: "text-rose-100",
+                        },
+                        {
+                          title: "Bottom",
+                          rowsKey: "bottom_max_rows",
+                          colsKey: "bottom_max_cols",
+                          rowsValue: displayLayout.bottom_max_rows,
+                          colsValue: displayLayout.bottom_max_cols,
+                          cardClass: "border-emerald-900/80 bg-emerald-950/35",
+                          textClass: "text-emerald-100",
+                        },
+                        {
+                          title: "Switch",
+                          rowsKey: "switch_max_rows",
+                          colsKey: "switch_max_cols",
+                          rowsValue: displayLayout.switch_max_rows,
+                          colsValue: displayLayout.switch_max_cols,
+                          cardClass: "border-sky-900/80 bg-sky-950/35",
+                          textClass: "text-sky-100",
+                        },
+                      ].map((section) => (
+                        <div key={section.title} className={`rounded-2xl border p-4 ${section.cardClass}`}>
+                          <div className={`mb-4 text-lg font-semibold ${section.textClass}`}>
+                            {section.title}
+                          </div>
+
+                          <div className="space-y-3">
+                            <div>
+                              <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                                Rows
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => updateLayoutValue(section.rowsKey, -1)}
+                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white"
+                                >
+                                  −
+                                </button>
+                                <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-center font-semibold text-white">
+                                  {section.rowsValue}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => updateLayoutValue(section.rowsKey, 1)}
+                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                                Columns
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => updateLayoutValue(section.colsKey, -1)}
+                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white"
+                                >
+                                  −
+                                </button>
+                                <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-center font-semibold text-white">
+                                  {section.colsValue}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => updateLayoutValue(section.colsKey, 1)}
+                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-lg font-semibold text-white">
+                      Display Text Size
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
+                      Adjust board readability without changing the layout.
+                    </p>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                        <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                          Board Entry Text Size
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateBoardEntryTextSize(-1)}
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                          >
+                            −
+                          </button>
+                          <div className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-center font-semibold text-white">
+                            {boardEntryTextSize > 0 ? `+${boardEntryTextSize}` : boardEntryTextSize}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => updateBoardEntryTextSize(1)}
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Controls participant names, handles, intentions, and open-to text. Range: -10 to +10.
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                        <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                          Host / DM Text Size
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateStaffTextSize(-1)}
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                          >
+                            −
+                          </button>
+                          <div className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-center font-semibold text-white">
+                            {staffTextSize > 0 ? `+${staffTextSize}` : staffTextSize}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => updateStaffTextSize(1)}
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Controls Host and DM names/functions in the top support row. Range: -10 to +10.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm leading-6 text-emerald-100">
+                    Display Sizing is complete: rows, columns, board text size, and support-team text size are now available here.
+                  </div>
+                </div>
+              ) : activeSetupTab === "Entry Form" ? (
+                <div className="mt-5 space-y-5">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <div className="mb-3">
+                      <div className="text-sm font-semibold text-slate-100">Entry Form Preset</div>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Choose how much the kiosk asks guests before adding them to the board.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <button
+                        type="button"
+                        onClick={() => setEntryFormPreset("standard")}
+                        className={`rounded-2xl border px-4 py-3 text-left ${
+                          entryFormPreset === "standard"
+                            ? "border-sky-400 bg-sky-400/10 text-sky-100"
+                            : "border-slate-700 bg-slate-950 text-slate-200"
+                        }`}
+                      >
+                        <div className="font-semibold">Standard Entry Form</div>
+                        <div className="mt-1 text-xs leading-5 text-slate-400">
+                          Shows identity, seeking, orientation, intention, and open-to fields.
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setEntryFormPreset("men_only")}
+                        className={`rounded-2xl border px-4 py-3 text-left ${
+                          entryFormPreset === "men_only"
+                            ? "border-amber-400 bg-amber-400/10 text-amber-100"
+                            : "border-slate-700 bg-slate-950 text-slate-200"
+                        }`}
+                      >
+                        <div className="font-semibold">Men-Only Simplified Form</div>
+                        <div className="mt-1 text-xs leading-5 text-slate-400">
+                          Hides identity, seeking, and orientation for faster men-only party entry.
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setEntryFormPreset("diaper_debauchery_glow")}
+                        className={`rounded-2xl border px-4 py-3 text-left ${
+                          entryFormPreset === "diaper_debauchery_glow"
+                            ? "border-fuchsia-400 bg-fuchsia-400/10 text-fuchsia-100"
+                            : "border-slate-700 bg-slate-950 text-slate-200"
+                        }`}
+                      >
+                        <div className="font-semibold">Diaper Debauchery Glow Connection Form</div>
+                        <div className="mt-1 text-xs leading-5 text-slate-400">
+                          Glow-themed connection board form with vibe, looking-for, kinks, sexual preferences, and socials.
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <div className="mb-4">
+                      <div className="text-sm font-semibold text-slate-100">Entry Button Options</div>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Choose which Sexual Preference and Interest buttons appear on the kiosk entry form.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-4 xl:grid-cols-2">
+                      <div className="rounded-2xl border border-red-900/40 bg-red-950/10 p-4">
+                        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-red-100/70">
+                          Sexual Preference Buttons
+                        </div>
+
+                        <div className="grid gap-2">
+                          {defaultSexualPreferenceOptions.map((option) => (
+                            <label key={option} className="flex items-center gap-3 text-sm text-slate-100">
+                              <input
+                                type="checkbox"
+                                checked={visibleSexualPreferenceOptions.includes(option)}
+                                onChange={() => toggleVisibleSexualPreferenceOption(option)}
+                                className="h-4 w-4"
+                              />
+                              {option}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-amber-800/40 bg-amber-950/10 p-4">
+                        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-amber-100/70">
+                          Interest Buttons
+                        </div>
+
+                        <div className="grid gap-2">
+                          {allInterestOptions.map((option) => {
+                            const isCustom = customInterestOptions.includes(option);
+
+                            return (
+                              <div key={option} className="flex items-center justify-between gap-3">
+                                <label className="flex min-w-0 items-center gap-3 text-sm text-slate-100">
+                                  <input
+                                    type="checkbox"
+                                    checked={visibleInterestOptions.includes(option)}
+                                    onChange={() => toggleVisibleInterestOption(option)}
+                                    className="h-4 w-4"
+                                  />
+                                  <span className="truncate">{option}</span>
+                                </label>
+
+                                {isCustom ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeCustomInterestOption(option)}
+                                    className="shrink-0 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100"
+                                  >
+                                    Remove
+                                  </button>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <div className="mt-4 rounded-2xl border border-amber-800/40 bg-slate-950/70 p-3">
+                          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-amber-100/70">
+                            Add Custom Interest Option
+                          </label>
+
+                          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                            <input
+                              value={customInterestOptionInput}
+                              onChange={(event) => setCustomInterestOptionInput(event.target.value)}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                  event.preventDefault();
+                                  addCustomInterestOption();
+                                }
+                              }}
+                              placeholder="Example: Paddles, Canes, Straps, No Marks"
+                              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none placeholder:text-slate-500 focus:border-amber-300"
+                            />
+
+                            <button
+                              type="button"
+                              onClick={addCustomInterestOption}
+                              className="rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-950"
+                            >
+                              Add
+                            </button>
+                          </div>
+
+                          <p className="mt-2 text-xs leading-5 text-slate-500">
+                            Custom options are added to this browser and can be checked on/off like the built-in options.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 space-y-3">
+                    <label className="flex items-center gap-3 text-sm font-semibold text-slate-100">
+                      <input
+                        type="checkbox"
+                        checked={showSocialHandleField}
+                        onChange={(e) => setShowSocialHandleField(e.target.checked)}
+                        className="h-4 w-4"
+                      />
+                      Show social handle field
+                    </label>
+
+                    {showSocialHandleField ? (
+                      <div className="grid gap-2 md:grid-cols-2">
+                        <label className="flex items-center gap-3 text-sm text-slate-100">
+                          <input type="checkbox" checked={allowFetLife} onChange={(e) => setAllowFetLife(e.target.checked)} className="h-4 w-4" />
+                          FetLife
+                        </label>
+                        <label className="flex items-center gap-3 text-sm text-slate-100">
+                          <input type="checkbox" checked={allowWhappz} onChange={(e) => setAllowWhappz(e.target.checked)} className="h-4 w-4" />
+                          Whappz
+                        </label>
+                        <label className="flex items-center gap-3 text-sm text-slate-100">
+                          <input type="checkbox" checked={allowTwitter} onChange={(e) => setAllowTwitter(e.target.checked)} className="h-4 w-4" />
+                          Twitter
+                        </label>
+                        <label className="flex items-center gap-3 text-sm text-slate-100">
+                          <input type="checkbox" checked={allowBluesky} onChange={(e) => setAllowBluesky(e.target.checked)} className="h-4 w-4" />
+                          Bluesky
+                        </label>
+                        <label className="flex items-center gap-3 text-sm text-slate-100">
+                          <input type="checkbox" checked={allowOtherPlatform} onChange={(e) => setAllowOtherPlatform(e.target.checked)} className="h-4 w-4" />
+                          Other
+                        </label>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={saveSettings}
+                      disabled={settingsSaving}
+                      className="rounded-2xl bg-sky-400 px-5 py-3 font-semibold text-slate-950 disabled:opacity-60"
+                    >
+                      {settingsSaving ? "Saving..." : "Save settings"}
+                    </button>
+                  </div>
+                </div>
+              ) : activeSetupTab === "Hosts & DMs" ? (
+                <div className="mt-5 space-y-5">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-2xl font-semibold tracking-tight text-slate-100">
+                      Hosts & DMs
+                    </h3>
+                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
+                      One form for Host, Co-Host, and DM.
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      Add Host, Co-Host, or DM support team entries from one form. Display order is Host, Co-Host, then DMs.
+                    </p>
+
+                    <div className="mt-4">
+                      <label className="mb-2 block text-sm font-semibold">Name</label>
+                      <input
+                        value={hostName}
+                        onChange={(e) => setHostName(e.target.value)}
+                        placeholder="Example: Cat, Joshua"
+                        className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                      />
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="mb-2 block text-sm font-semibold">Role</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Host", "Co-Host", "DM"].map((role) => (
+                          <button
+                            key={role}
+                            type="button"
+                            onClick={() => setHostRole(role)}
+                            className={`rounded-full px-4 py-2 text-sm font-semibold border ${
+                              hostRole === role
+                                ? "bg-sky-400 text-slate-950 border-sky-400"
+                                : "bg-slate-950 text-slate-100 border-slate-700"
+                            }`}
+                          >
+                            {role}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="mb-2 block text-sm font-semibold">Function</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Monitor", "Safety", "Tastings", "Q/A"].map((role) => {
+                          const active = hostFunctions.includes(role);
+
+                          return (
+                            <button
+                              key={role}
+                              type="button"
+                              onClick={() =>
+                                setHostFunctions((prev) =>
+                                  prev.includes(role)
+                                    ? prev.filter((r) => r !== role)
+                                    : [...prev, role]
+                                )
+                              }
+                              className={`rounded-full px-4 py-2 text-sm font-semibold border ${
+                                active
+                                  ? "bg-sky-400 text-slate-950 border-sky-400"
+                                  : "bg-slate-950 text-slate-100 border-slate-700"
+                              }`}
+                            >
+                              {role}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="mb-2 block text-sm font-semibold">Kinks and Fetishes</label>
+                      <p className="mb-2 text-sm leading-5 text-slate-400">
+                        Start typing, then press Enter or tap a match.
+                      </p>
+                      <input
+                        value={hostItemInput}
+                        onChange={(e) => setHostItemInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addHostItemValue(hostItemInput);
+                          }
+                        }}
+                        placeholder="Type what they are providing / responsible for"
+                        className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                      />
+                    </div>
+
+                    {hostItemInput.trim() && hostItemSuggestions.length > 0 ? (
+                      <div className="mt-3 max-h-[220px] overflow-auto rounded-2xl border border-slate-800 bg-slate-950/70 pr-1">
+                        <div className="divide-y divide-slate-800">
+                          {hostItemSuggestions.map((item) => (
+                            <button
+                              key={item}
+                              type="button"
+                              onClick={() => addHostItemValue(item)}
+                              className="block w-full px-4 py-3 text-left transition hover:bg-slate-900"
+                            >
+                              <div className="font-medium text-slate-100">{item}</div>
+                              <div className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
+                                {Object.entries(kinkCatalog).find(([, values]) =>
+                                  values.includes(item)
+                                )?.[0] || "Custom"}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {hostSelectedItems
+                        .slice()
+                        .sort((a, b) => a.localeCompare(b))
+                        .map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => removeHostSelectedItem(item)}
+                            className="rounded-full border border-sky-400/40 bg-sky-400/10 px-3 py-1.5 text-sm text-sky-100"
+                          >
+                            {item} ×
+                          </button>
+                        ))}
+                    </div>
+
+                    <div className="mt-5 flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={createSupportTeamEntry}
+                        disabled={hostSaving}
+                        className="rounded-2xl bg-sky-400 px-5 py-3 font-semibold text-slate-950 disabled:opacity-60"
+                      >
+                        {hostSaving ? "Saving..." : "Add Support Team Entry"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={resetHostForm}
+                        className="rounded-2xl border border-slate-700 bg-slate-950 px-5 py-3 font-semibold"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  {message ? (
+                    <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+                      {message}
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="mt-5 space-y-5">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-2xl font-semibold tracking-tight text-slate-100">
+                        Entries
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-400">
+                        Remove entries as needed or clear the board at the end of the night.
+                      </p>
+
+                      {lastRemovedEntry ? (
+                        <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+                          <span>
+                            Removed {lastRemovedEntry.name || "entry"}.
+                          </span>
+                          <button
+                            type="button"
+                            onClick={undoRemoveEntry}
+                            className="rounded-full border border-amber-300/50 bg-amber-300/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-amber-50"
+                          >
+                            Undo
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={clearBoard}
+                      className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-2 font-semibold text-rose-100"
+                    >
+                      Clear board
+                    </button>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <div className="flex h-full flex-col justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Total</div>
+                      <div className="mt-2 text-3xl font-bold">{participantEntries.length}</div>
+                    </div>
+
+                    <div className="flex h-full flex-col justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Top</div>
+                      <div className="mt-2 text-3xl font-bold text-rose-300">{topEntries.length}</div>
+                    </div>
+
+                    <div className="flex h-full flex-col justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Bottom</div>
+                      <div className="mt-2 text-3xl font-bold text-emerald-300">{bottomEntries.length}</div>
+                    </div>
+
+                    <div className="flex h-full flex-col justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Switch</div>
+                      <div className="mt-2 text-3xl font-bold text-sky-300">{switchEntries.length}</div>
+                    </div>
+                  </div>
+
+                  <input
+                    value={setupSearch}
+                    onChange={(e) => setSetupSearch(e.target.value)}
+                    placeholder="Search by name, identity, seeking, kink, or position"
+                    className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                  />
+
+                  <div className="max-h-[720px] overflow-auto pr-1 grid items-start gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    {loading ? (
+                      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-5 text-slate-400">
+                        Loading entries...
+                      </div>
+                    ) : filteredSetupEntries.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-slate-700 p-5 text-slate-400">
+                        No entries match that search.
+                      </div>
+                    ) : (
+                      <>
+                        {(() => {
+                          const query = setupSearch.trim().toLowerCase();
+                          const matchesSearch = (entry) => {
+                            if (!query) return true;
+                            const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+                            const haystack = [
+                              entry.name,
+                              entry.position,
+                              entry.social_handle,
+                              entry.social_platform,
+                              entry.who_am_i_text,
+                              entry.seeking_text,
+                              entry.dm_category,
+                              ...mergedItems,
+                            ]
+                              .filter(Boolean)
+                              .join(" ")
+                              .toLowerCase();
+                            return haystack.includes(query);
+                          };
+
+                          const groupedColumns = [
+                            {
+                              key: "hostdm",
+                              title: "Host / DM",
+                              entries: [...hostEntries, ...dmEntries].filter(matchesSearch),
+                              cardClass: "border-slate-700 bg-black/40",
+                              chipClass: "border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-300",
+                            },
+                            {
+                              key: "top",
+                              title: "Top",
+                              entries: filteredSetupEntries.filter(
+                                (entry) => (entry.position || "").toLowerCase() === "top"
+                              ),
+                              cardClass: "border-rose-500/35 bg-rose-950/20",
+                              chipClass: "border-rose-500/25 bg-rose-500/10 px-2 py-1 text-xs text-rose-100",
+                            },
+                            {
+                              key: "bottom",
+                              title: "Bottom",
+                              entries: filteredSetupEntries.filter(
+                                (entry) => (entry.position || "").toLowerCase() === "bottom"
+                              ),
+                              cardClass: "border-emerald-500/35 bg-emerald-950/20",
+                              chipClass: "border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-100",
+                            },
+                            {
+                              key: "switch",
+                              title: "Switch",
+                              entries: filteredSetupEntries.filter(
+                                (entry) => (entry.position || "").toLowerCase() === "switch"
+                              ),
+                              cardClass: "border-sky-500/35 bg-sky-950/20",
+                              chipClass: "border-sky-500/25 bg-sky-500/10 px-2 py-1 text-xs text-sky-100",
+                            },
+                          ];
+
+                          return groupedColumns.map((column) => (
+                            <div key={column.key} className="space-y-3">
+                              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                {column.title}
+                              </div>
+
+                              {column.entries.length === 0 ? (
+                                <div className="rounded-xl border border-dashed border-slate-700 p-4 text-sm text-slate-500">
+                                  No {column.title.toLowerCase()} entries.
+                                </div>
+                              ) : (
+                                column.entries.map((entry) => {
+                                  const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+
+                                  return (
+                                    <div
+                                      key={`${column.key}-${entry.id}`}
+                                      className={`rounded-xl border p-3 ${column.cardClass}`}
+                                    >
+                                      <div className="flex flex-wrap items-start justify-between gap-3">
+                                        <div>
+                                          <div className="text-base font-semibold">
+                                            {column.key === "hostdm"
+                                              ? entry.entry_kind === "dm"
+                                                ? entry.name
+                                                : `${entry.name} | ${entry.position || "Host"}`
+                                              : entry.name}
+                                          </div>
+
+                                          {entry.social_handle ? (
+                                            <div className="mt-1 text-sm text-slate-400">
+                                              {entry.social_platform
+                                                ? `${entry.social_platform}: ${entry.social_handle}`
+                                                : entry.social_handle}
+                                            </div>
+                                          ) : null}
+
+                                          {(entry.who_am_i_text || entry.seeking_text) ? (
+                                            <div className="mt-2 text-sm text-slate-300">
+                                              {entry.who_am_i_text || ""}
+                                              {entry.who_am_i_text && entry.seeking_text ? " → " : ""}
+                                              {entry.seeking_text || ""}
+                                            </div>
+                                          ) : null}
+
+                                          {entry.dm_category ? (
+                                            <div className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                              {entry.dm_category}
+                                            </div>
+                                          ) : null}
+                                        </div>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => removeEntry(entry.id)}
+                                          className="rounded-lg bg-rose-500/10 px-2 py-1 text-xs text-rose-200 hover:bg-rose-500/20"
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
+
+                                      {mergedItems.length > 0 ? (
+                                        <div className="mt-2 flex flex-wrap gap-1.5">
+                                          {mergedItems.map((item) => (
+                                            <span key={item} className={`rounded-full border ${column.chipClass}`}>
+                                              {item}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          ));
+                        })()}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 text-sm leading-6 text-slate-400">
+                This tabbed setup screen is still in testing. The original setup page remains available at ?mode=setup.
+              </div>
+            </div>
+          </div>
+        ) : isSetupMode ? (
           <div className="grid gap-5 xl:grid-cols-[430px,minmax(0,1fr)]">
             <div className="space-y-5">
               <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl">
@@ -2526,6 +4668,209 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+                <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                  <div className="mb-3">
+                    <div className="text-sm font-semibold text-slate-100">Display Text Size</div>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                      Adjust board readability from across the room without changing the layout.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+                      <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                        Board Entry Text Size
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => updateBoardEntryTextSize(-1)}
+                          className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                        >
+                          −
+                        </button>
+                        <div className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-center font-semibold text-white">
+                          {boardEntryTextSize > 0 ? `+${boardEntryTextSize}` : boardEntryTextSize}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => updateBoardEntryTextSize(1)}
+                          className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p className="mt-2 text-xs leading-5 text-slate-500">
+                        Controls participant names, handles, intentions, and open-to text. Range: -10 to +10.
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+                      <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                        Host / DM Text Size
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => updateStaffTextSize(-1)}
+                          className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                        >
+                          −
+                        </button>
+                        <div className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-center font-semibold text-white">
+                          {staffTextSize > 0 ? `+${staffTextSize}` : staffTextSize}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => updateStaffTextSize(1)}
+                          className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p className="mt-2 text-xs leading-5 text-slate-500">
+                        Controls Host and DM names/functions in the top support row. Range: -10 to +10.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                  <div className="mb-3">
+                    <div className="text-sm font-semibold text-slate-100">Entry Form Preset</div>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                      Choose how much the kiosk asks guests before adding them to the board.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setEntryFormPreset("standard")}
+                      className={`rounded-2xl border px-4 py-3 text-left ${
+                        entryFormPreset === "standard"
+                          ? "border-sky-400 bg-sky-400/10 text-sky-100"
+                          : "border-slate-700 bg-slate-950 text-slate-200"
+                      }`}
+                    >
+                      <div className="font-semibold">Standard Entry Form</div>
+                      <div className="mt-1 text-xs leading-5 text-slate-400">
+                        Shows identity, seeking, orientation, intention, and open-to fields.
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setEntryFormPreset("men_only")}
+                      className={`rounded-2xl border px-4 py-3 text-left ${
+                        entryFormPreset === "men_only"
+                          ? "border-amber-400 bg-amber-400/10 text-amber-100"
+                          : "border-slate-700 bg-slate-950 text-slate-200"
+                      }`}
+                    >
+                      <div className="font-semibold">Men-Only Simplified Form</div>
+                      <div className="mt-1 text-xs leading-5 text-slate-400">
+                        Hides identity, seeking, and orientation for faster men-only party entry.
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                  <div className="mb-4">
+                    <div className="text-sm font-semibold text-slate-100">Entry Button Options</div>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                      Choose which Sexual Preference and Interest buttons appear on the kiosk entry form.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 xl:grid-cols-2">
+                    <div className="rounded-2xl border border-red-900/40 bg-red-950/10 p-4">
+                      <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-red-100/70">
+                        Sexual Preference Buttons
+                      </div>
+                      <div className="grid gap-2">
+                        {defaultSexualPreferenceOptions.map((option) => (
+                          <label key={option} className="flex items-center gap-3 text-sm text-slate-100">
+                            <input
+                              type="checkbox"
+                              checked={visibleSexualPreferenceOptions.includes(option)}
+                              onChange={() => toggleVisibleSexualPreferenceOption(option)}
+                              className="h-4 w-4"
+                            />
+                            {option}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-amber-800/40 bg-amber-950/10 p-4">
+                      <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-amber-100/70">
+                        Interest Buttons
+                      </div>
+                      <div className="grid gap-2">
+                        {allInterestOptions.map((option) => {
+                          const isCustom = customInterestOptions.includes(option);
+
+                          return (
+                            <div key={option} className="flex items-center justify-between gap-3">
+                              <label className="flex min-w-0 items-center gap-3 text-sm text-slate-100">
+                                <input
+                                  type="checkbox"
+                                  checked={visibleInterestOptions.includes(option)}
+                                  onChange={() => toggleVisibleInterestOption(option)}
+                                  className="h-4 w-4"
+                                />
+                                <span className="truncate">{option}</span>
+                              </label>
+
+                              {isCustom ? (
+                                <button
+                                  type="button"
+                                  onClick={() => removeCustomInterestOption(option)}
+                                  className="shrink-0 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100"
+                                >
+                                  Remove
+                                </button>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-4 rounded-2xl border border-amber-800/40 bg-slate-950/70 p-3">
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-amber-100/70">
+                          Add Custom Interest Option
+                        </label>
+                        <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                          <input
+                            value={customInterestOptionInput}
+                            onChange={(event) => setCustomInterestOptionInput(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                addCustomInterestOption();
+                              }
+                            }}
+                            placeholder="Example: Paddles, Canes, Straps, No Marks"
+                            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none placeholder:text-slate-500 focus:border-amber-300"
+                          />
+                          <button
+                            type="button"
+                            onClick={addCustomInterestOption}
+                            className="rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-950"
+                          >
+                            Add
+                          </button>
+                        </div>
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Custom options are added to this browser and can be checked on/off like the built-in options.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4 space-y-3">
                   <label className="flex items-center gap-3 text-sm font-semibold text-slate-100">
                     <input
@@ -2574,11 +4919,14 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="grid gap-4 xl:grid-cols-2">
+              <div className="supportTeamSetupGrid grid gap-4 xl:grid-cols-1">
                 <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl">
-                  <h2 className="text-2xl font-semibold tracking-tight">Host</h2>
+                  <h2 className="text-2xl font-semibold tracking-tight">Support Team</h2>
+                  <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
+                    One form for Host, Co-Host, and DM.
+                  </p>
                   <p className="mt-2 text-sm leading-6 text-slate-400">
-                    Add Host(s), assign their role and function, then list what they are providing.
+                    Add Host, Co-Host, or DM support team entries from one form. Display order is Host, Co-Host, then DMs.
                   </p>
 
                   <div className="mt-4">
@@ -2594,7 +4942,7 @@ export default function App() {
                   <div className="mt-4">
                     <label className="mb-2 block text-sm font-semibold">Role</label>
                     <div className="flex gap-2">
-                      {["Host", "Co-Host"].map((role) => (
+                      {["Host", "Co-Host", "DM"].map((role) => (
                         <button
                           key={role}
                           type="button"
@@ -2654,7 +5002,7 @@ export default function App() {
                           addHostItemValue(hostItemInput);
                         }
                       }}
-                      placeholder="Type what they are providing"
+                      placeholder="Type what they are providing / responsible for"
                       className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
                     />
                   </div>
@@ -2699,11 +5047,11 @@ export default function App() {
 
                   <div className="mt-5 flex flex-wrap gap-3">
                     <button
-                      onClick={createHostEntry}
+                      onClick={createSupportTeamEntry}
                       disabled={hostSaving}
                       className="rounded-2xl bg-sky-400 px-5 py-3 font-semibold text-slate-950 disabled:opacity-60"
                     >
-                      {hostSaving ? "Saving..." : "Add Host"}
+                      {hostSaving ? "Saving..." : "Add Support Team Entry"}
                     </button>
 
                     <button
@@ -2718,7 +5066,7 @@ export default function App() {
                 <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl">
                   <h2 className="text-2xl font-semibold tracking-tight">DM / Facilitator</h2>
                   <p className="mt-2 text-sm leading-6 text-slate-400">
-                    Add Dungeon Monitor(s) or Facilitator(s), assign their function, then list what they are providing.
+                    Add Dungeon Monitor(s) or Facilitator(s), assign their function, then list what they are providing / responsible for.
                   </p>
 
                   <div className="mt-4">
@@ -2774,7 +5122,7 @@ export default function App() {
                           addDmItemValue(dmItemInput);
                         }
                       }}
-                      placeholder="Type what they are providing"
+                      placeholder="Type what they are providing / responsible for"
                       className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
                     />
                   </div>
@@ -2847,10 +5195,25 @@ export default function App() {
               <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-2xl font-semibold tracking-tight">Staff View</h2>
+                    <h2 className="text-2xl font-semibold tracking-tight">Entries</h2>
                     <p className="mt-2 text-sm leading-6 text-slate-400">
-                      Remove people as needed or clear the board at the end of the night.
+                      Remove entries as needed or clear the board at the end of the night.
                     </p>
+
+                    {lastRemovedEntry ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+                        <span>
+                          Removed {lastRemovedEntry.name || "entry"}.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={undoRemoveEntry}
+                          className="rounded-full border border-amber-300/50 bg-amber-300/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-amber-50"
+                        >
+                          Undo
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
 
                   <button
@@ -2991,7 +5354,9 @@ export default function App() {
                                       <div>
                                         <div className="text-base font-semibold">
                                           {column.key === "hostdm"
-                                            ? `${entry.name} | ${entry.entry_kind === "dm" ? "DM" : (entry.position || "Host")}`
+                                            ? entry.entry_kind === "dm"
+                                              ? entry.name
+                                              : `${entry.name} | ${entry.position || "Host"}`
                                             : entry.name}
                                         </div>
                                         {entry.social_handle ? (
@@ -3076,16 +5441,20 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div className="mx-auto max-w-[1500px]">
+            <div className={`mx-auto max-w-[1500px] ${isDiaperDebaucheryEntryForm ? "diaperGlowKiosk" : ""}`}>
               <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6">
-                <h2 className="text-2xl font-semibold tracking-tight">Add Entry</h2>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  {isDiaperDebaucheryEntryForm ? "Diaper Debauchery Glow Connection Board" : "Add Entry"}
+                </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-400">
-                  Add your name, choose the buttons that fit, and share what you are open to tonight.
+                  {isDiaperDebaucheryEntryForm
+                    ? "Add yourself to the glow board so people know how to connect with you tonight."
+                    : "Add your name, choose the buttons that fit, and share what you are open to tonight."}
                 </p>
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
                   <div>
-                    <label className="mb-2 block text-sm font-semibold">Display name</label>
+                    <label className="mb-2 block text-sm font-semibold">{isDiaperDebaucheryEntryForm ? "Name / Scene Name" : "Display name"}</label>
                     <input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -3096,37 +5465,124 @@ export default function App() {
 
                   {showSocialHandleField ? (
                     <div>
-                      <label className="mb-2 block text-sm font-semibold">Social handle (optional)</label>
-                      <input
-                        value={socialHandle}
-                        onChange={(e) => setSocialHandle(e.target.value)}
-                        placeholder='Example: "Your handle name on Fetlife"'
-                        className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
-                      />
+                      <label className="mb-2 block text-sm font-semibold">
+                        {isDiaperDebaucheryEntryForm ? "Social Handles (optional)" : "Social handle (optional)"}
+                      </label>
 
-                      {availableHandlePlatforms.length > 0 ? (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {availableHandlePlatforms.map((platform) => (
-                            <button
-                              key={platform}
-                              type="button"
-                              onClick={() => setSocialPlatform(platform)}
-                              className={`rounded-2xl border px-3 py-1.5 text-xs font-semibold ${
-                                socialPlatform === platform
-                                  ? "border-sky-400 bg-sky-400/10 text-sky-100"
-                                  : "border-slate-700 bg-slate-950 text-slate-200"
-                              }`}
-                            >
-                              {platform}
-                            </button>
-                          ))}
+                      {isDiaperDebaucheryEntryForm ? (
+                        <div className="rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/10 p-3">
+                          <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
+                            <div>
+                              <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
+                                Platform
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {["FetLife", "Bluesky", "X", "Instagram", "Other"].map((platform) => (
+                                  <button
+                                    key={platform}
+                                    type="button"
+                                    onClick={() => setSocialHandleDraftPlatform(platform)}
+                                    className={`rounded-2xl border px-3 py-1.5 text-xs font-semibold ${
+                                      socialHandleDraftPlatform === platform
+                                        ? "border-fuchsia-300 bg-fuchsia-400/20 text-fuchsia-50"
+                                        : "border-fuchsia-500/35 bg-fuchsia-500/10 text-fuchsia-100"
+                                    }`}
+                                  >
+                                    {platform}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
+                                Handle
+                              </div>
+                              <input
+                                value={socialHandleDraftValue}
+                                onChange={(e) => setSocialHandleDraftValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    addSocialHandleItem();
+                                  }
+                                }}
+                                placeholder={
+                                  socialHandleDraftPlatform === "Bluesky"
+                                    ? "@name.bsky.social"
+                                    : socialHandleDraftPlatform === "Other"
+                                      ? "Platform: @name"
+                                      : "@name"
+                                }
+                                className="w-full rounded-2xl border border-fuchsia-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-fuchsia-300"
+                              />
+                            </div>
+
+                            <div className="flex items-end">
+                              <button
+                                type="button"
+                                onClick={addSocialHandleItem}
+                                className="w-full rounded-2xl border border-fuchsia-300 bg-fuchsia-400/20 px-4 py-3 text-sm font-bold text-fuchsia-50"
+                              >
+                                + Add another
+                              </button>
+                            </div>
+                          </div>
+
+                          {socialHandleItems.length > 0 ? (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {socialHandleItems.map((line) => (
+                                <button
+                                  key={line}
+                                  type="button"
+                                  onClick={() => removeSocialHandleItem(line)}
+                                  className="rounded-full border border-fuchsia-400/40 bg-fuchsia-400/10 px-3 py-1.5 text-xs font-semibold text-fuchsia-100"
+                                >
+                                  {line} ×
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="mt-3 text-xs leading-5 text-fuchsia-100/60">
+                              Add as many as you want. Press Enter or tap + Add another after each one.
+                            </p>
+                          )}
                         </div>
-                      ) : null}
+                      ) : (
+                        <>
+                          <input
+                            value={socialHandle}
+                            onChange={(e) => setSocialHandle(e.target.value)}
+                            placeholder='Example: "Your handle name on Fetlife"'
+                            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
+                          />
+
+                          {availableHandlePlatforms.length > 0 ? (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {availableHandlePlatforms.map((platform) => (
+                                <button
+                                  key={platform}
+                                  type="button"
+                                  onClick={() => setSocialPlatform(platform)}
+                                  className={`rounded-2xl border px-3 py-1.5 text-xs font-semibold ${
+                                    socialPlatform === platform
+                                      ? "border-sky-400 bg-sky-400/10 text-sky-100"
+                                      : "border-slate-700 bg-slate-950 text-slate-200"
+                                  }`}
+                                >
+                                  {platform}
+                                </button>
+                              ))}
+                            </div>
+                          ) : null}
+                        </>
+                      )}
                     </div>
                   ) : null}
                 </div>
 
-                <div className="mt-5 grid gap-4 xl:grid-cols-3">
+                {!isDiaperDebaucheryEntryForm ? (
+                <div className={`mt-5 grid gap-4 ${isMenOnlyEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
                   <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold text-slate-100">Position</label>
@@ -3151,6 +5607,8 @@ export default function App() {
                     </div>
                   </div>
 
+                  {!isMenOnlyEntryForm ? (
+                    <>
                   <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold text-slate-100">I identify as</label>
@@ -3216,9 +5674,13 @@ export default function App() {
                       />
                     ) : null}
                   </div>
+                    </>
+                  ) : null}
                 </div>
+                ) : null}
 
-                <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_0.85fr]">
+                <div className={`mt-4 grid gap-4 ${isMenOnlyEntryForm || isDiaperDebaucheryEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-[1fr_0.85fr]"}`}>
+                  {!isMenOnlyEntryForm && !isDiaperDebaucheryEntryForm ? (
                   <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold">
@@ -3275,19 +5737,22 @@ export default function App() {
                       )}
                     </div>
                   </div>
+                  ) : null}
 
                   <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold">
-  <span className="text-slate-100">Intention</span>
+  <span className="text-slate-100">{isDiaperDebaucheryEntryForm ? "Vibe Tonight" : "Intention"}</span>
   <span className="mx-1 text-slate-500">|</span>
   <span className="font-normal text-slate-500">Optional</span>
 </label>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">Choose all that apply.</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        {isDiaperDebaucheryEntryForm ? "Choose the vibe you want people to see on the board." : "Choose all that apply."}
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 xl:grid-cols-3">
-                      {quickTagOptions.map((tag) => {
+                      {(isDiaperDebaucheryEntryForm ? diaperDebaucheryVibeOptions : quickTagOptions).map((tag) => {
                         const active = quickTags.includes(tag);
 
                         return (
@@ -3309,20 +5774,203 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
-                  <div className="mb-3 border-b border-slate-800 pb-2">
-                    <label className="block text-sm font-semibold text-slate-100">Open to tonight</label>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                      Kinks, fetishes, scene interests.
-                    </p>
+
+                {isDiaperDebaucheryEntryForm ? (
+                  <div className="mt-4 rounded-2xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
+                    <div className="mb-3 border-b border-fuchsia-500/30 pb-2">
+                      <label className="block text-sm font-semibold text-fuchsia-100">Looking For</label>
+                      <p className="mt-1 text-xs leading-5 text-fuchsia-100/60">
+                        Choose what kind of connection you are open to tonight. This is not consent.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+                      {diaperDebaucheryLookingForOptions.map((item) => {
+                        const active = lookingForItems.includes(item);
+
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => toggleLookingForItem(item)}
+                            className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
+                              active
+                                ? "border-fuchsia-300 bg-fuchsia-400/20 text-fuchsia-50"
+                                : "border-fuchsia-500/35 bg-fuchsia-500/10 text-fuchsia-100"
+                            }`}
+                          >
+                            {item}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {lookingForItems.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {lookingForItems.map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => toggleLookingForItem(item)}
+                            className="rounded-full border border-fuchsia-400/40 bg-fuchsia-400/10 px-3 py-1.5 text-xs font-semibold text-fuchsia-100"
+                          >
+                            {item} ×
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                  <div className="rounded-2xl border border-red-900/50 bg-red-950/20 p-4">
+                    <div className="mb-3 border-b border-red-900/30 pb-2">
+                      <label className="block text-sm font-semibold text-red-100">Sexual Preferences</label>
+                      <p className="mt-1 text-xs leading-5 text-red-100/60">
+                        Choose any that apply. Selections are conversation starters, not consent.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                      {(isDiaperDebaucheryEntryForm
+                        ? diaperDebaucherySexualPreferenceOptions
+                        : defaultSexualPreferenceOptions.filter((option) => visibleSexualPreferenceOptions.includes(option))
+                      ).map((option) => {
+                          const active = sexualPreferenceItems.includes(option);
+                          const isOther = option === "Other";
+
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              onPointerDown={(e) => {
+                                e.preventDefault();
+
+                                if (isOther) {
+                                  document.getElementById("sexual-preference-input")?.focus();
+                                  toggleSexualPreferenceItem(option);
+                                  return;
+                                }
+
+                                toggleSexualPreferenceItem(option);
+                              }}
+                              className={`relative z-10 touch-manipulation rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
+                                active
+                                  ? "border-red-300 bg-red-500/25 text-red-50"
+                                  : isOther
+                                    ? "border-red-400/40 bg-red-500/5 text-red-100/80"
+                                    : "border-red-500/45 bg-red-500/10 text-red-100"
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                    </div>
+
+                    {sexualPreferenceItems.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {sexualPreferenceItems.map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => toggleSexualPreferenceItem(item)}
+                            className="rounded-full border border-red-400/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-100"
+                          >
+                            {item} ×
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    <label className="mt-4 block text-sm font-bold text-red-50">
+                      Type anything else about sexual preferences or safer sex.
+                    </label>
+                    <textarea
+                      id="sexual-preference-input"
+                      value={sexualPreferenceInput}
+                      onChange={(e) => setSexualPreferenceInput(e.target.value)}
+                      placeholder="Examples: ask me first, condoms only, oral only, safer sex notes, specific limits"
+                      rows={2}
+                      className="mt-2 w-full rounded-2xl border border-red-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-red-300"
+                    />
                   </div>
 
-                  <input
-                    value={itemInput}
-                    onChange={(e) => setItemInput(e.target.value)}
-                    placeholder="Example: rope, impact, watching, service"
-                    className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
-                  />
+                  <div className="rounded-2xl border border-amber-700/50 bg-amber-950/10 p-4">
+                    <div className="mb-3 border-b border-amber-800/30 pb-2">
+                      <label className="block text-sm font-semibold text-amber-100">{isDiaperDebaucheryEntryForm ? "Kinks / Fetishes / Responsibilities" : "Interests"}</label>
+                      <p className="mt-1 text-xs leading-5 text-amber-100/60">
+                        {isDiaperDebaucheryEntryForm
+                          ? "Type what you want people to know. Examples: diaper play, impact, service, rope, caregiver energy."
+                          : "Choose any that apply. These are conversation starters, not consent."}
+                      </p>
+                    </div>
+
+                    {!isDiaperDebaucheryEntryForm ? (
+                      <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                        {allInterestOptions
+                          .filter((option) => visibleInterestOptions.includes(option))
+                          .map((option) => {
+                            const active = interestItems.includes(option);
+                            const isOther = option === "Other";
+
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onPointerDown={(e) => {
+                                  e.preventDefault();
+
+                                  if (isOther) {
+                                    document.getElementById("interest-input")?.focus();
+                                    toggleInterestItem(option);
+                                    return;
+                                  }
+
+                                  toggleInterestItem(option);
+                                }}
+                                className={`relative z-10 touch-manipulation rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
+                                  active
+                                    ? "border-amber-300 bg-amber-400/20 text-amber-50"
+                                    : isOther
+                                      ? "border-amber-400/40 bg-amber-400/5 text-amber-100/80"
+                                      : "border-slate-700 bg-slate-950 text-slate-200"
+                                }`}
+                              >
+                                {option}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    ) : null}
+
+                    {interestItems.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {interestItems.map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => toggleInterestItem(item)}
+                            className="rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-100"
+                          >
+                            {item} ×
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    <label className="mt-4 block text-sm font-bold text-amber-50">
+                      {isDiaperDebaucheryEntryForm ? "Type kinks, fetishes, responsibilities, or scene interests." : "Type anything else about your interests, kinks, or scene preferences."}
+                    </label>
+                    <textarea
+                      id="interest-input"
+                      value={interestInput}
+                      onChange={(e) => setInterestInput(e.target.value)}
+                      placeholder={isDiaperDebaucheryEntryForm ? "Examples: diaper play, impact, service, rope, roleplay, caregiver energy" : "Examples: rope, impact, watching, service, limits, specific interests"}
+                      rows={2}
+                      className="mt-2 w-full rounded-2xl border border-amber-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-300"
+                    />
+                  </div>
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-3">
@@ -3351,70 +5999,93 @@ export default function App() {
             </div>
           )
         ) : (
-          <div>
+          <div
+            className={`displayBoardSurface ${isDiaperDebaucheryEntryForm ? "diaperGlowDisplayBoard" : ""}`}
+            style={{
+              "--board-entry-detail-size": `${1.535 + clampTextSizeStep(boardEntryTextSize) * 0.045}rem`,
+              "--board-entry-name-size": `${2.23 + clampTextSizeStep(boardEntryTextSize) * 0.07}rem`,
+              "--staff-detail-size": `${1.36 + clampTextSizeStep(staffTextSize) * 0.04}rem`,
+              "--staff-name-size": `${1.88 + clampTextSizeStep(staffTextSize) * 0.06}rem`,
+            }}
+          >
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
-            <div className="hidden 2xl:grid gap-[0.375rem] items-start" style={{ gridTemplateColumns: "1fr 1fr 1fr" }}>
-              <DisplaySection
-                title="Top"
-                entries={topEntries}
-                theme={sectionThemes.Top}
-                maxRows={displayLayout.top_max_rows}
-                maxCols={Number(displayLayout.top_max_cols) || 1}
-              />
-              <DisplaySection
-                title="Bottom"
-                entries={bottomEntries}
-                theme={sectionThemes.Bottom}
-                maxRows={displayLayout.bottom_max_rows}
-                maxCols={displayLayout.bottom_max_cols}
-              />
-              <DisplaySection
-                title="Switch"
-                entries={switchEntries}
-                theme={sectionThemes.Switch}
-                maxRows={displayLayout.switch_max_rows}
-                maxCols={displayLayout.switch_max_cols}
+
+            <div className="displayBoardHeader">
+              <div className="displayBoardTitleBlock">
+                <h1 className="displayBoardInlineTitle">
+                  <span className="displayBoardEventName">{appConfig.eventName}</span>
+                  <span className="displayBoardTitleDivider">|</span>
+                  <span className="displayBoardEventDescription">{appConfig.venueName}</span>
+                </h1>
+              </div>
+
+              <img
+                src={DISPLAY_LOGO_SRC}
+                alt="Sanctuary Sessions logo"
+                className="displayBoardLogo"
               />
             </div>
 
-            <div className="grid gap-[0.375rem] 2xl:hidden">
-              <VerticalStaffSection
-                    title=""
-                    entries={hostEntries}
-                    maxRows={displayLayout.host_max_rows}
-                    maxCols={displayLayout.host_max_cols}
-                    theme={{ outer: "border-slate-800 bg-black", inner: "border-slate-800 bg-black" }}
-                  />
+            <div className="displayStaffRow displayStaffRowCombined">
               <DisplaySection
                 title=""
-                entries={dmEntries}
-                theme={sectionThemes.DM}
-                maxRows={displayLayout.dm_max_rows}
-                maxCols={displayLayout.dm_max_cols}
+                entries={[...hostEntries, ...dmEntries].sort((a, b) => {
+                  const getStaffRank = (entry) => {
+                    const kind = entry.entry_kind || "";
+                    const role = entry.position || entry.dm_category || "";
+
+                    if (kind === "host" && role === "Host") return 0;
+                    if (kind === "host" && role === "Co-Host") return 1;
+                    if (kind === "host") return 2;
+                    return 3;
+                  };
+
+                  return getStaffRank(a) - getStaffRank(b);
+                })}
+                theme={sectionThemes.Host || sectionThemes.DM || sectionThemes.Top}
+                maxRows={1}
+                maxCols={Math.max([...hostEntries, ...dmEntries].length, 1)}
                 isDM
               />
-              <DisplaySection
-                title="Top"
-                entries={topEntries}
-                theme={sectionThemes.Top}
-                maxRows={displayLayout.top_max_rows}
-                maxCols={Number(displayLayout.top_max_cols) || 1}
-              />
-              <DisplaySection
-                title="Bottom"
-                entries={bottomEntries}
-                theme={sectionThemes.Bottom}
-                maxRows={displayLayout.bottom_max_rows}
-                maxCols={displayLayout.bottom_max_cols}
-              />
-              <DisplaySection
-                title="Switch"
-                entries={switchEntries}
-                theme={sectionThemes.Switch}
-                maxRows={displayLayout.switch_max_rows}
-                maxCols={displayLayout.switch_max_cols}
-              />
             </div>
+
+            {isDiaperDebaucheryEntryForm ? (
+              <div className="displayRoleRow displayConnectionRow">
+                <DisplaySection
+                  title="Connection Board"
+                  entries={[...topEntries, ...bottomEntries, ...switchEntries]}
+                  theme={sectionThemes.Switch}
+                  maxRows={8}
+                  maxCols={5}
+                />
+              </div>
+            ) : (
+              <div className="displayRoleRow">
+                <DisplaySection
+                  title="Top"
+                  entries={topEntries}
+                  theme={sectionThemes.Top}
+                  maxRows={displayLayout.top_max_rows}
+                  maxCols={Number(displayLayout.top_max_cols) || 1}
+                />
+
+                <DisplaySection
+                  title="Bottom"
+                  entries={bottomEntries}
+                  theme={sectionThemes.Bottom}
+                  maxRows={displayLayout.bottom_max_rows}
+                  maxCols={displayLayout.bottom_max_cols}
+                />
+
+                <DisplaySection
+                  title="Switch"
+                  entries={switchEntries}
+                  theme={sectionThemes.Switch}
+                  maxRows={displayLayout.switch_max_rows}
+                  maxCols={displayLayout.switch_max_cols}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
