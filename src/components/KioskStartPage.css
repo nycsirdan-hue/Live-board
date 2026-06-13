@@ -675,3 +675,62 @@
   color: rgba(5, 5, 5, 0.78);
   font-weight: 900;
 }
+
+
+/* Restore kiosk payment/check-in background visibility */
+.kioskStartPageDiaper {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.04) 48%, rgba(0, 0, 0, 0) 100%),
+    url("/kiosk-start-bg.jpg"),
+    #000000;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+.kioskStartPageDiaper .kioskPreviewArea {
+  width: 56%;
+  padding-left: 2.3vw;
+  padding-right: 1.5vw;
+}
+
+.kioskStartPageDiaper .connectionPreview {
+  background:
+    linear-gradient(115deg, rgba(255, 0, 40, 0.18), transparent 28%),
+    linear-gradient(160deg, rgba(0, 128, 255, 0.12), transparent 68%),
+    rgba(0, 0, 0, 0.78);
+  border: 1px solid rgba(255, 38, 58, 0.64);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06) inset,
+    0 0 28px rgba(255, 0, 48, 0.24),
+    0 0 52px rgba(0, 128, 255, 0.14),
+    0 24px 70px rgba(0, 0, 0, 0.68);
+}
+
+.kioskStartPageDiaper .displayStyleHeader h1 {
+  font-size: clamp(30px, 2.45vw, 44px);
+  white-space: normal;
+}
+
+.kioskStartPageDiaper .previewHeader::after {
+  width: min(500px, 100%);
+}
+
+.kioskStartPageDiaper .startInfoBox {
+  min-height: 112px;
+}
+
+.kioskStartPageDiaper .exampleEntryBlock {
+  margin-top: 14px;
+}
+
+.kioskStartPageDiaper .kioskStartButton {
+  max-width: 560px;
+}
+
+/* Keep right-side check-in/payment image open on wide kiosk screens */
+@media (min-width: 1200px) {
+  .kioskStartPageDiaper .kioskPreviewArea {
+    max-width: 980px;
+  }
+}
