@@ -2364,3 +2364,161 @@ body:has(.displayBoardSurface) #root {
 .diaperGlowDisplayBoard .text-sky-200 {
   white-space: pre-line !important;
 }
+
+/* Diaper Debauchery / KrINKles rainbow glow entry form */
+.diaperGlowKiosk {
+  color: #ffffff;
+}
+
+.diaperGlowKiosk > div {
+  background:
+    linear-gradient(115deg, rgba(255, 0, 56, 0.16), transparent 28%),
+    linear-gradient(145deg, rgba(255, 138, 0, 0.1), transparent 38%),
+    linear-gradient(175deg, rgba(255, 238, 0, 0.08), transparent 48%),
+    linear-gradient(205deg, rgba(0, 255, 122, 0.09), transparent 58%),
+    linear-gradient(235deg, rgba(0, 128, 255, 0.13), transparent 70%),
+    linear-gradient(265deg, rgba(151, 71, 255, 0.15), transparent 82%),
+    rgba(0, 0, 0, 0.88) !important;
+  border-color: rgba(255, 38, 58, 0.68) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.08) inset,
+    0 0 34px rgba(255, 0, 56, 0.24),
+    0 0 60px rgba(0, 128, 255, 0.16),
+    0 24px 70px rgba(0, 0, 0, 0.72) !important;
+}
+
+.diaperGlowKiosk h2 {
+  color: #ffffff !important;
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.38),
+    0 0 24px rgba(255,0,56,0.58),
+    0 0 42px rgba(0,128,255,0.28);
+}
+
+.diaperGlowKiosk h2 + p {
+  color: #f3f4f6 !important;
+  font-weight: 650;
+}
+
+.diaperGlowKiosk label {
+  color: #ffffff !important;
+  text-shadow: 0 0 10px rgba(255, 0, 56, 0.24);
+}
+
+.diaperGlowKiosk input,
+.diaperGlowKiosk textarea,
+.diaperGlowKiosk select {
+  background: rgba(0, 0, 0, 0.62) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 0 18px rgba(0,128,255,0.08) !important;
+}
+
+.diaperGlowKiosk input:focus,
+.diaperGlowKiosk textarea:focus,
+.diaperGlowKiosk select:focus {
+  border-color: rgba(255, 0, 56, 0.82) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,0,56,0.32),
+    0 0 18px rgba(255,0,56,0.28),
+    0 0 32px rgba(0,128,255,0.18) !important;
+}
+
+.diaperGlowKiosk input::placeholder,
+.diaperGlowKiosk textarea::placeholder {
+  color: rgba(255, 255, 255, 0.44) !important;
+}
+
+/* Rainbow glow option buttons */
+.diaperGlowKiosk button[type="button"] {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 1) {
+  border-color: rgba(255, 0, 56, 0.52) !important;
+}
+
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 2) {
+  border-color: rgba(255, 138, 0, 0.52) !important;
+}
+
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 3) {
+  border-color: rgba(255, 238, 0, 0.42) !important;
+}
+
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 4) {
+  border-color: rgba(0, 255, 122, 0.42) !important;
+}
+
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n + 5) {
+  border-color: rgba(0, 128, 255, 0.52) !important;
+}
+
+.diaperGlowKiosk button[type="button"]:nth-of-type(6n) {
+  border-color: rgba(151, 71, 255, 0.52) !important;
+}
+
+/* Selected-looking and active buttons get stronger rainbow glow */
+.diaperGlowKiosk button[aria-pressed="true"],
+.diaperGlowKiosk button.bg-amber-300,
+.diaperGlowKiosk button.bg-rose-500,
+.diaperGlowKiosk button.bg-sky-500,
+.diaperGlowKiosk button.bg-emerald-500 {
+  background:
+    linear-gradient(90deg, #ff0038, #ff8a00, #ffee00, #00ff7a, #0080ff, #9747ff) !important;
+  color: #050505 !important;
+  border-color: rgba(255, 255, 255, 0.62) !important;
+  font-weight: 900 !important;
+  box-shadow:
+    0 0 16px rgba(255,0,56,0.4),
+    0 0 28px rgba(0,128,255,0.28) !important;
+}
+
+/* Main submit button */
+.diaperGlowKiosk button[type="submit"] {
+  background:
+    linear-gradient(90deg, #ff0038, #ff8a00, #ffee00, #00ff7a, #0080ff, #9747ff, #ff0038) !important;
+  color: #050505 !important;
+  border: 1px solid rgba(255,255,255,0.4) !important;
+  font-weight: 950 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  box-shadow:
+    0 0 18px rgba(255, 0, 56, 0.55),
+    0 0 34px rgba(0, 128, 255, 0.36),
+    0 18px 42px rgba(0,0,0,0.5) !important;
+}
+
+.diaperGlowKiosk button[type="submit"]:hover {
+  filter: brightness(1.08) saturate(1.12);
+}
+
+/* Section cards inside the form */
+.diaperGlowKiosk .rounded-2xl,
+.diaperGlowKiosk .rounded-3xl {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Less cute pink/blue, more blacklight glow */
+.diaperGlowKiosk .text-pink-100,
+.diaperGlowKiosk .text-pink-200,
+.diaperGlowKiosk .text-fuchsia-100,
+.diaperGlowKiosk .text-fuchsia-200 {
+  color: #ffffff !important;
+}
+
+.diaperGlowKiosk .text-sky-100,
+.diaperGlowKiosk .text-sky-200,
+.diaperGlowKiosk .text-cyan-100,
+.diaperGlowKiosk .text-cyan-200 {
+  color: #f3f4f6 !important;
+}
+
+.diaperGlowKiosk .text-amber-100,
+.diaperGlowKiosk .text-amber-200 {
+  color: #fff4c2 !important;
+}
