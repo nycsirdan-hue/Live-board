@@ -1340,3 +1340,24 @@
     background-size: auto 90vh !important;
   }
 }
+
+/* Reduce gap between left board and right payment image */
+.kioskStartPageDiaper .kioskPreviewArea {
+  width: 60.5% !important;
+  max-width: none !important;
+}
+
+.kioskStartPageDiaper {
+  background-position: 64% center !important;
+}
+
+/* iPad landscape tuning */
+@media (orientation: landscape) {
+  .kioskStartPageDiaper .kioskPreviewArea {
+    width: 60.5% !important;
+  }
+
+  .kioskStartPageDiaper {
+    background-position: 64% center !important;
+  }
+}
