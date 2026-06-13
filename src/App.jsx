@@ -1895,6 +1895,22 @@ export default function App() {
         if (Array.isArray(data.custom_interest_options)) {
           setCustomInterestOptions(data.custom_interest_options);
         }
+
+        if (data.entry_form_preset) {
+          setEntryFormPreset(data.entry_form_preset);
+        }
+
+        if (Array.isArray(data.visible_sexual_preference_options)) {
+          setVisibleSexualPreferenceOptions(data.visible_sexual_preference_options);
+        }
+
+        if (Array.isArray(data.visible_interest_options)) {
+          setVisibleInterestOptions(data.visible_interest_options);
+        }
+
+        if (Array.isArray(data.custom_interest_options)) {
+          setCustomInterestOptions(data.custom_interest_options);
+        }
       }
 
       setSettingsLoading(false);
@@ -2170,6 +2186,10 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
       custom_interest_options: customInterestOptions,
+      entry_form_preset: entryFormPreset,
+      visible_sexual_preference_options: visibleSexualPreferenceOptions,
+      visible_interest_options: visibleInterestOptions,
+      custom_interest_options: customInterestOptions,
       active_event_display_preset_id: activeEventDisplayId || null,
       updated_at: new Date().toISOString(),
     };
@@ -2291,6 +2311,10 @@ export default function App() {
       allow_twitter: allowTwitter,
       allow_bluesky: allowBluesky,
       allow_other_platform: allowOtherPlatform,
+      entry_form_preset: entryFormPreset,
+      visible_sexual_preference_options: visibleSexualPreferenceOptions,
+      visible_interest_options: visibleInterestOptions,
+      custom_interest_options: customInterestOptions,
       entry_form_preset: entryFormPreset,
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
