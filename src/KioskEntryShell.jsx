@@ -8,10 +8,10 @@ export default function KioskEntryShell() {
   const mode = params.get("mode");
 
   /*
-    Kiosk start page is only for guest entry.
-    Display and setup modes bypass the kiosk start page completely.
+    Kiosk start page is only for iPad kiosk mode.
+    Phone/mobile direct entry, display, and setup bypass the kiosk start page.
   */
-  if (mode === "display" || mode === "setup" || mode === "admin") {
+  if (mode === "entry" || mode === "display" || mode === "setup" || mode === "admin") {
     return <App />;
   }
 
@@ -20,11 +20,21 @@ export default function KioskEntryShell() {
   const returnTimerRef = useRef(null);
 
   const startEntry = () => {
+    const nextParams = new URLSearchParams(window.location.search);
+    nextParams.set("mode", "entry");
+    nextParams.set("kiosk", "1");
+    window.history.replaceState({}, "", `${window.location.pathname}?${nextParams.toString()}`);
+
     setShowSuccessOverlay(false);
     setShowKioskStart(false);
   };
 
   const returnToStart = () => {
+    const nextParams = new URLSearchParams(window.location.search);
+    nextParams.set("mode", "kiosk");
+    nextParams.delete("kiosk");
+    window.history.replaceState({}, "", `${window.location.pathname}?${nextParams.toString()}`);
+
     setShowSuccessOverlay(false);
     setShowKioskStart(true);
   };

@@ -1114,8 +1114,7 @@ export default function App() {
   const isDisplayMode = mode === "display";
   const isEntryMode = mode === "entry";
   const isSetupMode = mode === "setup";
-  const isSetupTabsMode =
-    isSetupMode && new URLSearchParams(window.location.search).get("view") === "tabs";
+  const isSetupTabsMode = isSetupMode;
 
   const setupTabOptions = ["Events", "Hosts & DMs", "Entry Form", "Display Sizing", "Entries"];
   const [activeSetupTab, setActiveSetupTab] = useState("Events");
@@ -3228,7 +3227,7 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      window.history.pushState({}, "", `${window.location.pathname}?mode=setup&view=tabs`);
+                      window.history.pushState({}, "", `${window.location.pathname}?mode=setup`);
                       window.dispatchEvent(new PopStateEvent("popstate"));
                     }}
                     className={`rounded-2xl border px-4 py-2 font-semibold ${
