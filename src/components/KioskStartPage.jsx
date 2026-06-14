@@ -65,6 +65,7 @@ function getPresetFromStorage() {
 export default function KioskStartPage({ onStart }) {
   const [entryFormPreset, setEntryFormPreset] = useState(getPresetFromStorage);
   const isDiaperMode = entryFormPreset === "diaper_debauchery_glow";
+  const isMenMode = entryFormPreset === "men_only";
 
   useEffect(() => {
     let cancelled = false;
@@ -151,33 +152,58 @@ export default function KioskStartPage({ onStart }) {
         button: "JOIN THE BOARD",
         buttonSmall: "Add Yourself to Tonight’s Glow Board",
       }
-    : {
-        title: "The Sanctuary Connection Board",
-        subtitle: "A live connection board for scenes, play, and conversation.",
-        hostTitle: "Host & Co-Host",
-        hostBody: "Find the people holding the event.",
-        monitorTitle: "Dungeon Monitors",
-        monitorBody: "See who is available for safety and support.",
-        cardOneTitle: "Who You Are",
-        cardOneBody: "Add the name and identity details you want people to see.",
-        cardTwoTitle: "What You’re Seeking",
-        cardTwoBody: "Share what kind of connection, scene, or conversation you’re open to.",
-        cardThreeTitle: "Interests & Boundaries",
-        cardThreeBody: "List the kinks, interests, responsibilities, or limits you want visible.",
-        exampleLabel: "Example Entry",
-        nameLine: "Your Name",
-        nameSubline: "Real or Scene",
-        seekingLeft: "How you identify",
-        seekingRight: "What you’re seeking",
-        orientation: "| Orientation optional",
-        intention: "Tonight’s intention",
-        interests: "Your interests, kinks, fetishes, responsibilities, or boundaries",
-        button: "START",
-        buttonSmall: "Add Yourself to the Board",
-      };
+    : isMenMode
+      ? {
+          title: "Corrosion Connection Board",
+          subtitle: "Men’s BDSM & Sex Party. Add your position, intention, sexual interests, kinks, and notes for tonight.",
+          hostTitle: "Hosts & Support",
+          hostBody: "Find the people holding the room.",
+          monitorTitle: "Safety & Consent",
+          monitorBody: "See who can help if you need anything.",
+          cardOneTitle: "Position",
+          cardOneBody: "Top, bottom, switch, side, voyeur, service, or however you want to be read tonight.",
+          cardTwoTitle: "Intention",
+          cardTwoBody: "Share the energy you are bringing into the room.",
+          cardThreeTitle: "Sex, Kinks & Notes",
+          cardThreeBody: "List what you are open to discussing: BDSM, sex, limits, safer sex, interests, and boundaries.",
+          exampleLabel: "Example Men’s Entry",
+          nameLine: "Your Name / Scene Name",
+          nameSubline: "Position, intention, and room energy",
+          seekingLeft: "Position",
+          seekingRight: "Sexual preferences",
+          orientation: "| Kinks and notes visible",
+          intention: "Open to BDSM, sex, impact, service, watching, conversation, or negotiation",
+          interests: "Impact, rope, oral, service, safer sex notes, limits, scene interests, consent first",
+          button: "JOIN THE BOARD",
+          buttonSmall: "Add Yourself to Tonight’s Board",
+        }
+      : {
+          title: "The Sanctuary Connection Board",
+          subtitle: "A live connection board for scenes, play, and conversation.",
+          hostTitle: "Host & Co-Host",
+          hostBody: "Find the people holding the event.",
+          monitorTitle: "Dungeon Monitors",
+          monitorBody: "See who is available for safety and support.",
+          cardOneTitle: "Who You Are",
+          cardOneBody: "Add the name and identity details you want people to see.",
+          cardTwoTitle: "What You’re Seeking",
+          cardTwoBody: "Share what kind of connection, scene, or conversation you’re open to.",
+          cardThreeTitle: "Interests & Boundaries",
+          cardThreeBody: "List the kinks, interests, responsibilities, or limits you want visible.",
+          exampleLabel: "Example Entry",
+          nameLine: "Your Name",
+          nameSubline: "Real or Scene",
+          seekingLeft: "How you identify",
+          seekingRight: "What you’re seeking",
+          orientation: "| Orientation optional",
+          intention: "Tonight’s intention",
+          interests: "Your interests, kinks, fetishes, responsibilities, or boundaries",
+          button: "START",
+          buttonSmall: "Add Yourself to the Board",
+        };
 
   return (
-    <main className={`kioskStartPage ${isDiaperMode ? "kioskStartPageDiaper" : "kioskStartPageStandard"}`}>
+    <main className={`kioskStartPage ${isDiaperMode ? "kioskStartPageDiaper" : isMenMode ? "kioskStartPageMenOnly" : "kioskStartPageStandard"}`}>
       <section
         className="kioskPreviewArea kioskPreviewAreaButton"
         role="button"
