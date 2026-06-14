@@ -5620,10 +5620,20 @@ export default function App() {
 
                 {!isDiaperDebaucheryEntryForm ? (
                 <div className={`mt-5 grid gap-4 ${isMenOnlyEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
-                  <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
-                    <div className="mb-3 border-b border-slate-800 pb-2">
-                      <label className="block text-sm font-semibold text-slate-100">Position</label>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">Choose how you want to be listed.</p>
+                  <div className={`rounded-2xl border p-4 ${
+                    isMenOnlyEntryForm
+                      ? "border-zinc-500/60 bg-zinc-950/70 shadow-[0_0_24px_rgba(113,113,122,0.14)]"
+                      : "border-slate-700/70 bg-slate-950/60"
+                  }`}>
+                    <div className={`mb-3 border-b pb-2 ${
+                      isMenOnlyEntryForm ? "border-zinc-700/70" : "border-slate-800"
+                    }`}>
+                      <label className={`block text-sm font-semibold ${
+                        isMenOnlyEntryForm ? "text-zinc-100" : "text-slate-100"
+                      }`}>Position</label>
+                      <p className={`mt-1 text-xs leading-5 ${
+                        isMenOnlyEntryForm ? "text-zinc-400" : "text-slate-500"
+                      }`}>Choose how you want to be listed.</p>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
@@ -5634,8 +5644,12 @@ export default function App() {
                           onClick={() => setPosition(option)}
                           className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
                             position === option
-                              ? "border-sky-400 bg-sky-400/10 text-sky-100"
-                              : "border-slate-700 bg-slate-950 text-slate-200"
+                              ? isMenOnlyEntryForm
+                                ? "border-zinc-200 bg-zinc-300/20 text-zinc-50 shadow-[0_0_18px_rgba(212,212,216,0.18)]"
+                                : "border-sky-400 bg-sky-400/10 text-sky-100"
+                              : isMenOnlyEntryForm
+                                ? "border-zinc-700 bg-black/60 text-zinc-200"
+                                : "border-slate-700 bg-slate-950 text-slate-200"
                           }`}
                         >
                           {option}
@@ -5776,14 +5790,22 @@ export default function App() {
                   </div>
                   ) : null}
 
-                  <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
-                    <div className="mb-3 border-b border-slate-800 pb-2">
+                  <div className={`rounded-2xl border p-4 ${
+                    isMenOnlyEntryForm
+                      ? "border-red-900/60 bg-red-950/20 shadow-[0_0_28px_rgba(220,38,38,0.14)]"
+                      : "border-slate-700/70 bg-slate-950/60"
+                  }`}>
+                    <div className={`mb-3 border-b pb-2 ${
+                      isMenOnlyEntryForm ? "border-red-900/40" : "border-slate-800"
+                    }`}>
                       <label className="block text-sm font-semibold">
-  <span className="text-slate-100">{isDiaperDebaucheryEntryForm ? "Vibe Tonight" : "Intention"}</span>
+  <span className={isMenOnlyEntryForm ? "text-red-100" : "text-slate-100"}>{isDiaperDebaucheryEntryForm ? "Vibe Tonight" : "Intention"}</span>
   <span className="mx-1 text-slate-500">|</span>
   <span className="font-normal text-slate-500">Optional</span>
 </label>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                      <p className={`mt-1 text-xs leading-5 ${
+                        isMenOnlyEntryForm ? "text-red-100/60" : "text-slate-500"
+                      }`}>
                         {isDiaperDebaucheryEntryForm ? "Choose the vibe you want people to see on the board." : "Choose all that apply."}
                       </p>
                     </div>
@@ -5799,8 +5821,12 @@ export default function App() {
                             onClick={() => toggleQuickTag(tag)}
                             className={`rounded-2xl border px-3 py-3 text-sm font-semibold ${
                               active
-                                ? "border-amber-400 bg-amber-400/10 text-amber-100"
-                                : "border-slate-700 bg-slate-950 text-slate-200"
+                                ? isMenOnlyEntryForm
+                                  ? "border-red-300 bg-red-600/30 text-red-50 shadow-[0_0_18px_rgba(239,68,68,0.22)]"
+                                  : "border-amber-400 bg-amber-400/10 text-amber-100"
+                                : isMenOnlyEntryForm
+                                  ? "border-red-950/80 bg-black/60 text-red-100"
+                                  : "border-slate-700 bg-slate-950 text-slate-200"
                             }`}
                           >
                             {tag}
@@ -5933,10 +5959,20 @@ export default function App() {
                     />
                   </div>
 
-                  <div className="rounded-2xl border border-amber-700/50 bg-amber-950/10 p-4">
-                    <div className="mb-3 border-b border-amber-800/30 pb-2">
-                      <label className="block text-sm font-semibold text-amber-100">{isDiaperDebaucheryEntryForm ? "Kinks / Fetishes / Responsibilities" : "Interests"}</label>
-                      <p className="mt-1 text-xs leading-5 text-amber-100/60">
+                  <div className={`rounded-2xl border p-4 ${
+                    isMenOnlyEntryForm
+                      ? "border-violet-800/60 bg-violet-950/20 shadow-[0_0_28px_rgba(124,58,237,0.14)]"
+                      : "border-amber-700/50 bg-amber-950/10"
+                  }`}>
+                    <div className={`mb-3 border-b pb-2 ${
+                      isMenOnlyEntryForm ? "border-violet-800/40" : "border-amber-800/30"
+                    }`}>
+                      <label className={`block text-sm font-semibold ${
+                        isMenOnlyEntryForm ? "text-violet-100" : "text-amber-100"
+                      }`}>{isDiaperDebaucheryEntryForm ? "Kinks / Fetishes / Responsibilities" : "Interests"}</label>
+                      <p className={`mt-1 text-xs leading-5 ${
+                        isMenOnlyEntryForm ? "text-violet-100/60" : "text-amber-100/60"
+                      }`}>
                         {isDiaperDebaucheryEntryForm
                           ? "Type what you want people to know. Examples: diaper play, impact, service, rope, caregiver energy."
                           : "Choose any that apply. These are conversation starters, not consent."}
@@ -5968,10 +6004,16 @@ export default function App() {
                                 }}
                                 className={`relative z-10 touch-manipulation rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
                                   active
-                                    ? "border-amber-300 bg-amber-400/20 text-amber-50"
+                                    ? isMenOnlyEntryForm
+                                      ? "border-violet-300 bg-violet-500/25 text-violet-50 shadow-[0_0_18px_rgba(139,92,246,0.22)]"
+                                      : "border-amber-300 bg-amber-400/20 text-amber-50"
                                     : isOther
-                                      ? "border-amber-400/40 bg-amber-400/5 text-amber-100/80"
-                                      : "border-slate-700 bg-slate-950 text-slate-200"
+                                      ? isMenOnlyEntryForm
+                                        ? "border-violet-400/40 bg-violet-500/5 text-violet-100/80"
+                                        : "border-amber-400/40 bg-amber-400/5 text-amber-100/80"
+                                      : isMenOnlyEntryForm
+                                        ? "border-violet-950/80 bg-black/60 text-violet-100"
+                                        : "border-slate-700 bg-slate-950 text-slate-200"
                                 }`}
                               >
                                 {option}
@@ -5988,7 +6030,11 @@ export default function App() {
                             key={item}
                             type="button"
                             onClick={() => toggleInterestItem(item)}
-                            className="rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-100"
+                            className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                              isMenOnlyEntryForm
+                                ? "border-violet-400/40 bg-violet-500/10 text-violet-100"
+                                : "border-amber-400/40 bg-amber-400/10 text-amber-100"
+                            }`}
                           >
                             {item} ×
                           </button>
@@ -5996,7 +6042,9 @@ export default function App() {
                       </div>
                     ) : null}
 
-                    <label className="mt-4 block text-sm font-bold text-amber-50">
+                    <label className={`mt-4 block text-sm font-bold ${
+                      isMenOnlyEntryForm ? "text-violet-50" : "text-amber-50"
+                    }`}>
                       {isDiaperDebaucheryEntryForm ? "Type kinks, fetishes, responsibilities, or scene interests." : "Type anything else about your interests, kinks, or scene preferences."}
                     </label>
                     <textarea
@@ -6005,7 +6053,11 @@ export default function App() {
                       onChange={(e) => setInterestInput(e.target.value)}
                       placeholder={isDiaperDebaucheryEntryForm ? "Examples: diaper play, impact, service, rope, roleplay, caregiver energy" : "Examples: rope, impact, watching, service, limits, specific interests"}
                       rows={2}
-                      className="mt-2 w-full rounded-2xl border border-amber-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-300"
+                      className={`mt-2 w-full rounded-2xl border bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 ${
+                        isMenOnlyEntryForm
+                          ? "border-violet-500/40 focus:border-violet-300"
+                          : "border-amber-500/40 focus:border-amber-300"
+                      }`}
                     />
                   </div>
                 </div>
