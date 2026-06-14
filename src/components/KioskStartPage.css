@@ -1520,3 +1520,42 @@
 .kioskStartPageMenOnly .kioskStartButton small {
   color: rgba(254, 226, 226, 0.76) !important;
 }
+
+/* FINAL OVERRIDE: restore right-side check-in image on men-only kiosk screen */
+.kioskStartPageMenOnly {
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(3, 3, 3, 0.99) 0%,
+      rgba(9, 9, 11, 0.98) 43%,
+      rgba(23, 6, 6, 0.72) 55%,
+      rgba(0, 0, 0, 0.12) 72%
+    ),
+    radial-gradient(circle at 25% 20%, rgba(127, 29, 29, 0.38), transparent 34%),
+    radial-gradient(circle at 31% 82%, rgba(63, 63, 70, 0.34), transparent 32%),
+    url("/kiosk-start-bg.jpg") !important;
+
+  background-size:
+    cover,
+    cover,
+    cover,
+    auto 94vh !important;
+
+  background-position:
+    center,
+    center,
+    center,
+    66% 42% !important;
+
+  background-repeat:
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat !important;
+}
+
+/* Keep the left board from covering too much of the image */
+.kioskStartPageMenOnly .kioskPreviewArea {
+  width: 60.5% !important;
+  max-width: none !important;
+}
