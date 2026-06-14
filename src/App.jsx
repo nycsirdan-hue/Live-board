@@ -1280,7 +1280,7 @@ export default function App() {
     [customInterestOptions]
   );
 
-  const clampTextSizeStep = (value) => Math.max(-10, Math.min(10, Number(value) || 0));
+  const clampTextSizeStep = (value) => Math.max(-20, Math.min(10, Number(value) || 0));
 
   const updateBoardEntryTextSize = (direction) => {
     setBoardEntryTextSize((current) => clampTextSizeStep(current + direction));
