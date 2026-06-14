@@ -1559,3 +1559,18 @@
   width: 60.5% !important;
   max-width: none !important;
 }
+
+/* Make any extra page background around kiosk screens black */
+html,
+body,
+#root {
+  background: #000 !important;
+}
+
+/* Ensure kiosk page itself is fully black behind the layout */
+.kioskStartPage,
+.kioskStartPageStandard,
+.kioskStartPageDiaper,
+.kioskStartPageMenOnly {
+  background-color: #000 !important;
+}
