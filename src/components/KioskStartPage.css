@@ -1574,3 +1574,21 @@ body,
 .kioskStartPageMenOnly {
   background-color: #000 !important;
 }
+
+/* URGENT EVENT FIX: keep right-side kiosk instruction/payment image fully visible */
+.kioskStartPage,
+.kioskStartPageStandard,
+.kioskStartPageDiaper {
+  background-size: auto 78vh !important;
+  background-position: 72% center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* URGENT EVENT FIX: keep right-side kiosk instruction/payment image fully visible */
+.kioskStartPage,
+.kioskStartPageStandard,
+.kioskStartPageDiaper {
+  background-size: auto 78vh !important;
+  background-position: 72% center !important;
+  background-repeat: no-repeat !important;
+}
