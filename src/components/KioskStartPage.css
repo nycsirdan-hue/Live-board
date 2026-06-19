@@ -1601,3 +1601,12 @@ body,
   background-position: 71% center !important;
   background-repeat: no-repeat !important;
 }
+
+/* URGENT EVENT TUNE: make right-side kiosk image larger while still mostly fitting */
+.kioskStartPage,
+.kioskStartPageStandard,
+.kioskStartPageDiaper {
+  background-size: auto 91vh !important;
+  background-position: 70% center !important;
+  background-repeat: no-repeat !important;
+}
