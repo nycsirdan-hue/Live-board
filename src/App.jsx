@@ -1273,7 +1273,7 @@ export default function App() {
 
   const isMenOnlyEntryForm = entryFormPreset === "men_only";
   const isDiaperDebaucheryEntryForm = entryFormPreset === "diaper_debauchery_glow";
-  const usesMultipleSocialHandles = isDiaperDebaucheryEntryForm;
+  const usesMultipleSocialHandles = isDiaperDebaucheryEntryForm || isMenOnlyEntryForm;
   const isConnectionEntryForm = isDiaperDebaucheryEntryForm;
 
   const allInterestOptions = useMemo(
