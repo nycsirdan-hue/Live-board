@@ -1273,7 +1273,6 @@ export default function App() {
 
   const isMenOnlyEntryForm = entryFormPreset === "men_only";
   const isDiaperDebaucheryEntryForm = entryFormPreset === "diaper_debauchery_glow";
-  const usesMultipleSocialHandles = isDiaperDebaucheryEntryForm || isMenOnlyEntryForm;
   const isConnectionEntryForm = isDiaperDebaucheryEntryForm;
 
   const allInterestOptions = useMemo(
@@ -2859,13 +2858,13 @@ export default function App() {
     );
 
     const handleValue = showSocialHandleField
-      ? usesMultipleSocialHandles
+      ? isDiaperDebaucheryEntryForm
         ? finalDiaperSocialHandles.join("\n")
         : socialHandle.trim()
       : null;
 
     const platformValue =
-      usesMultipleSocialHandles
+      isDiaperDebaucheryEntryForm
         ? null
         : showSocialHandleField && handleValue && availableHandlePlatforms.includes(socialPlatform)
           ? socialPlatform
@@ -5504,10 +5503,10 @@ export default function App() {
                   {showSocialHandleField ? (
                     <div>
                       <label className="mb-2 block text-sm font-semibold">
-                        {usesMultipleSocialHandles ? "Social Handles (optional)" : "Social handle (optional)"}
+                        {isDiaperDebaucheryEntryForm ? "Social Handles (optional)" : "Social handle (optional)"}
                       </label>
 
-                      {usesMultipleSocialHandles ? (
+                      {isDiaperDebaucheryEntryForm ? (
                         <div className="rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/10 p-3">
                           <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
                             <div>
@@ -5839,7 +5838,7 @@ export default function App() {
                 </div>
 
 
-                {usesMultipleSocialHandles ? (
+                {isDiaperDebaucheryEntryForm ? (
                   <div className="mt-4 rounded-2xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
                     <div className="mb-3 border-b border-fuchsia-500/30 pb-2">
                       <label className="block text-sm font-semibold text-fuchsia-100">Looking For</label>
@@ -6139,7 +6138,7 @@ export default function App() {
               />
             </div>
 
-            {usesMultipleSocialHandles ? (
+            {isDiaperDebaucheryEntryForm ? (
               <div className="displayRoleRow displayConnectionRow">
                 <DisplaySection
                   title="Connection Board"
