@@ -5507,7 +5507,7 @@ export default function App() {
                         {usesMultipleSocialHandles ? "Social Handles (optional)" : "Social handle (optional)"}
                       </label>
 
-                      {isDiaperDebaucheryEntryForm ? (
+                      {usesMultipleSocialHandles ? (
                         <div className="rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/10 p-3">
                           <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
                             <div>
