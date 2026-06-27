@@ -138,7 +138,7 @@ export default function KioskStartPage({ onStart }) {
         cardOneTitle: "Tonight’s Vibe",
         cardOneBody: "Padded, playful, proud, social, shy, flirty, or fully feral.",
         cardTwoTitle: "Open To",
-        cardTwoBody: "Connection, dancing, cuddles, changes, play, conversation, or glow-up chaos.",
+        cardTwoBody: "Connection, dancing, cuddles, play, conversation, or glow-up chaos.",
         cardThreeTitle: "Kinks & Notes",
         cardThreeBody: "Share what you want visible: diaper play, care energy, limits, interests, and scene details.",
         exampleLabel: "Example Glow Entry",
