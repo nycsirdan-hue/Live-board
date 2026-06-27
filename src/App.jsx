@@ -2583,9 +2583,9 @@ export default function App() {
     setTimeout(() => setMessage(""), 2500);
   };
 
-  const editActiveEventDisplayPreset = () => {
+  const editActiveEventDisplayPreset = (selectedPresetId = activeEventDisplayId) => {
     const activePreset = savedEventDisplays.find(
-      (eventDisplay) => eventDisplay.id === activeEventDisplayId
+      (eventDisplay) => eventDisplay.id === selectedPresetId
     );
 
     if (!activePreset) {
@@ -2627,18 +2627,18 @@ export default function App() {
     setTimeout(() => setMessage(""), 2000);
   };
 
-  const deleteActiveEventDisplayPreset = async () => {
+  const deleteActiveEventDisplayPreset = async (selectedPresetId = activeEventDisplayId) => {
     if (!supabase) {
       setMessage("Supabase connection is missing.");
       return;
     }
 
     const activeCustomPreset = savedEventDisplays.find(
-      (eventDisplay) => eventDisplay.id === activeEventDisplayId
+      (eventDisplay) => eventDisplay.id === selectedPresetId
     );
 
     const activeBuiltinPreset = eventDisplayPresets.find(
-      (eventDisplay) => eventDisplay.id === activeEventDisplayId
+      (eventDisplay) => eventDisplay.id === selectedPresetId
     );
 
     const activePreset = activeCustomPreset || activeBuiltinPreset;
@@ -2669,7 +2669,11 @@ export default function App() {
       );
 
       setHiddenBuiltinEventDisplayIds(nextHiddenIds);
-      setActiveEventDisplayId(savedEventDisplays[0]?.id || nextOptions[0]?.id || "");
+      setPendingEventDisplayId("");
+
+      if (selectedPresetId === activeEventDisplayId) {
+        setActiveEventDisplayId(savedEventDisplays[0]?.id || nextOptions[0]?.id || "");
+      }
 
       setMessage("Built-in sample preset hidden.");
       setTimeout(() => setMessage(""), 2500);
@@ -2691,21 +2695,24 @@ export default function App() {
     );
 
     setSavedEventDisplays(remaining);
+    setPendingEventDisplayId("");
 
-    const nextActiveId =
-      remaining[0]?.id ||
-      eventDisplayPresets.find(
-        (eventDisplay) => !hiddenBuiltinEventDisplayIds.includes(eventDisplay.id)
-      )?.id ||
-      "";
+    if (selectedPresetId === activeEventDisplayId) {
+      const nextActiveId =
+        remaining[0]?.id ||
+        eventDisplayPresets.find(
+          (eventDisplay) => !hiddenBuiltinEventDisplayIds.includes(eventDisplay.id)
+        )?.id ||
+        "";
 
-    if (nextActiveId) {
-      await updateActiveEventDisplayPreset(nextActiveId);
-    } else {
-      setActiveEventDisplayId("");
+      if (nextActiveId) {
+        await updateActiveEventDisplayPreset(nextActiveId);
+      } else {
+        setActiveEventDisplayId("");
+      }
     }
 
-    if (editingEventDisplayId === activeEventDisplayId) {
+    if (editingEventDisplayId === selectedPresetId) {
       setEditingEventDisplayId("");
       setDisplayEventName("");
       setDisplayEventDescription("");
@@ -3386,7 +3393,7 @@ export default function App() {
                         </div>
                       ) : null}
 
-                      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                      <div className="mt-4 grid gap-2 sm:grid-cols-4">
                         <button
                           type="button"
                           onClick={() => updateActiveEventDisplayPreset(pendingEventDisplayId || activeEventDisplayId)}
@@ -3397,15 +3404,24 @@ export default function App() {
                         </button>
                         <button
                           type="button"
+                          onClick={() => editActiveEventDisplayPreset(pendingEventDisplayId || activeEventDisplayId)}
+                          disabled={!(pendingEventDisplayId || activeEventDisplayId)}
+                          className="rounded-2xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Edit Selected Event
+                        </button>
+                        <button
+                          type="button"
                           onClick={cancelEventDisplayEdit}
                           className="rounded-2xl border border-sky-400/40 bg-sky-400/10 px-4 py-3 text-sm font-semibold text-sky-100"
                         >
                           New Event
                         </button>
-<button
+                        <button
                           type="button"
-                          onClick={deleteActiveEventDisplayPreset}
-                          className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-100"
+                          onClick={() => deleteActiveEventDisplayPreset(pendingEventDisplayId || activeEventDisplayId)}
+                          disabled={!(pendingEventDisplayId || activeEventDisplayId)}
+                          className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Delete / hide selected preset
                         </button>
