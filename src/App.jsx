@@ -1273,8 +1273,40 @@ export default function App() {
 
   const isMenOnlyEntryForm = entryFormPreset === "men_only";
   const isDiaperDebaucheryEntryForm = entryFormPreset === "diaper_debauchery_glow";
-  const usesMultipleSocialHandles = isDiaperDebaucheryEntryForm || isMenOnlyEntryForm;
-  const isConnectionEntryForm = isDiaperDebaucheryEntryForm;
+
+  const entryMenuSettings = isDiaperDebaucheryEntryForm
+    ? {
+        type: "abdl",
+        usesMultipleSocialHandles: true,
+      }
+    : isMenOnlyEntryForm
+      ? {
+          type: "menOnly",
+          usesMultipleSocialHandles: true,
+        }
+      : {
+          type: "default",
+          usesMultipleSocialHandles: false,
+        };
+
+  const displayBoardSettings = isDiaperDebaucheryEntryForm
+    ? {
+        type: "abdl",
+        layout: "singleConnectionBoard",
+      }
+    : isMenOnlyEntryForm
+      ? {
+          type: "menOnly",
+          layout: "topBottomSwitch",
+        }
+      : {
+          type: "default",
+          layout: "topBottomSwitch",
+        };
+
+  const usesMultipleSocialHandles = entryMenuSettings.usesMultipleSocialHandles;
+  const usesSingleConnectionBoard = displayBoardSettings.layout === "singleConnectionBoard";
+  const isConnectionEntryForm = entryMenuSettings.type === "abdl";
 
   const allInterestOptions = useMemo(
     () => Array.from(new Set([...defaultInterestOptions, ...customInterestOptions])).filter(Boolean),
@@ -5507,7 +5539,7 @@ export default function App() {
                         {usesMultipleSocialHandles ? "Social Handles (optional)" : "Social handle (optional)"}
                       </label>
 
-                      {isDiaperDebaucheryEntryForm ? (
+                      {usesMultipleSocialHandles ? (
                         <div className="rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/10 p-3">
                           <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
                             <div>
@@ -6090,7 +6122,7 @@ export default function App() {
           )
         ) : (
           <div
-            className={`displayBoardSurface ${isDiaperDebaucheryEntryForm ? "diaperGlowDisplayBoard" : ""}`}
+            className={`displayBoardSurface ${usesSingleConnectionBoard ? "diaperGlowDisplayBoard" : ""}`}
             style={{
               "--board-entry-detail-size": `${1.535 + clampTextSizeStep(boardEntryTextSize) * 0.045}rem`,
               "--board-entry-name-size": `${2.23 + clampTextSizeStep(boardEntryTextSize) * 0.07}rem`,
@@ -6139,7 +6171,7 @@ export default function App() {
               />
             </div>
 
-            {isDiaperDebaucheryEntryForm ? (
+            {usesSingleConnectionBoard ? (
               <div className="displayRoleRow displayConnectionRow">
                 <DisplaySection
                   title="Connection Board"
