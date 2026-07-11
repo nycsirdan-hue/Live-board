@@ -6454,18 +6454,41 @@ export default function App() {
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
 
             {currentRaffleDraw ? (
-              <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 px-10 py-8 text-center text-white">
-                <div className="text-2xl font-bold uppercase tracking-[0.35em] text-amber-300">
-                  Raffle Draw
-                </div>
+          <div className={
+            currentRaffleDraw.status === "winner"
+              ? "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-emerald-950 px-10 py-8 text-center text-white shadow-[inset_0_0_180px_rgba(16,185,129,0.5)]"
+              : currentRaffleDraw.status === "timed_out"
+                ? "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-rose-950 px-10 py-8 text-center text-white shadow-[inset_0_0_180px_rgba(244,63,94,0.38)]"
+                : "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 px-10 py-8 text-center text-white"
+          }>
+            <div className={
+              currentRaffleDraw.status === "winner"
+                ? "text-5xl font-black uppercase tracking-[0.25em] text-emerald-200 drop-shadow-2xl"
+                : currentRaffleDraw.status === "timed_out"
+                  ? "text-4xl font-black uppercase tracking-[0.25em] text-rose-200 drop-shadow-2xl"
+                  : "text-2xl font-bold uppercase tracking-[0.35em] text-amber-300"
+            }>
+              {currentRaffleDraw.status === "winner" ? "★ Winner ★" : currentRaffleDraw.status === "timed_out" ? "Timed Out" : "Raffle Draw"}
+            </div>
 
-                <div className={"mt-8 rounded-full border px-6 py-3 text-xl font-black uppercase tracking-[0.18em] " + getRaffleStatusClass(currentRaffleDraw.status)}>
-                  {getRaffleStatusLabel(currentRaffleDraw.status)}
-                </div>
+            <div className={"mt-8 rounded-full border px-6 py-3 text-xl font-black uppercase tracking-[0.18em] " + getRaffleStatusClass(currentRaffleDraw.status)}>
+              {getRaffleStatusLabel(currentRaffleDraw.status)}
+            </div>
 
-                <div className="mt-6 text-[20vw] font-black leading-none tracking-tight text-white drop-shadow-2xl">
+            {currentRaffleDraw.status === "winner" ? (
+              <div className="mt-8 flex items-center justify-center gap-8 text-7xl font-black text-emerald-200 drop-shadow-2xl">
+                <span>★</span>
+                <span className="rounded-[4rem] border-8 border-emerald-300 bg-emerald-400/20 px-14 py-8 text-[16vw] leading-none tracking-tight text-white shadow-[0_0_90px_rgba(16,185,129,0.8)]">
                   {currentRaffleDraw.ticket_number}
-                </div>
+                </span>
+                <span>★</span>
+              </div>
+            ) : (
+              <div className="mt-6 text-[20vw] font-black leading-none tracking-tight text-white drop-shadow-2xl">
+                {currentRaffleDraw.ticket_number}
+              </div>
+            )}
+
 
                 {previousRaffleDraws.length ? (
                   <div className="mt-10 w-full max-w-6xl">
