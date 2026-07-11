@@ -1925,6 +1925,69 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const mode = searchParams.get("mode");
+    const isDisplayRoute =
+      mode === "display" || window.location.pathname.toLowerCase().includes("display");
+
+    const existingClock = document.getElementById("liveboard-eastern-clock");
+
+    if (!isDisplayRoute) {
+      if (existingClock) existingClock.remove();
+      return;
+    }
+
+    const clock = existingClock || document.createElement("div");
+    clock.id = "liveboard-eastern-clock";
+    clock.setAttribute("aria-hidden", "true");
+
+    Object.assign(clock.style, {
+      position: "fixed",
+      right: "24px",
+      bottom: "24px",
+      zIndex: "2147483647",
+      pointerEvents: "none",
+      padding: "10px 22px",
+      borderRadius: "18px",
+      border: "1px solid rgba(255,255,255,0.35)",
+      background: "rgba(0,0,0,0.82)",
+      color: "#ffffff",
+      fontSize: "44px",
+      fontWeight: "900",
+      lineHeight: "1",
+      letterSpacing: "0.08em",
+      fontFamily: "Arial, Helvetica, sans-serif",
+      boxShadow: "0 0 42px rgba(255,255,255,0.28)",
+      backdropFilter: "blur(10px)",
+    });
+
+    const updateClock = () => {
+      clock.textContent = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+        .format(new Date())
+        .replace(/\s?[AP]M$/i, "");
+    };
+
+    updateClock();
+
+    if (!existingClock) {
+      document.body.appendChild(clock);
+    }
+
+    const easternClockInterval = window.setInterval(updateClock, 1000);
+
+    return () => {
+      window.clearInterval(easternClockInterval);
+      const activeClock = document.getElementById("liveboard-eastern-clock");
+      if (activeClock) activeClock.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!supabase) {
       setLoading(false);
       setSettingsLoading(false);
@@ -6930,13 +6993,6 @@ export default function App() {
             }}
           >
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
-
-        <div
-          className="pointer-events-none fixed bottom-6 right-6 rounded-2xl border border-white/25 bg-black/75 px-6 py-3 text-4xl font-black tracking-[0.08em] text-white shadow-[0_0_40px_rgba(255,255,255,0.25)] backdrop-blur-md"
-          style={{ zIndex: 2147483647 }}
-        >
-          {displayEasternTime}
-        </div>
 
             {isRaffleDisplayActive && currentRaffleDraw ? (
           <div className={
