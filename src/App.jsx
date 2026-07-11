@@ -1981,6 +1981,8 @@ export default function App() {
     loadEntries();
     loadRaffleDraws();
 
+    const raffleRefreshInterval = window.setInterval(loadRaffleDraws, 2000);
+
     const channel = supabase
       .channel("board-live")
       .on(
@@ -2002,6 +2004,7 @@ export default function App() {
 
     return () => {
       mounted = false;
+      window.clearInterval(raffleRefreshInterval);
       supabase.removeChannel(channel);
     };
   }, []);
@@ -2023,18 +2026,27 @@ export default function App() {
 
     setRaffleSaving(true);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("raffle_draws")
       .insert({
         ticket_number: ticketNumber,
         status: "drawn",
-      });
+      })
+      .select("id, ticket_number, status, created_at, updated_at")
+      .single();
 
     setRaffleSaving(false);
 
     if (error) {
       setMessage("Could not show raffle number: " + error.message);
       return;
+    }
+
+    if (data) {
+      setRaffleDraws((current) => [
+        data,
+        ...current.filter((draw) => draw.id !== data.id),
+      ]);
     }
 
     setRaffleTicketInput("");
@@ -2068,6 +2080,14 @@ export default function App() {
       return;
     }
 
+    setRaffleDraws((current) =>
+      current.map((draw) =>
+        draw.id === currentRaffleDraw.id
+          ? { ...draw, status: nextStatus, updated_at: new Date().toISOString() }
+          : draw
+      )
+    );
+
     setMessage("Raffle number " + currentRaffleDraw.ticket_number + " marked " + getRaffleStatusLabel(nextStatus) + ".");
     setTimeout(() => setMessage(""), 2500);
   };
@@ -2090,6 +2110,8 @@ export default function App() {
       setMessage("Could not undo raffle draw: " + error.message);
       return;
     }
+
+    setRaffleDraws((current) => current.filter((draw) => draw.id !== currentRaffleDraw.id));
 
     setMessage("Last raffle draw removed.");
     setTimeout(() => setMessage(""), 2500);
@@ -2115,6 +2137,8 @@ export default function App() {
       setMessage("Could not clear raffle: " + error.message);
       return;
     }
+
+    setRaffleDraws([]);
 
     setMessage("Raffle cleared. Display will return to the normal board.");
     setTimeout(() => setMessage(""), 2500);
@@ -4578,6 +4602,27 @@ export default function App() {
                       </button>
                     </div>
 
+                    <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300/80">
+                        Current number on display
+                      </div>
+
+                      {currentRaffleDraw ? (
+                        <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+                          <div className="text-7xl font-black tracking-tight text-white">
+                            {currentRaffleDraw.ticket_number}
+                          </div>
+                          <span className={"rounded-full border px-4 py-2 text-sm font-bold uppercase tracking-[0.14em] " + getRaffleStatusClass(currentRaffleDraw.status)}>
+                            {getRaffleStatusLabel(currentRaffleDraw.status)}
+                          </span>
+                        </div>
+                      ) : (
+                        <p className="mt-3 text-sm text-slate-400">
+                          No raffle number is currently on display. Enter a number above to take over the display screen.
+                        </p>
+                      )}
+                    </div>
+
                     <div className="mt-5 grid gap-2 sm:grid-cols-4">
                       <button
                         type="button"
@@ -4615,27 +4660,6 @@ export default function App() {
                         Clear Raffle
                       </button>
                     </div>
-
-                    <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4">
-                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300/80">
-                        Current number on display
-                      </div>
-
-                      {currentRaffleDraw ? (
-                        <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
-                          <div className="text-6xl font-black tracking-tight text-white">
-                            {currentRaffleDraw.ticket_number}
-                          </div>
-                          <span className={"rounded-full border px-4 py-2 text-sm font-bold uppercase tracking-[0.14em] " + getRaffleStatusClass(currentRaffleDraw.status)}>
-                            {getRaffleStatusLabel(currentRaffleDraw.status)}
-                          </span>
-                        </div>
-                      ) : (
-                        <p className="mt-3 text-sm text-slate-400">
-                          No raffle number is currently on display. Enter a number above to take over the display screen.
-                        </p>
-                      )}
-                    </div>
                   </div>
 
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
@@ -4646,7 +4670,7 @@ export default function App() {
 
                     <div className="mt-4 space-y-2">
                       {raffleDraws.length ? (
-                        raffleDraws.map((draw, index) => (
+                        raffleDraws.slice().reverse().map((draw, index) => (
                           <div
                             key={draw.id}
                             className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3"
@@ -4656,7 +4680,7 @@ export default function App() {
                                 {draw.ticket_number}
                               </div>
                               <div className="text-xs uppercase tracking-[0.14em] text-slate-500">
-                                {index === 0 ? "Current" : "Previous"}
+                                {"Draw " + (index + 1)}
                               </div>
                             </div>
 
