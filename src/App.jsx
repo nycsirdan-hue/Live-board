@@ -1123,7 +1123,18 @@ export default function App() {
 
   const [entries, setEntries] = useState([]);
   const [raffleDraws, setRaffleDraws] = useState([]);
+  const formatEasternDisplayTime = () =>
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+      .format(new Date())
+      .replace(/\s?[AP]M$/i, "");
+
   const [raffleTicketInput, setRaffleTicketInput] = useState("");
+  const [displayEasternTime, setDisplayEasternTime] = useState(() => formatEasternDisplayTime());
   const [raffleSaving, setRaffleSaving] = useState(false);
   const [lastRemovedEntry, setLastRemovedEntry] = useState(null);
   const [settings, setSettings] = useState(null);
@@ -1902,6 +1913,16 @@ export default function App() {
     if (status === "timed_out") return "border-rose-300/60 bg-rose-300/20 text-rose-100";
     return "border-sky-300/50 bg-sky-300/15 text-sky-100";
   };
+
+  useEffect(() => {
+    const updateEasternTime = () => setDisplayEasternTime(formatEasternDisplayTime());
+
+    updateEasternTime();
+
+    const easternTimeInterval = window.setInterval(updateEasternTime, 1000);
+
+    return () => window.clearInterval(easternTimeInterval);
+  }, []);
 
   useEffect(() => {
     if (!supabase) {
