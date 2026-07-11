@@ -2316,6 +2316,71 @@ export default function App() {
     );
   };
 
+  const updateEntryFormPreset = async (nextPreset) => {
+    const allowedPresets = ["standard", "men_only", "diaper_debauchery_glow"];
+
+    if (!allowedPresets.includes(nextPreset)) return;
+
+    setEntryFormPreset(nextPreset);
+
+    try {
+      window.localStorage.setItem("entryFormPreset", nextPreset);
+    } catch {
+      // Ignore local storage issues.
+    }
+
+    if (!supabase) {
+      setMessage("Entry form changed locally, but Supabase connection is missing.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const payload = {
+      entry_form_preset: nextPreset,
+      visible_sexual_preference_options: visibleSexualPreferenceOptions,
+      custom_sexual_preference_options: customSexualPreferenceOptions,
+      visible_interest_options: visibleInterestOptions,
+      custom_interest_options: customInterestOptions,
+      updated_at: new Date().toISOString(),
+    };
+
+    const query = settings?.id
+      ? supabase
+          .from("board_settings")
+          .update(payload)
+          .eq("id", settings.id)
+          .select("*")
+          .single()
+      : supabase
+          .from("board_settings")
+          .insert({
+            event_name: setupEventName || defaultConfig.eventName,
+            venue_name: setupVenueName || defaultConfig.venueName,
+            ...payload,
+          })
+          .select("*")
+          .single();
+
+    const { data, error } = await query;
+
+    if (error) {
+      setMessage("Could not switch entry form: " + error.message);
+      return;
+    }
+
+    if (data) setSettings(data);
+
+    const label =
+      nextPreset === "men_only"
+        ? "Men-Only Simplified Form"
+        : nextPreset === "diaper_debauchery_glow"
+          ? "Diaper Debauchery Glow Connection Form"
+          : "Standard Entry Form";
+
+    setMessage("Entry form switched to " + label + ".");
+    setTimeout(() => setMessage(""), 2500);
+  };
+
   const persistSexualPreferenceButtonOptions = async (
     nextVisibleSexualPreferenceOptions,
     nextCustomSexualPreferenceOptions,
@@ -4209,7 +4274,7 @@ export default function App() {
                     <div className="grid gap-3 md:grid-cols-3">
                       <button
                         type="button"
-                        onClick={() => setEntryFormPreset("standard")}
+                        onClick={() => updateEntryFormPreset("standard")}
                         className={`rounded-2xl border px-4 py-3 text-left ${
                           entryFormPreset === "standard"
                             ? "border-sky-400 bg-sky-400/10 text-sky-100"
@@ -4224,7 +4289,7 @@ export default function App() {
 
                       <button
                         type="button"
-                        onClick={() => setEntryFormPreset("men_only")}
+                        onClick={() => updateEntryFormPreset("men_only")}
                         className={`rounded-2xl border px-4 py-3 text-left ${
                           entryFormPreset === "men_only"
                             ? "border-amber-400 bg-amber-400/10 text-amber-100"
@@ -4239,7 +4304,7 @@ export default function App() {
 
                       <button
                         type="button"
-                        onClick={() => setEntryFormPreset("diaper_debauchery_glow")}
+                        onClick={() => updateEntryFormPreset("diaper_debauchery_glow")}
                         className={`rounded-2xl border px-4 py-3 text-left ${
                           entryFormPreset === "diaper_debauchery_glow"
                             ? "border-fuchsia-400 bg-fuchsia-400/10 text-fuchsia-100"
@@ -5456,7 +5521,7 @@ export default function App() {
                   <div className="grid gap-3 md:grid-cols-2">
                     <button
                       type="button"
-                      onClick={() => setEntryFormPreset("standard")}
+                      onClick={() => updateEntryFormPreset("standard")}
                       className={`rounded-2xl border px-4 py-3 text-left ${
                         entryFormPreset === "standard"
                           ? "border-sky-400 bg-sky-400/10 text-sky-100"
@@ -5471,7 +5536,7 @@ export default function App() {
 
                     <button
                       type="button"
-                      onClick={() => setEntryFormPreset("men_only")}
+                      onClick={() => updateEntryFormPreset("men_only")}
                       className={`rounded-2xl border px-4 py-3 text-left ${
                         entryFormPreset === "men_only"
                           ? "border-amber-400 bg-amber-400/10 text-amber-100"
