@@ -1983,6 +1983,7 @@ export default function App() {
     loadRaffleDraws();
 
     const raffleRefreshInterval = window.setInterval(loadRaffleDraws, 2000);
+    const settingsRefreshInterval = !isSetupMode ? window.setInterval(loadSettings, 1000) : null;
 
     const channel = supabase
       .channel("board-live")
@@ -2006,6 +2007,7 @@ export default function App() {
     return () => {
       mounted = false;
       window.clearInterval(raffleRefreshInterval);
+      if (settingsRefreshInterval) window.clearInterval(settingsRefreshInterval);
       supabase.removeChannel(channel);
     };
   }, []);
