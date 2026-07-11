@@ -1116,12 +1116,15 @@ export default function App() {
   const isSetupMode = mode === "setup";
   const isSetupTabsMode = isSetupMode;
 
-  const setupTabOptions = ["Events", "Hosts & DMs", "Entry Form", "Display Sizing", "Entries"];
+  const setupTabOptions = ["Events", "Hosts & DMs", "Entry Form", "Display Sizing", "Entries", "Raffle"];
   const [activeSetupTab, setActiveSetupTab] = useState("Events");
   const isKioskEntryMode =
     isEntryMode && new URLSearchParams(window.location.search).get("kiosk") === "1";
 
   const [entries, setEntries] = useState([]);
+  const [raffleDraws, setRaffleDraws] = useState([]);
+  const [raffleTicketInput, setRaffleTicketInput] = useState("");
+  const [raffleSaving, setRaffleSaving] = useState(false);
   const [lastRemovedEntry, setLastRemovedEntry] = useState(null);
   const [settings, setSettings] = useState(null);
 
@@ -1867,6 +1870,21 @@ export default function App() {
     [participantEntries]
   );
 
+  const currentRaffleDraw = useMemo(() => raffleDraws[0] || null, [raffleDraws]);
+  const previousRaffleDraws = useMemo(() => raffleDraws.slice(1, 9), [raffleDraws]);
+
+  const getRaffleStatusLabel = (status) => {
+    if (status === "winner") return "Winner";
+    if (status === "timed_out") return "Timed Out";
+    return "Drawn";
+  };
+
+  const getRaffleStatusClass = (status) => {
+    if (status === "winner") return "border-emerald-300/60 bg-emerald-300/20 text-emerald-100";
+    if (status === "timed_out") return "border-rose-300/60 bg-rose-300/20 text-rose-100";
+    return "border-sky-300/50 bg-sky-300/15 text-sky-100";
+  };
+
   useEffect(() => {
     if (!supabase) {
       setLoading(false);
@@ -1948,8 +1966,20 @@ export default function App() {
       setLoading(false);
     };
 
+    const loadRaffleDraws = async () => {
+      const { data, error } = await supabase
+        .from("raffle_draws")
+        .select("id, ticket_number, status, created_at, updated_at")
+        .order("created_at", { ascending: false });
+
+      if (!mounted) return;
+
+      if (!error) setRaffleDraws(data || []);
+    };
+
     loadSettings();
     loadEntries();
+    loadRaffleDraws();
 
     const channel = supabase
       .channel("board-live")
@@ -1963,6 +1993,11 @@ export default function App() {
         { event: "*", schema: "public", table: "board_settings" },
         () => loadSettings()
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "raffle_draws" },
+        () => loadRaffleDraws()
+      )
       .subscribe();
 
     return () => {
@@ -1970,6 +2005,120 @@ export default function App() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const addRaffleDraw = async () => {
+    const ticketNumber = raffleTicketInput.trim();
+
+    if (!ticketNumber) {
+      setMessage("Enter the drawn ticket number first.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    setRaffleSaving(true);
+
+    const { error } = await supabase
+      .from("raffle_draws")
+      .insert({
+        ticket_number: ticketNumber,
+        status: "drawn",
+      });
+
+    setRaffleSaving(false);
+
+    if (error) {
+      setMessage("Could not show raffle number: " + error.message);
+      return;
+    }
+
+    setRaffleTicketInput("");
+    setMessage("Raffle number " + ticketNumber + " is now on display.");
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const updateCurrentRaffleStatus = async (nextStatus) => {
+    if (!currentRaffleDraw) {
+      setMessage("No raffle number is currently on display.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("raffle_draws")
+      .update({
+        status: nextStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", currentRaffleDraw.id);
+
+    if (error) {
+      setMessage("Could not update raffle number: " + error.message);
+      return;
+    }
+
+    setMessage("Raffle number " + currentRaffleDraw.ticket_number + " marked " + getRaffleStatusLabel(nextStatus) + ".");
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const undoLastRaffleDraw = async () => {
+    if (!currentRaffleDraw) {
+      setMessage("There is no raffle draw to undo.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    if (!window.confirm('Remove raffle number "' + currentRaffleDraw.ticket_number + '" from the display?')) return;
+
+    const { error } = await supabase
+      .from("raffle_draws")
+      .delete()
+      .eq("id", currentRaffleDraw.id);
+
+    if (error) {
+      setMessage("Could not undo raffle draw: " + error.message);
+      return;
+    }
+
+    setMessage("Last raffle draw removed.");
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const clearRaffleDraws = async () => {
+    if (!raffleDraws.length) {
+      setMessage("There are no raffle numbers to clear.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    if (!window.confirm("Clear all raffle numbers from the display and history?")) return;
+
+    const ids = raffleDraws.map((draw) => draw.id);
+
+    const { error } = await supabase
+      .from("raffle_draws")
+      .delete()
+      .in("id", ids);
+
+    if (error) {
+      setMessage("Could not clear raffle: " + error.message);
+      return;
+    }
+
+    setMessage("Raffle cleared. Display will return to the normal board.");
+    setTimeout(() => setMessage(""), 2500);
+  };
 
   const addItemValue = (rawValue) => {
     const value = rawValue.trim();
@@ -4177,7 +4326,7 @@ export default function App() {
                     </div>
                   ) : null}
                 </div>
-              ) : (
+              ) : activeSetupTab === "Entries" ? (
                 <div className="mt-5 space-y-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
@@ -4392,7 +4541,139 @@ export default function App() {
                     )}
                   </div>
                 </div>
-              )}
+              ) : activeSetupTab === "Raffle" ? (
+                <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr),420px]">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-2xl font-semibold tracking-tight text-slate-100">
+                      Raffle Ticket Display
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      Pull the raffle ticket by hand, type the number here, and show it live on the display screen.
+                    </p>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr),180px]">
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold">Drawn ticket number</label>
+                        <input
+                          value={raffleTicketInput}
+                          onChange={(e) => setRaffleTicketInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addRaffleDraw();
+                            }
+                          }}
+                          placeholder="Example: 847"
+                          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-2xl font-semibold outline-none placeholder:text-slate-600 focus:border-sky-400"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={addRaffleDraw}
+                        disabled={raffleSaving}
+                        className="self-end rounded-2xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-4 text-sm font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {raffleSaving ? "Showing..." : "Show Number"}
+                      </button>
+                    </div>
+
+                    <div className="mt-5 grid gap-2 sm:grid-cols-4">
+                      <button
+                        type="button"
+                        onClick={() => updateCurrentRaffleStatus("winner")}
+                        disabled={!currentRaffleDraw}
+                        className="rounded-2xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Winner
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => updateCurrentRaffleStatus("timed_out")}
+                        disabled={!currentRaffleDraw}
+                        className="rounded-2xl border border-rose-400/40 bg-rose-400/10 px-4 py-3 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Timed Out
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={undoLastRaffleDraw}
+                        disabled={!currentRaffleDraw}
+                        className="rounded-2xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Undo Last
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={clearRaffleDraws}
+                        disabled={!raffleDraws.length}
+                        className="rounded-2xl border border-slate-600 bg-slate-950 px-4 py-3 text-sm font-semibold text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Clear Raffle
+                      </button>
+                    </div>
+
+                    <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300/80">
+                        Current number on display
+                      </div>
+
+                      {currentRaffleDraw ? (
+                        <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+                          <div className="text-6xl font-black tracking-tight text-white">
+                            {currentRaffleDraw.ticket_number}
+                          </div>
+                          <span className={"rounded-full border px-4 py-2 text-sm font-bold uppercase tracking-[0.14em] " + getRaffleStatusClass(currentRaffleDraw.status)}>
+                            {getRaffleStatusLabel(currentRaffleDraw.status)}
+                          </span>
+                        </div>
+                      ) : (
+                        <p className="mt-3 text-sm text-slate-400">
+                          No raffle number is currently on display. Enter a number above to take over the display screen.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-lg font-semibold text-white">Raffle History</h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
+                      The newest number stays largest on the display. Older numbers move into the smaller history list.
+                    </p>
+
+                    <div className="mt-4 space-y-2">
+                      {raffleDraws.length ? (
+                        raffleDraws.map((draw, index) => (
+                          <div
+                            key={draw.id}
+                            className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3"
+                          >
+                            <div>
+                              <div className="text-lg font-black text-white">
+                                {draw.ticket_number}
+                              </div>
+                              <div className="text-xs uppercase tracking-[0.14em] text-slate-500">
+                                {index === 0 ? "Current" : "Previous"}
+                              </div>
+                            </div>
+
+                            <span className={"rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] " + getRaffleStatusClass(draw.status)}>
+                              {getRaffleStatusLabel(draw.status)}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950 p-4 text-sm text-slate-400">
+                          No raffle numbers have been entered yet.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 text-sm leading-6 text-slate-400">
                 This tabbed setup screen is still in testing. The original setup page remains available at ?mode=setup.
@@ -6147,6 +6428,46 @@ export default function App() {
             }}
           >
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
+
+            {currentRaffleDraw ? (
+              <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 px-10 py-8 text-center text-white">
+                <div className="text-2xl font-bold uppercase tracking-[0.35em] text-amber-300">
+                  Raffle Draw
+                </div>
+
+                <div className={"mt-8 rounded-full border px-6 py-3 text-xl font-black uppercase tracking-[0.18em] " + getRaffleStatusClass(currentRaffleDraw.status)}>
+                  {getRaffleStatusLabel(currentRaffleDraw.status)}
+                </div>
+
+                <div className="mt-6 text-[20vw] font-black leading-none tracking-tight text-white drop-shadow-2xl">
+                  {currentRaffleDraw.ticket_number}
+                </div>
+
+                {previousRaffleDraws.length ? (
+                  <div className="mt-10 w-full max-w-6xl">
+                    <div className="mb-4 text-lg font-bold uppercase tracking-[0.25em] text-slate-400">
+                      Previous Numbers
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      {previousRaffleDraws.map((draw) => (
+                        <div
+                          key={draw.id}
+                          className="rounded-3xl border border-slate-700 bg-slate-900/90 px-6 py-5"
+                        >
+                          <div className="text-5xl font-black text-white">
+                            {draw.ticket_number}
+                          </div>
+                          <div className={"mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] " + getRaffleStatusClass(draw.status)}>
+                            {getRaffleStatusLabel(draw.status)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="displayBoardHeader">
               <div className="displayBoardTitleBlock">
