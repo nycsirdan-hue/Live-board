@@ -1232,6 +1232,16 @@ export default function App() {
     }
   });
 
+  const [customSexualPreferenceOptions, setCustomSexualPreferenceOptions] = useState(() => {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem("customSexualPreferenceOptions") || "[]");
+      return Array.isArray(stored) ? stored : [];
+    } catch {
+      return [];
+    }
+  });
+  const [customSexualPreferenceOptionInput, setCustomSexualPreferenceOptionInput] = useState("");
+
   const [customInterestOptions, setCustomInterestOptions] = useState(() => {
     try {
       const stored = JSON.parse(window.localStorage.getItem("customInterestOptions") || "[]");
@@ -1310,6 +1320,11 @@ export default function App() {
   const usesMultipleSocialHandles = entryMenuSettings.usesMultipleSocialHandles;
   const usesSingleConnectionBoard = displayBoardSettings.layout === "singleConnectionBoard";
   const isConnectionEntryForm = entryMenuSettings.type === "abdl";
+
+  const allSexualPreferenceOptions = useMemo(
+    () => Array.from(new Set([...defaultSexualPreferenceOptions, ...customSexualPreferenceOptions])).filter(Boolean),
+    [customSexualPreferenceOptions]
+  );
 
   const allInterestOptions = useMemo(
     () => Array.from(new Set([...defaultInterestOptions, ...customInterestOptions])).filter(Boolean),
@@ -1939,6 +1954,10 @@ export default function App() {
           setVisibleSexualPreferenceOptions(data.visible_sexual_preference_options);
         }
 
+        if (Array.isArray(data.custom_sexual_preference_options)) {
+          setCustomSexualPreferenceOptions(data.custom_sexual_preference_options);
+        }
+
         if (Array.isArray(data.visible_interest_options)) {
           setVisibleInterestOptions(data.visible_interest_options);
         }
@@ -2313,6 +2332,43 @@ export default function App() {
     );
   };
 
+  const addCustomSexualPreferenceOption = () => {
+    const value = customSexualPreferenceOptionInput.trim();
+
+    if (!value) {
+      setMessage("Enter a custom Sexual Preference option first.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const alreadyExists = allSexualPreferenceOptions.some(
+      (option) => option.toLowerCase() === value.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      setMessage(value + " already exists as a Sexual Preference option.");
+      setCustomSexualPreferenceOptionInput("");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    setCustomSexualPreferenceOptions((current) => [...current, value]);
+    setVisibleSexualPreferenceOptions((current) =>
+      current.includes(value) ? current : [...current, value]
+    );
+    setCustomSexualPreferenceOptionInput("");
+    setMessage(value + " added to Sexual Preference Buttons.");
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const removeCustomSexualPreferenceOption = (item) => {
+    setCustomSexualPreferenceOptions((current) => current.filter((value) => value !== item));
+    setVisibleSexualPreferenceOptions((current) => current.filter((value) => value !== item));
+    setSexualPreferenceItems((current) => current.filter((value) => value !== item));
+    setMessage(item + " removed from custom Sexual Preference options.");
+    setTimeout(() => setMessage(""), 2500);
+  };
+
   const addCustomInterestOption = () => {
     const value = customInterestOptionInput.trim();
 
@@ -2441,6 +2497,7 @@ export default function App() {
       allow_other_platform: allowOtherPlatform,
       entry_form_preset: entryFormPreset,
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
+      custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
       custom_interest_options: customInterestOptions,
       active_event_display_preset_id: activeEventDisplayId || null,
@@ -2566,6 +2623,7 @@ export default function App() {
       allow_other_platform: allowOtherPlatform,
       entry_form_preset: entryFormPreset,
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
+      custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
       custom_interest_options: customInterestOptions,
       active_event_display_preset_id: presetId || null,
@@ -4130,17 +4188,66 @@ export default function App() {
                         </div>
 
                         <div className="grid gap-2">
-                          {defaultSexualPreferenceOptions.map((option) => (
-                            <label key={option} className="flex items-center gap-3 text-sm text-slate-100">
-                              <input
-                                type="checkbox"
-                                checked={visibleSexualPreferenceOptions.includes(option)}
-                                onChange={() => toggleVisibleSexualPreferenceOption(option)}
-                                className="h-4 w-4"
-                              />
-                              {option}
-                            </label>
-                          ))}
+                          {allSexualPreferenceOptions.map((option) => {
+                            const isCustom = customSexualPreferenceOptions.includes(option);
+
+                            return (
+                              <div key={option} className="flex items-center justify-between gap-3">
+                                <label className="flex min-w-0 items-center gap-3 text-sm text-slate-100">
+                                  <input
+                                    type="checkbox"
+                                    checked={visibleSexualPreferenceOptions.includes(option)}
+                                    onChange={() => toggleVisibleSexualPreferenceOption(option)}
+                                    className="h-4 w-4"
+                                  />
+                                  <span className="truncate">{option}</span>
+                                </label>
+
+                                {isCustom ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeCustomSexualPreferenceOption(option)}
+                                    className="shrink-0 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100"
+                                  >
+                                    Remove
+                                  </button>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <div className="mt-4 rounded-2xl border border-red-900/40 bg-slate-950/70 p-3">
+                          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-red-100/70">
+                            Add Custom Sexual Preference Option
+                          </label>
+
+                          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                            <input
+                              value={customSexualPreferenceOptionInput}
+                              onChange={(event) => setCustomSexualPreferenceOptionInput(event.target.value)}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                  event.preventDefault();
+                                  addCustomSexualPreferenceOption();
+                                }
+                              }}
+                              placeholder="Example: Service Top, Side, Oral Only, Edge Play"
+                              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none placeholder:text-slate-500 focus:border-red-300"
+                            />
+
+                            <button
+                              type="button"
+                              onClick={addCustomSexualPreferenceOption}
+                              className="rounded-xl bg-red-400 px-4 py-2 text-sm font-bold text-slate-950"
+                            >
+                              Add
+                            </button>
+                          </div>
+
+                          <p className="mt-2 text-xs leading-5 text-slate-500">
+                            Custom options are added to this browser and can be checked on/off like the built-in options.
+                          </p>
                         </div>
                       </div>
 
@@ -6396,7 +6503,7 @@ export default function App() {
                     <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                       {(isDiaperDebaucheryEntryForm
                         ? diaperDebaucherySexualPreferenceOptions
-                        : defaultSexualPreferenceOptions.filter((option) => visibleSexualPreferenceOptions.includes(option))
+                        : allSexualPreferenceOptions.filter((option) => visibleSexualPreferenceOptions.includes(option))
                       ).map((option) => {
                           const active = sexualPreferenceItems.includes(option);
                           const isOther = option === "Other";
