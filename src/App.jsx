@@ -2316,11 +2316,78 @@ export default function App() {
     );
   };
 
+  const persistSexualPreferenceButtonOptions = async (
+    nextVisibleSexualPreferenceOptions,
+    nextCustomSexualPreferenceOptions,
+    confirmationMessage = ""
+  ) => {
+    try {
+      window.localStorage.setItem(
+        "visibleSexualPreferenceOptions",
+        JSON.stringify(nextVisibleSexualPreferenceOptions)
+      );
+      window.localStorage.setItem(
+        "customSexualPreferenceOptions",
+        JSON.stringify(nextCustomSexualPreferenceOptions)
+      );
+    } catch {
+      // Ignore local storage issues.
+    }
+
+    if (!supabase) return;
+
+    const payload = {
+      visible_sexual_preference_options: nextVisibleSexualPreferenceOptions,
+      custom_sexual_preference_options: nextCustomSexualPreferenceOptions,
+      updated_at: new Date().toISOString(),
+    };
+
+    const query = settings?.id
+      ? supabase
+          .from("board_settings")
+          .update(payload)
+          .eq("id", settings.id)
+          .select("*")
+          .single()
+      : supabase
+          .from("board_settings")
+          .insert({
+            event_name: setupEventName || defaultConfig.eventName,
+            venue_name: setupVenueName || defaultConfig.venueName,
+            ...payload,
+          })
+          .select("*")
+          .single();
+
+    const { data, error } = await query;
+
+    if (error) {
+      setMessage("Could not save Sexual Preference buttons: " + error.message);
+      return;
+    }
+
+    if (data) setSettings(data);
+
+    if (confirmationMessage) {
+      setMessage(confirmationMessage);
+      setTimeout(() => setMessage(""), 2500);
+    }
+  };
+
   const toggleVisibleSexualPreferenceOption = (item) => {
-    setVisibleSexualPreferenceOptions((current) =>
-      current.includes(item)
-        ? current.filter((value) => value !== item)
-        : [...current, item]
+    const nextVisibleSexualPreferenceOptions = visibleSexualPreferenceOptions.includes(item)
+      ? visibleSexualPreferenceOptions.filter((value) => value !== item)
+      : [...visibleSexualPreferenceOptions, item];
+
+    setVisibleSexualPreferenceOptions(nextVisibleSexualPreferenceOptions);
+    persistSexualPreferenceButtonOptions(
+      nextVisibleSexualPreferenceOptions,
+      customSexualPreferenceOptions,
+      item + (
+        nextVisibleSexualPreferenceOptions.includes(item)
+          ? " activated for the kiosk."
+          : " deactivated from the kiosk."
+      )
     );
   };
 
@@ -2352,21 +2419,35 @@ export default function App() {
       return;
     }
 
-    setCustomSexualPreferenceOptions((current) => [...current, value]);
-    setVisibleSexualPreferenceOptions((current) =>
-      current.includes(value) ? current : [...current, value]
-    );
+    const nextCustomSexualPreferenceOptions = [...customSexualPreferenceOptions, value];
+    const nextVisibleSexualPreferenceOptions = visibleSexualPreferenceOptions.includes(value)
+      ? visibleSexualPreferenceOptions
+      : [...visibleSexualPreferenceOptions, value];
+
+    setCustomSexualPreferenceOptions(nextCustomSexualPreferenceOptions);
+    setVisibleSexualPreferenceOptions(nextVisibleSexualPreferenceOptions);
     setCustomSexualPreferenceOptionInput("");
-    setMessage(value + " added to Sexual Preference Buttons.");
-    setTimeout(() => setMessage(""), 2500);
+
+    persistSexualPreferenceButtonOptions(
+      nextVisibleSexualPreferenceOptions,
+      nextCustomSexualPreferenceOptions,
+      value + " added to Sexual Preference Buttons."
+    );
   };
 
   const removeCustomSexualPreferenceOption = (item) => {
-    setCustomSexualPreferenceOptions((current) => current.filter((value) => value !== item));
-    setVisibleSexualPreferenceOptions((current) => current.filter((value) => value !== item));
+    const nextCustomSexualPreferenceOptions = customSexualPreferenceOptions.filter((value) => value !== item);
+    const nextVisibleSexualPreferenceOptions = visibleSexualPreferenceOptions.filter((value) => value !== item);
+
+    setCustomSexualPreferenceOptions(nextCustomSexualPreferenceOptions);
+    setVisibleSexualPreferenceOptions(nextVisibleSexualPreferenceOptions);
     setSexualPreferenceItems((current) => current.filter((value) => value !== item));
-    setMessage(item + " removed from custom Sexual Preference options.");
-    setTimeout(() => setMessage(""), 2500);
+
+    persistSexualPreferenceButtonOptions(
+      nextVisibleSexualPreferenceOptions,
+      nextCustomSexualPreferenceOptions,
+      item + " removed from custom Sexual Preference options."
+    );
   };
 
   const addCustomInterestOption = () => {
@@ -5419,7 +5500,7 @@ export default function App() {
                         Sexual Preference Buttons
                       </div>
                       <div className="grid gap-2">
-                        {defaultSexualPreferenceOptions.map((option) => (
+                        {allSexualPreferenceOptions.map((option) => (
                           <label key={option} className="flex items-center gap-3 text-sm text-slate-100">
                             <input
                               type="checkbox"
