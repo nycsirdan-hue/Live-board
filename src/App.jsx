@@ -6647,10 +6647,9 @@ export default function App() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                      {(isDiaperDebaucheryEntryForm
-                        ? diaperDebaucherySexualPreferenceOptions
-                        : allSexualPreferenceOptions.filter((option) => visibleSexualPreferenceOptions.includes(option))
-                      ).map((option) => {
+                      {allSexualPreferenceOptions
+                    .filter((option) => visibleSexualPreferenceOptions.includes(option))
+                    .map((option) => {
                           const active = sexualPreferenceItems.includes(option);
                           const isOther = option === "Other";
 
