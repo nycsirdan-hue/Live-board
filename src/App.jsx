@@ -1126,7 +1126,7 @@ export default function App() {
   const formatEasternDisplayTime = () =>
     new Intl.DateTimeFormat("en-US", {
       timeZone: "America/New_York",
-      hour: "2-digit",
+      hour: "numeric",
       minute: "2-digit",
       hour12: true,
     })
@@ -1964,7 +1964,7 @@ export default function App() {
     const updateClock = () => {
       clock.textContent = new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York",
-        hour: "2-digit",
+        hour: "numeric",
         minute: "2-digit",
         hour12: true,
       })
