@@ -1872,6 +1872,7 @@ export default function App() {
 
   const currentRaffleDraw = useMemo(() => raffleDraws[0] || null, [raffleDraws]);
   const previousRaffleDraws = useMemo(() => raffleDraws.slice(1, 9), [raffleDraws]);
+  const isRaffleDisplayActive = settings?.display_mode === "raffle";
 
   const getRaffleStatusLabel = (status) => {
     if (status === "winner") return "Winner";
@@ -2009,6 +2010,64 @@ export default function App() {
     };
   }, []);
 
+  const updateBoardDisplayMode = async (nextDisplayMode, showConfirmation = true) => {
+    if (!["liveboard", "raffle"].includes(nextDisplayMode)) return;
+
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const updatedAt = new Date().toISOString();
+    const payload = {
+      display_mode: nextDisplayMode,
+      updated_at: updatedAt,
+    };
+
+    if (settings?.id) {
+      const { data, error } = await supabase
+        .from("board_settings")
+        .update(payload)
+        .eq("id", settings.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        setMessage("Could not switch display mode: " + error.message);
+        return;
+      }
+
+      setSettings(data);
+    } else {
+      const { data, error } = await supabase
+        .from("board_settings")
+        .insert({
+          event_name: setupEventName || defaultConfig.eventName,
+          venue_name: setupVenueName || defaultConfig.venueName,
+          ...payload,
+        })
+        .select("*")
+        .single();
+
+      if (error) {
+        setMessage("Could not switch display mode: " + error.message);
+        return;
+      }
+
+      setSettings(data);
+    }
+
+    if (showConfirmation) {
+      setMessage(
+        nextDisplayMode === "raffle"
+          ? "Display switched to Raffle."
+          : "Display switched to LiveBoard."
+      );
+      setTimeout(() => setMessage(""), 2500);
+    }
+  };
+
   const addRaffleDraw = async () => {
     const ticketNumber = raffleTicketInput.trim();
 
@@ -2050,6 +2109,7 @@ export default function App() {
     }
 
     setRaffleTicketInput("");
+    await updateBoardDisplayMode("raffle", false);
     setMessage("Raffle number " + ticketNumber + " is now on display.");
     setTimeout(() => setMessage(""), 2500);
   };
@@ -4581,6 +4641,45 @@ export default function App() {
                       Pull the raffle ticket by hand, type the number here, and show it live on the display screen.
                     </p>
 
+                    <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Display mode control
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <span className={
+                          "rounded-full border px-4 py-2 text-sm font-bold uppercase tracking-[0.14em] " +
+                          (isRaffleDisplayActive
+                            ? "border-emerald-300/60 bg-emerald-300/20 text-emerald-100"
+                            : "border-sky-300/50 bg-sky-300/15 text-sky-100")
+                        }>
+                          {isRaffleDisplayActive ? "Raffle Display Active" : "LiveBoard Active"}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => updateBoardDisplayMode("liveboard")}
+                          disabled={!isRaffleDisplayActive}
+                          className="rounded-2xl border border-sky-400/40 bg-sky-400/10 px-4 py-3 text-sm font-semibold text-sky-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Show LiveBoard
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => updateBoardDisplayMode("raffle")}
+                          disabled={isRaffleDisplayActive || !currentRaffleDraw}
+                          className="rounded-2xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Show Raffle Display
+                        </button>
+                      </div>
+
+                      <p className="mt-3 text-xs leading-5 text-slate-500">
+                        Switching to LiveBoard hides the raffle screen without clearing the raffle numbers or history.
+                      </p>
+                    </div>
+
                     <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr),180px]">
                       <div>
                         <label className="mb-2 block text-sm font-semibold">Drawn ticket number</label>
@@ -6497,7 +6596,7 @@ export default function App() {
           >
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
 
-            {currentRaffleDraw ? (
+            {isRaffleDisplayActive && currentRaffleDraw ? (
           <div className={
             currentRaffleDraw.status === "winner"
               ? "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-emerald-950 px-10 py-8 text-center text-white shadow-[inset_0_0_180px_rgba(16,185,129,0.5)]"
