@@ -2006,6 +2006,13 @@ export default function App() {
     loadRaffleDraws();
 
     const raffleRefreshInterval = window.setInterval(loadRaffleDraws, 2000);
+    const liveBoardRefreshInterval = !isSetupMode
+      ? window.setInterval(() => {
+          loadSettings();
+          loadEntries();
+          loadRaffleDraws();
+        }, 1500)
+      : null;
     const settingsRefreshInterval = !isSetupMode ? window.setInterval(loadSettings, 1000) : null;
 
     const channel = supabase
@@ -2030,6 +2037,7 @@ export default function App() {
     return () => {
       mounted = false;
       window.clearInterval(raffleRefreshInterval);
+      if (liveBoardRefreshInterval) window.clearInterval(liveBoardRefreshInterval);
       if (settingsRefreshInterval) window.clearInterval(settingsRefreshInterval);
       supabase.removeChannel(channel);
     };
