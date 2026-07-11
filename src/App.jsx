@@ -6931,6 +6931,13 @@ export default function App() {
           >
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
 
+        <div
+          className="pointer-events-none fixed bottom-6 right-6 rounded-2xl border border-white/25 bg-black/75 px-6 py-3 text-4xl font-black tracking-[0.08em] text-white shadow-[0_0_40px_rgba(255,255,255,0.25)] backdrop-blur-md"
+          style={{ zIndex: 2147483647 }}
+        >
+          {displayEasternTime}
+        </div>
+
             {isRaffleDisplayActive && currentRaffleDraw ? (
           <div className={
             currentRaffleDraw.status === "winner"
