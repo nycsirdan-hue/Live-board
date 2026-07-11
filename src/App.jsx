@@ -2054,9 +2054,9 @@ export default function App() {
     setTimeout(() => setMessage(""), 2500);
   };
 
-  const updateCurrentRaffleStatus = async (nextStatus) => {
-    if (!currentRaffleDraw) {
-      setMessage("No raffle number is currently on display.");
+  const updateRaffleDrawStatus = async (draw, nextStatus) => {
+    if (!draw) {
+      setMessage("No raffle number is selected.");
       setTimeout(() => setMessage(""), 2500);
       return;
     }
@@ -2067,13 +2067,15 @@ export default function App() {
       return;
     }
 
+    const updatedAt = new Date().toISOString();
+
     const { error } = await supabase
       .from("raffle_draws")
       .update({
         status: nextStatus,
-        updated_at: new Date().toISOString(),
+        updated_at: updatedAt,
       })
-      .eq("id", currentRaffleDraw.id);
+      .eq("id", draw.id);
 
     if (error) {
       setMessage("Could not update raffle number: " + error.message);
@@ -2081,15 +2083,19 @@ export default function App() {
     }
 
     setRaffleDraws((current) =>
-      current.map((draw) =>
-        draw.id === currentRaffleDraw.id
-          ? { ...draw, status: nextStatus, updated_at: new Date().toISOString() }
-          : draw
+      current.map((raffleDraw) =>
+        raffleDraw.id === draw.id
+          ? { ...raffleDraw, status: nextStatus, updated_at: updatedAt }
+          : raffleDraw
       )
     );
 
-    setMessage("Raffle number " + currentRaffleDraw.ticket_number + " marked " + getRaffleStatusLabel(nextStatus) + ".");
+    setMessage("Raffle number " + draw.ticket_number + " marked " + getRaffleStatusLabel(nextStatus) + ".");
     setTimeout(() => setMessage(""), 2500);
+  };
+
+  const updateCurrentRaffleStatus = async (nextStatus) => {
+    await updateRaffleDrawStatus(currentRaffleDraw, nextStatus);
   };
 
   const undoLastRaffleDraw = async () => {
@@ -4673,20 +4679,58 @@ export default function App() {
                         raffleDraws.slice().reverse().map((draw, index) => (
                           <div
                             key={draw.id}
-                            className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3"
+                            className={
+                              "rounded-2xl border px-4 py-3 " +
+                              (draw.status === "winner"
+                                ? "border-emerald-500/60 bg-emerald-500/10"
+                                : draw.status === "timed_out"
+                                  ? "border-rose-500/50 bg-rose-500/10"
+                                  : "border-slate-800 bg-slate-950")
+                            }
                           >
-                            <div>
-                              <div className="text-lg font-black text-white">
-                                {draw.ticket_number}
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <div className="text-lg font-black text-white">
+                                  {draw.ticket_number}
+                                </div>
+                                <div className="text-xs uppercase tracking-[0.14em] text-slate-500">
+                                  {"Draw " + (index + 1)}
+                                </div>
                               </div>
-                              <div className="text-xs uppercase tracking-[0.14em] text-slate-500">
-                                {"Draw " + (index + 1)}
-                              </div>
+
+                              <span className={"rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] " + getRaffleStatusClass(draw.status)}>
+                                {getRaffleStatusLabel(draw.status)}
+                              </span>
                             </div>
 
-                            <span className={"rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] " + getRaffleStatusClass(draw.status)}>
-                              {getRaffleStatusLabel(draw.status)}
-                            </span>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                              <button
+                                type="button"
+                                onClick={() => updateRaffleDrawStatus(draw, "winner")}
+                                disabled={draw.status === "winner"}
+                                className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-emerald-100 disabled:cursor-not-allowed disabled:opacity-45"
+                              >
+                                Winner
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => updateRaffleDrawStatus(draw, "timed_out")}
+                                disabled={draw.status === "timed_out"}
+                                className="rounded-xl border border-rose-400/40 bg-rose-400/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-rose-100 disabled:cursor-not-allowed disabled:opacity-45"
+                              >
+                                Timed Out
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => updateRaffleDrawStatus(draw, "drawn")}
+                                disabled={draw.status === "drawn"}
+                                className="rounded-xl border border-sky-400/40 bg-sky-400/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-sky-100 disabled:cursor-not-allowed disabled:opacity-45"
+                              >
+                                Drawn
+                              </button>
+                            </div>
                           </div>
                         ))
                       ) : (
