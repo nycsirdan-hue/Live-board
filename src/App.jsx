@@ -1201,6 +1201,8 @@ export default function App() {
   const [draggedDisplayImageId, setDraggedDisplayImageId] = useState("");
 
   const [showSocialHandleField, setShowSocialHandleField] = useState(true);
+  const [showSexualPreferenceSection, setShowSexualPreferenceSection] = useState(true);
+  const [showInterestSection, setShowInterestSection] = useState(true);
   const [allowFetLife, setAllowFetLife] = useState(true);
   const [allowWhappz, setAllowWhappz] = useState(true);
   const [allowTwitter, setAllowTwitter] = useState(true);
@@ -1940,6 +1942,8 @@ export default function App() {
           switch_max_cols: clampLayoutValue(data.switch_max_cols ?? defaultDisplayLayout.switch_max_cols),
         });
         setShowSocialHandleField(data.show_social_handle_field ?? true);
+        setShowSexualPreferenceSection(data.show_sexual_preference_section ?? true);
+        setShowInterestSection(data.show_interest_section ?? true);
         setAllowFetLife(data.allow_fetlife ?? true);
         setAllowWhappz(data.allow_whappz ?? true);
         setAllowTwitter(data.allow_twitter ?? true);
@@ -2636,6 +2640,8 @@ export default function App() {
       switch_max_rows: clampLayoutValue(displayLayout.switch_max_rows),
       switch_max_cols: clampLayoutValue(displayLayout.switch_max_cols),
       show_social_handle_field: showSocialHandleField,
+      show_sexual_preference_section: showSexualPreferenceSection,
+      show_interest_section: showInterestSection,
       allow_fetlife: allowFetLife,
       allow_whappz: allowWhappz,
       allow_twitter: allowTwitter,
@@ -2762,6 +2768,8 @@ export default function App() {
       switch_max_rows: clampLayoutValue(displayLayout.switch_max_rows),
       switch_max_cols: clampLayoutValue(displayLayout.switch_max_cols),
       show_social_handle_field: showSocialHandleField,
+      show_sexual_preference_section: showSexualPreferenceSection,
+      show_interest_section: showInterestSection,
       allow_fetlife: allowFetLife,
       allow_whappz: allowWhappz,
       allow_twitter: allowTwitter,
@@ -4324,6 +4332,50 @@ export default function App() {
                       <div className="text-sm font-semibold text-slate-100">Entry Button Options</div>
                       <p className="mt-1 text-xs leading-5 text-slate-500">
                         Choose which Sexual Preference and Interest buttons appear on the kiosk entry form.
+                      </p>
+                    </div>
+
+                    <div className="mb-5 rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
+                      <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+                        Entry Form Section Visibility
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <label className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-sm font-semibold text-slate-100">
+                          <input
+                            type="checkbox"
+                            checked={showSexualPreferenceSection}
+                            onChange={(event) => {
+                              setShowSexualPreferenceSection(event.target.checked);
+                              if (!event.target.checked) {
+                                setSexualPreferenceItems([]);
+                                setSexualPreferenceInput("");
+                              }
+                            }}
+                            className="h-4 w-4"
+                          />
+                          Show Sexual Preferences
+                        </label>
+
+                        <label className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-sm font-semibold text-slate-100">
+                          <input
+                            type="checkbox"
+                            checked={showInterestSection}
+                            onChange={(event) => {
+                              setShowInterestSection(event.target.checked);
+                              if (!event.target.checked) {
+                                setInterestItems([]);
+                                setInterestInput("");
+                              }
+                            }}
+                            className="h-4 w-4"
+                          />
+                          Show Interests / Kinks
+                        </label>
+                      </div>
+
+                      <p className="mt-3 text-xs leading-5 text-slate-500">
+                        For social hours, turn both off and keep social handles on. Click Save settings to update the kiosk.
                       </p>
                     </div>
 
@@ -6547,7 +6599,7 @@ export default function App() {
                       ? "border-red-900/60 bg-red-950/20 shadow-[0_0_28px_rgba(220,38,38,0.14)]"
                       : "border-slate-700/70 bg-slate-950/60"
                   }`}>
-                    <div className={`mb-3 border-b pb-2 ${
+                    <div className={`${showSexualPreferenceSection ? "" : "hidden"} mb-3 border-b pb-2 ${
                       isMenOnlyEntryForm ? "border-red-900/40" : "border-slate-800"
                     }`}>
                       <label className="block text-sm font-semibold">
@@ -6715,7 +6767,7 @@ export default function App() {
                       ? "border-violet-800/60 bg-violet-950/20 shadow-[0_0_28px_rgba(124,58,237,0.14)]"
                       : "border-amber-700/50 bg-amber-950/10"
                   }`}>
-                    <div className={`mb-3 border-b pb-2 ${
+                    <div className={`${showInterestSection ? "" : "hidden"} mb-3 border-b pb-2 ${
                       isMenOnlyEntryForm ? "border-violet-800/40" : "border-amber-800/30"
                     }`}>
                       <label className={`block text-sm font-semibold ${
