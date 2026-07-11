@@ -6599,7 +6599,7 @@ export default function App() {
                       ? "border-red-900/60 bg-red-950/20 shadow-[0_0_28px_rgba(220,38,38,0.14)]"
                       : "border-slate-700/70 bg-slate-950/60"
                   }`}>
-                    <div className={`${showSexualPreferenceSection ? "" : "hidden"} mb-3 border-b pb-2 ${
+                    <div className={`mb-3 border-b pb-2 ${
                       isMenOnlyEntryForm ? "border-red-900/40" : "border-slate-800"
                     }`}>
                       <label className="block text-sm font-semibold">
@@ -6690,7 +6690,7 @@ export default function App() {
                 ) : null}
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                  <div className="rounded-2xl border border-red-900/50 bg-red-950/20 p-4">
+                  <div className={`${showSexualPreferenceSection ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
                     <div className="mb-3 border-b border-red-900/30 pb-2">
                       <label className="block text-sm font-semibold text-red-100">Sexual Preferences</label>
                       <p className="mt-1 text-xs leading-5 text-red-100/60">
@@ -6762,12 +6762,12 @@ export default function App() {
                     />
                   </div>
 
-                  <div className={`rounded-2xl border p-4 ${
+                  <div className={`${showInterestSection ? "" : "hidden"} rounded-2xl border p-4 ${
                     isMenOnlyEntryForm
                       ? "border-violet-800/60 bg-violet-950/20 shadow-[0_0_28px_rgba(124,58,237,0.14)]"
                       : "border-amber-700/50 bg-amber-950/10"
                   }`}>
-                    <div className={`${showInterestSection ? "" : "hidden"} mb-3 border-b pb-2 ${
+                    <div className={`mb-3 border-b pb-2 ${
                       isMenOnlyEntryForm ? "border-violet-800/40" : "border-amber-800/30"
                     }`}>
                       <label className={`block text-sm font-semibold ${
