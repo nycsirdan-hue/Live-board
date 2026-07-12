@@ -2552,11 +2552,78 @@ export default function App() {
     );
   };
 
+  const persistInterestButtonOptions = async (
+    nextVisibleInterestOptions,
+    nextCustomInterestOptions,
+    confirmationMessage = ""
+  ) => {
+    try {
+      window.localStorage.setItem(
+        "visibleInterestOptions",
+        JSON.stringify(nextVisibleInterestOptions)
+      );
+      window.localStorage.setItem(
+        "customInterestOptions",
+        JSON.stringify(nextCustomInterestOptions)
+      );
+    } catch {
+      // Ignore local storage issues.
+    }
+
+    if (!supabase) return;
+
+    const payload = {
+      visible_interest_options: nextVisibleInterestOptions,
+      custom_interest_options: nextCustomInterestOptions,
+      updated_at: new Date().toISOString(),
+    };
+
+    const query = settings?.id
+      ? supabase
+          .from("board_settings")
+          .update(payload)
+          .eq("id", settings.id)
+          .select("*")
+          .single()
+      : supabase
+          .from("board_settings")
+          .insert({
+            event_name: setupEventName || defaultConfig.eventName,
+            venue_name: setupVenueName || defaultConfig.venueName,
+            ...payload,
+          })
+          .select("*")
+          .single();
+
+    const { data, error } = await query;
+
+    if (error) {
+      setMessage("Could not save Interest buttons: " + error.message);
+      return;
+    }
+
+    if (data) setSettings(data);
+
+    if (confirmationMessage) {
+      setMessage(confirmationMessage);
+      setTimeout(() => setMessage(""), 2500);
+    }
+  };
+
   const toggleVisibleInterestOption = (item) => {
-    setVisibleInterestOptions((current) =>
-      current.includes(item)
-        ? current.filter((value) => value !== item)
-        : [...current, item]
+    const nextVisibleInterestOptions = visibleInterestOptions.includes(item)
+      ? visibleInterestOptions.filter((value) => value !== item)
+      : [...visibleInterestOptions, item];
+
+    setVisibleInterestOptions(nextVisibleInterestOptions);
+    persistInterestButtonOptions(
+      nextVisibleInterestOptions,
+      customInterestOptions,
+      item + (
+        nextVisibleInterestOptions.includes(item)
+          ? " activated for the kiosk."
+          : " deactivated from the kiosk."
+      )
     );
   };
 
@@ -2627,21 +2694,35 @@ export default function App() {
       return;
     }
 
-    setCustomInterestOptions((current) => [...current, value]);
-    setVisibleInterestOptions((current) =>
-      current.includes(value) ? current : [...current, value]
-    );
+    const nextCustomInterestOptions = [...customInterestOptions, value];
+    const nextVisibleInterestOptions = visibleInterestOptions.includes(value)
+      ? visibleInterestOptions
+      : [...visibleInterestOptions, value];
+
+    setCustomInterestOptions(nextCustomInterestOptions);
+    setVisibleInterestOptions(nextVisibleInterestOptions);
     setCustomInterestOptionInput("");
-    setMessage(`${value} added to Interest Buttons.`);
-    setTimeout(() => setMessage(""), 2500);
+
+    persistInterestButtonOptions(
+      nextVisibleInterestOptions,
+      nextCustomInterestOptions,
+      value + " added to Interest Buttons."
+    );
   };
 
   const removeCustomInterestOption = (item) => {
-    setCustomInterestOptions((current) => current.filter((value) => value !== item));
-    setVisibleInterestOptions((current) => current.filter((value) => value !== item));
+    const nextCustomInterestOptions = customInterestOptions.filter((value) => value !== item);
+    const nextVisibleInterestOptions = visibleInterestOptions.filter((value) => value !== item);
+
+    setCustomInterestOptions(nextCustomInterestOptions);
+    setVisibleInterestOptions(nextVisibleInterestOptions);
     setInterestItems((current) => current.filter((value) => value !== item));
-    setMessage(`${item} removed from custom Interest options.`);
-    setTimeout(() => setMessage(""), 2500);
+
+    persistInterestButtonOptions(
+      nextVisibleInterestOptions,
+      nextCustomInterestOptions,
+      item + " removed from custom Interest options."
+    );
   };
 
   const toggleQuickTag = (tag) => {
