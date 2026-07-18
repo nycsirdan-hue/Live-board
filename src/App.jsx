@@ -2920,7 +2920,25 @@ export default function App() {
   };
 
   const updateActiveEventDisplayPreset = async (presetId) => {
+    const selectedEventDisplay =
+      eventDisplayOptions.find((eventDisplay) => eventDisplay.id === presetId) ||
+      activeEventDisplay;
+
+    const selectedEventName =
+      selectedEventDisplay?.eventName ||
+      selectedEventDisplay?.event_name ||
+      setupEventName ||
+      defaultConfig.eventName;
+
+    const selectedEventDescription =
+      selectedEventDisplay?.eventDescription ||
+      selectedEventDisplay?.event_description ||
+      setupVenueName ||
+      defaultConfig.venueName;
+
     setActiveEventDisplayId(presetId);
+    setSetupEventName(selectedEventName);
+    setSetupVenueName(selectedEventDescription);
 
     if (!supabase) {
       window.localStorage.setItem("activeEventDisplayId", presetId);
@@ -2928,8 +2946,8 @@ export default function App() {
     }
 
     const payload = {
-      event_name: setupEventName || defaultConfig.eventName,
-      venue_name: setupVenueName || defaultConfig.venueName,
+      event_name: selectedEventName,
+      venue_name: selectedEventDescription,
       host_max_rows: clampLayoutValue(displayLayout.host_max_rows),
       host_max_cols: clampLayoutValue(displayLayout.host_max_cols),
       dm_max_rows: clampLayoutValue(displayLayout.dm_max_rows),
@@ -6458,7 +6476,7 @@ export default function App() {
             <div className={`mx-auto max-w-[1500px] ${isDiaperDebaucheryEntryForm ? "diaperGlowKiosk" : ""}`}>
               <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6">
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  {isDiaperDebaucheryEntryForm ? "Diaper Debauchery Glow Connection Board" : "Add Entry"}
+                  {isDiaperDebaucheryEntryForm ? "Diaper Debauchery Glow Connection Board" : isMenOnlyEntryForm ? appConfig.eventName : "Add Entry"}
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-400">
                   {isDiaperDebaucheryEntryForm
