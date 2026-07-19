@@ -62,8 +62,17 @@ function getPresetFromStorage() {
   }
 }
 
+function getEventNameFromStorage() {
+  try {
+    return window.localStorage.getItem("kioskEventName") || "";
+  } catch {
+    return "";
+  }
+}
+
 export default function KioskStartPage({ onStart }) {
   const [entryFormPreset, setEntryFormPreset] = useState(getPresetFromStorage);
+  const [eventName, setEventName] = useState(getEventNameFromStorage);
   const isDiaperMode = entryFormPreset === "diaper_debauchery_glow";
   const isMenMode = entryFormPreset === "men_only";
 
@@ -75,18 +84,30 @@ export default function KioskStartPage({ onStart }) {
 
       const { data, error } = await supabase
         .from("board_settings")
-        .select("entry_form_preset, updated_at")
+        .select("entry_form_preset, event_name, updated_at")
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      if (!cancelled && !error && data?.entry_form_preset) {
-        setEntryFormPreset(data.entry_form_preset);
+      if (!cancelled && !error && data) {
+        if (data.entry_form_preset) {
+          setEntryFormPreset(data.entry_form_preset);
 
-        try {
-          window.localStorage.setItem("entryFormPreset", data.entry_form_preset);
-        } catch {
-          // Ignore localStorage issues.
+          try {
+            window.localStorage.setItem("entryFormPreset", data.entry_form_preset);
+          } catch {
+            // Ignore localStorage issues.
+          }
+        }
+
+        if (data.event_name) {
+          setEventName(data.event_name);
+
+          try {
+            window.localStorage.setItem("kioskEventName", data.event_name);
+          } catch {
+            // Ignore localStorage issues.
+          }
         }
       }
     }
@@ -103,11 +124,23 @@ export default function KioskStartPage({ onStart }) {
             { event: "*", schema: "public", table: "board_settings" },
             (payload) => {
               const nextPreset = payload?.new?.entry_form_preset;
+              const nextEventName = payload?.new?.event_name;
+
               if (nextPreset) {
                 setEntryFormPreset(nextPreset);
 
                 try {
                   window.localStorage.setItem("entryFormPreset", nextPreset);
+                } catch {
+                  // Ignore localStorage issues.
+                }
+              }
+
+              if (nextEventName) {
+                setEventName(nextEventName);
+
+                try {
+                  window.localStorage.setItem("kioskEventName", nextEventName);
                 } catch {
                   // Ignore localStorage issues.
                 }
@@ -154,7 +187,7 @@ export default function KioskStartPage({ onStart }) {
       }
     : isMenMode
       ? {
-          title: "Corrosion Connection Board",
+          title: `${eventName || "Corrosion"} Connection Board`,
           subtitle: "Men’s BDSM & Sex Party. Add your position, intention, sexual interests, kinks, and notes for tonight.",
           hostTitle: "Hosts & Support",
           hostBody: "Find the people holding the room.",
