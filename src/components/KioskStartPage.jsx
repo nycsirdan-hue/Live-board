@@ -79,36 +79,65 @@ export default function KioskStartPage({ onStart }) {
   useEffect(() => {
     let cancelled = false;
 
+    function savePreset(nextPreset) {
+      if (!nextPreset) return;
+
+      setEntryFormPreset(nextPreset);
+
+      try {
+        window.localStorage.setItem("entryFormPreset", nextPreset);
+      } catch {
+        // Ignore localStorage issues.
+      }
+    }
+
+    function saveEventName(nextEventName) {
+      if (!nextEventName) return;
+
+      setEventName(nextEventName);
+
+      try {
+        window.localStorage.setItem("kioskEventName", nextEventName);
+      } catch {
+        // Ignore localStorage issues.
+      }
+    }
+
+    async function resolveActiveEventName(settingsRow) {
+      const activePresetId = settingsRow?.active_event_display_preset_id;
+
+      if (activePresetId && supabase) {
+        const { data: activePreset, error: presetError } = await supabase
+          .from("event_display_presets")
+          .select("event_name")
+          .eq("id", activePresetId)
+          .maybeSingle();
+
+        if (!presetError && activePreset?.event_name) {
+          return activePreset.event_name;
+        }
+      }
+
+      return settingsRow?.event_name || "";
+    }
+
     async function loadPreset() {
       if (!supabase) return;
 
       const { data, error } = await supabase
         .from("board_settings")
-        .select("entry_form_preset, event_name, updated_at")
+        .select("entry_form_preset, event_name, active_event_display_preset_id, updated_at")
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      if (!cancelled && !error && data) {
-        if (data.entry_form_preset) {
-          setEntryFormPreset(data.entry_form_preset);
+      if (cancelled || error || !data) return;
 
-          try {
-            window.localStorage.setItem("entryFormPreset", data.entry_form_preset);
-          } catch {
-            // Ignore localStorage issues.
-          }
-        }
+      savePreset(data.entry_form_preset);
 
-        if (data.event_name) {
-          setEventName(data.event_name);
-
-          try {
-            window.localStorage.setItem("kioskEventName", data.event_name);
-          } catch {
-            // Ignore localStorage issues.
-          }
-        }
+      const resolvedEventName = await resolveActiveEventName(data);
+      if (!cancelled) {
+        saveEventName(resolvedEventName);
       }
     }
 
@@ -123,28 +152,15 @@ export default function KioskStartPage({ onStart }) {
             "postgres_changes",
             { event: "*", schema: "public", table: "board_settings" },
             (payload) => {
-              const nextPreset = payload?.new?.entry_form_preset;
-              const nextEventName = payload?.new?.event_name;
+              const nextSettings = payload?.new || {};
 
-              if (nextPreset) {
-                setEntryFormPreset(nextPreset);
+              savePreset(nextSettings.entry_form_preset);
 
-                try {
-                  window.localStorage.setItem("entryFormPreset", nextPreset);
-                } catch {
-                  // Ignore localStorage issues.
+              resolveActiveEventName(nextSettings).then((resolvedEventName) => {
+                if (!cancelled) {
+                  saveEventName(resolvedEventName);
                 }
-              }
-
-              if (nextEventName) {
-                setEventName(nextEventName);
-
-                try {
-                  window.localStorage.setItem("kioskEventName", nextEventName);
-                } catch {
-                  // Ignore localStorage issues.
-                }
-              }
+              });
             }
           )
           .subscribe()
