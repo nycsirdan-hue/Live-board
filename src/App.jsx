@@ -565,7 +565,7 @@ function EntryLine({
         </div>
       ) : null}
 
-      {renderDisplayDetailLine("Sex", sexualPreferenceText, "text-purple-600", "mt-0.5")}
+      {renderDisplayDetailLine("Sex", sexualPreferenceText, "text-blue-500", "mt-0.5")}
 
       {renderDisplayDetailLine("Give", topLikesToGiveText, "text-red-500", sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
 
@@ -573,9 +573,9 @@ function EntryLine({
 
       {renderDisplayDetailLine("Limits", limitsText, "text-yellow-600", bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
 
-      {renderDisplayDetailLine("Exp", experienceText, "text-slate-400", limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
+      {renderDisplayDetailLine("Exp", experienceText, "text-orange-500", limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
 
-      {renderDisplayDetailLine("Interests", interestText, "text-slate-400", experienceText || limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
+      {renderDisplayDetailLine("Interests", interestText, "text-yellow-500", experienceText || limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
     </div>
   );
 }
