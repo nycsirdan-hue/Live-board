@@ -530,7 +530,7 @@ function EntryLine({
   const renderDisplayDetailLine = (label, value, labelClass, marginClass = "mt-0.5") =>
     value ? (
       <div className={`${detailTextClass} ${marginClass} text-slate-300 break-words leading-tight`}>
-        <span className={`mr-1 font-black uppercase tracking-[0.12em] ${labelClass}`}>{label}:</span>
+        <span className={`mr-1.5 inline-block font-black ${labelClass}`}>{label}</span>
         <span>{value}</span>
       </div>
     ) : null;
@@ -565,17 +565,17 @@ function EntryLine({
         </div>
       ) : null}
 
-      {renderDisplayDetailLine("Give", topLikesToGiveText, "text-red-500", "mt-0.5")}
+      {renderDisplayDetailLine("🔴", topLikesToGiveText, "text-red-500", "mt-0.5")}
 
-      {renderDisplayDetailLine("Receive", bottomLikesToReceiveText, "text-green-500", "mt-0.5")}
+      {renderDisplayDetailLine("🟢", bottomLikesToReceiveText, "text-green-500", "mt-0.5")}
 
-      {renderDisplayDetailLine("Limits", limitsText, "text-yellow-600", "mt-0.5")}
+      {renderDisplayDetailLine("⛔", limitsText, "text-yellow-600", "mt-0.5")}
 
-      {renderDisplayDetailLine("Exp", experienceText, "text-orange-500", "mt-0.5")}
+      {renderDisplayDetailLine("🟠", experienceText, "text-orange-500", "mt-0.5")}
 
-      {renderDisplayDetailLine("Looking For", interestText, "text-yellow-500", "mt-0.5")}
+      {renderDisplayDetailLine("👀", interestText, "text-yellow-500", "mt-0.5")}
 
-      {renderDisplayDetailLine("Sex", sexualPreferenceText, "text-blue-500", "mt-0.5")}
+      {renderDisplayDetailLine("🍑🍆", sexualPreferenceText, "text-blue-500", "mt-0.5")}
     </div>
   );
 }
