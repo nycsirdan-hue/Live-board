@@ -666,23 +666,23 @@ function ParticipantListDisplay({ entries = [] }) {
     if (position === "Top") {
       return {
         label: "Top",
-        cardClass: "border-rose-500/50 bg-rose-500/15 shadow-[0_0_24px_rgba(244,63,94,0.14)]",
-        labelClass: "bg-rose-500/20 text-rose-100 border-rose-400/40",
+        cardClass: "border-red-500/50 bg-red-950/35",
+        labelClass: "border-red-400/40 bg-red-500/15 text-red-100",
       };
     }
 
     if (position === "Bottom") {
       return {
         label: "Bottom",
-        cardClass: "border-emerald-500/50 bg-emerald-500/15 shadow-[0_0_24px_rgba(16,185,129,0.14)]",
-        labelClass: "bg-emerald-500/20 text-emerald-100 border-emerald-400/40",
+        cardClass: "border-emerald-500/50 bg-emerald-950/35",
+        labelClass: "border-emerald-400/40 bg-emerald-500/15 text-emerald-100",
       };
     }
 
     return {
       label: "Switch",
-      cardClass: "border-sky-500/50 bg-sky-500/15 shadow-[0_0_24px_rgba(14,165,233,0.14)]",
-      labelClass: "bg-sky-500/20 text-sky-100 border-sky-400/40",
+      cardClass: "border-sky-500/50 bg-sky-950/35",
+      labelClass: "border-sky-400/40 bg-sky-500/15 text-sky-100",
     };
   };
 
@@ -692,60 +692,49 @@ function ParticipantListDisplay({ entries = [] }) {
     return new Date(a.created_at || 0) - new Date(b.created_at || 0);
   });
 
-  return (
-    <section className="w-full rounded-[2rem] border border-slate-700/70 bg-slate-950/80 p-4 shadow-2xl">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="text-3xl font-black tracking-tight text-white">
-            Participants
-          </div>
-          <div className="mt-1 text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
-            Tops first · Bottoms second · Switches third
-          </div>
-        </div>
-
-        <div className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-black uppercase tracking-[0.14em] text-slate-200">
-          {sortedEntries.length} entries
-        </div>
-      </div>
-
-      {sortedEntries.length === 0 ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-6 text-center text-lg font-semibold text-slate-400">
+  if (sortedEntries.length === 0) {
+    return (
+      <section className="w-full">
+        <div className="rounded-3xl border border-slate-800 bg-slate-950/70 px-6 py-8 text-center text-2xl font-semibold text-slate-400">
           No participant entries yet.
         </div>
-      ) : (
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {sortedEntries.map((entry) => {
-            const meta = getPositionMeta(entry.position);
-            const mergedItems = sortDisplayItemsByConfiguredOrder([
-              ...(entry.items || []),
-              ...(entry.custom_items || []),
-            ]);
+      </section>
+    );
+  }
 
-            return (
-              <div
-                key={entry.id}
-                className={`rounded-3xl border px-4 py-3 ${meta.cardClass}`}
-              >
-                <div className={`mb-1 inline-flex rounded-full border px-3 py-1 text-xs font-black uppercase tracking-[0.14em] ${meta.labelClass}`}>
-                  {meta.label}
-                </div>
+  return (
+    <section className="w-full space-y-3">
+      {sortedEntries.map((entry) => {
+        const meta = getPositionMeta(entry.position);
+        const mergedItems = sortDisplayItemsByConfiguredOrder([
+          ...(entry.items || []),
+          ...(entry.custom_items || []),
+        ]);
 
-                <EntryLine
-                  name={entry.name}
-                  socialHandle={entry.social_handle || ""}
-                  socialPlatform={entry.social_platform || ""}
-                  whoAmI={entry.who_am_i_text || ""}
-                  seeking={entry.seeking_text || ""}
-                  items={mergedItems}
-                  compact
-                  itemLimit={4}
-                />
+        return (
+          <div
+            key={entry.id}
+            className={`w-full rounded-3xl border px-6 py-5 ${meta.cardClass}`}
+          >
+            <div className="mb-3">
+              <div className={`inline-flex rounded-full border px-4 py-1.5 text-sm font-black uppercase tracking-[0.18em] ${meta.labelClass}`}>
+                {meta.label}
               </div>
-            );
-          })}
-        </div>
-      )}
+            </div>
+
+            <EntryLine
+              name={entry.name}
+              socialHandle={entry.social_handle || ""}
+              socialPlatform={entry.social_platform || ""}
+              whoAmI={entry.who_am_i_text || ""}
+              seeking={entry.seeking_text || ""}
+              items={mergedItems}
+              compact
+              itemLimit={6}
+            />
+          </div>
+        );
+      })}
     </section>
   );
 }
