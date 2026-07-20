@@ -2468,10 +2468,10 @@ export default function App() {
 
     const label =
       nextPreset === "men_only"
-        ? "Men-Only Simplified Form"
+        ? "Men Only"
         : nextPreset === "diaper_debauchery_glow"
-          ? "Diaper Debauchery Glow Connection Form"
-          : "Standard Entry Form";
+          ? "KrINKles"
+          : "Standard";
 
     setMessage("Entry form switched to " + label + ".");
     setTimeout(() => setMessage(""), 2500);
@@ -4268,125 +4268,8 @@ export default function App() {
                       Display Sizing
                     </h3>
                     <p className="mt-2 text-sm leading-6 text-slate-400">
-                      Control the board layout, section limits, and readability from across the room.
+                      Control board readability from across the room.
                     </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-                    <h3 className="text-lg font-semibold text-white">
-                      Automatic Display Limits
-                    </h3>
-                    <p className="mt-1 text-sm leading-6 text-slate-400">
-                      Control how many rows and columns each display section can use.
-                    </p>
-
-                    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5 items-start">
-                      {[
-                        {
-                          title: "Host",
-                          rowsKey: "host_max_rows",
-                          colsKey: "host_max_cols",
-                          rowsValue: displayLayout.host_max_rows,
-                          colsValue: displayLayout.host_max_cols,
-                          cardClass: "border-slate-800 bg-black",
-                          textClass: "text-white",
-                        },
-                        {
-                          title: "Dungeon Monitor",
-                          rowsKey: "dm_max_rows",
-                          colsKey: "dm_max_cols",
-                          rowsValue: displayLayout.dm_max_rows,
-                          colsValue: displayLayout.dm_max_cols,
-                          cardClass: "border-slate-800 bg-black",
-                          textClass: "text-white",
-                        },
-                        {
-                          title: "Top",
-                          rowsKey: "top_max_rows",
-                          colsKey: "top_max_cols",
-                          rowsValue: displayLayout.top_max_rows,
-                          colsValue: displayLayout.top_max_cols,
-                          cardClass: "border-rose-900/80 bg-rose-950/40",
-                          textClass: "text-rose-100",
-                        },
-                        {
-                          title: "Bottom",
-                          rowsKey: "bottom_max_rows",
-                          colsKey: "bottom_max_cols",
-                          rowsValue: displayLayout.bottom_max_rows,
-                          colsValue: displayLayout.bottom_max_cols,
-                          cardClass: "border-emerald-900/80 bg-emerald-950/35",
-                          textClass: "text-emerald-100",
-                        },
-                        {
-                          title: "Switch",
-                          rowsKey: "switch_max_rows",
-                          colsKey: "switch_max_cols",
-                          rowsValue: displayLayout.switch_max_rows,
-                          colsValue: displayLayout.switch_max_cols,
-                          cardClass: "border-sky-900/80 bg-sky-950/35",
-                          textClass: "text-sky-100",
-                        },
-                      ].map((section) => (
-                        <div key={section.title} className={`rounded-2xl border p-4 ${section.cardClass}`}>
-                          <div className={`mb-4 text-lg font-semibold ${section.textClass}`}>
-                            {section.title}
-                          </div>
-
-                          <div className="space-y-3">
-                            <div>
-                              <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">
-                                Rows
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => updateLayoutValue(section.rowsKey, -1)}
-                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white"
-                                >
-                                  −
-                                </button>
-                                <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-center font-semibold text-white">
-                                  {section.rowsValue}
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => updateLayoutValue(section.rowsKey, 1)}
-                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white"
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-
-                            <div>
-                              <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">
-                                Columns
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => updateLayoutValue(section.colsKey, -1)}
-                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white"
-                                >
-                                  −
-                                </button>
-                                <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-center font-semibold text-white">
-                                  {section.colsValue}
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => updateLayoutValue(section.colsKey, 1)}
-                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white"
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
                   </div>
 
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
@@ -4480,7 +4363,7 @@ export default function App() {
                             : "border-slate-700 bg-slate-950 text-slate-200"
                         }`}
                       >
-                        <div className="font-semibold">Standard Entry Form</div>
+                        <div className="font-semibold">Standard</div>
                         <div className="mt-1 text-xs leading-5 text-slate-400">
                           Shows identity, seeking, orientation, intention, and open-to fields.
                         </div>
@@ -4495,7 +4378,7 @@ export default function App() {
                             : "border-slate-700 bg-slate-950 text-slate-200"
                         }`}
                       >
-                        <div className="font-semibold">Men-Only Simplified Form</div>
+                        <div className="font-semibold">Men Only</div>
                         <div className="mt-1 text-xs leading-5 text-slate-400">
                           Hides identity, seeking, and orientation for faster men-only party entry.
                         </div>
@@ -4510,7 +4393,7 @@ export default function App() {
                             : "border-slate-700 bg-slate-950 text-slate-200"
                         }`}
                       >
-                        <div className="font-semibold">Diaper Debauchery Glow Connection Form</div>
+                        <div className="font-semibold">KrINKles</div>
                         <div className="mt-1 text-xs leading-5 text-slate-400">
                           Glow-themed connection board form with vibe, looking-for, kinks, sexual preferences, and socials.
                         </div>
@@ -5351,7 +5234,7 @@ export default function App() {
               <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl">
                 <h2 className="text-2xl font-semibold tracking-tight">Setup</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Choose or create the event display preset, then adjust automatic display limits here.
+                  Choose or create the event display preset, then adjust display text size here.
                 </p>
 
                 <div className="mt-4 grid gap-4">
@@ -5560,132 +5443,6 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-
-                <div className="mt-5 space-y-3">
-                  <div className="text-sm font-semibold">Automatic display limits</div>
-
-                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5 items-start">
-                    <div className="rounded-2xl border border-slate-800 bg-black p-4">
-                      <div className="mb-4 text-lg font-semibold text-white">Host</div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">Rows</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("host_max_rows", -1)} className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white">−</button>
-                            <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-center font-semibold text-white">{displayLayout.host_max_rows}</div>
-                            <button type="button" onClick={() => updateLayoutValue("host_max_rows", 1)} className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white">+</button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">Columns</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("host_max_cols", -1)} className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white">−</button>
-                            <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-center font-semibold text-white">{displayLayout.host_max_cols}</div>
-                            <button type="button" onClick={() => updateLayoutValue("host_max_cols", 1)} className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white">+</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-800 bg-black p-4">
-                      <div className="mb-4 text-lg font-semibold text-white">Dungeon Monitor</div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">Rows</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("dm_max_rows", -1)} className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white">−</button>
-                            <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-center font-semibold text-white">{displayLayout.dm_max_rows}</div>
-                            <button type="button" onClick={() => updateLayoutValue("dm_max_rows", 1)} className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white">+</button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">Columns</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("dm_max_cols", -1)} className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white">−</button>
-                            <div className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-center font-semibold text-white">{displayLayout.dm_max_cols}</div>
-                            <button type="button" onClick={() => updateLayoutValue("dm_max_cols", 1)} className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-semibold text-white">+</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-rose-900/80 bg-rose-950/40 p-4">
-                      <div className="mb-4 text-lg font-semibold text-rose-100">Top</div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-rose-200/70">Rows</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("top_max_rows", -1)} className="rounded-xl border border-rose-900/60 bg-rose-950/25 px-3 py-2 font-semibold text-rose-100">−</button>
-                            <div className="flex-1 rounded-xl border border-rose-900/60 bg-rose-950/25 px-3 py-2 text-center font-semibold text-rose-100">{displayLayout.top_max_rows}</div>
-                            <button type="button" onClick={() => updateLayoutValue("top_max_rows", 1)} className="rounded-xl border border-rose-900/60 bg-rose-950/25 px-3 py-2 font-semibold text-rose-100">+</button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-rose-200/70">Columns</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("top_max_cols", -1)} className="rounded-xl border border-rose-900/60 bg-rose-950/25 px-3 py-2 font-semibold text-rose-100">−</button>
-                            <div className="flex-1 rounded-xl border border-rose-900/60 bg-rose-950/25 px-3 py-2 text-center font-semibold text-rose-100">{displayLayout.top_max_cols}</div>
-                            <button type="button" onClick={() => updateLayoutValue("top_max_cols", 1)} className="rounded-xl border border-rose-900/60 bg-rose-950/25 px-3 py-2 font-semibold text-rose-100">+</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-emerald-900/80 bg-emerald-950/35 p-4">
-                      <div className="mb-4 text-lg font-semibold text-emerald-100">Bottom</div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-emerald-200/70">Rows</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("bottom_max_rows", -1)} className="rounded-xl border border-emerald-900/60 bg-emerald-950/20 px-3 py-2 font-semibold text-emerald-100">−</button>
-                            <div className="flex-1 rounded-xl border border-emerald-900/60 bg-emerald-950/20 px-3 py-2 text-center font-semibold text-emerald-100">{displayLayout.bottom_max_rows}</div>
-                            <button type="button" onClick={() => updateLayoutValue("bottom_max_rows", 1)} className="rounded-xl border border-emerald-900/60 bg-emerald-950/20 px-3 py-2 font-semibold text-emerald-100">+</button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-emerald-200/70">Columns</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("bottom_max_cols", -1)} className="rounded-xl border border-emerald-900/60 bg-emerald-950/20 px-3 py-2 font-semibold text-emerald-100">−</button>
-                            <div className="flex-1 rounded-xl border border-emerald-900/60 bg-emerald-950/20 px-3 py-2 text-center font-semibold text-emerald-100">{displayLayout.bottom_max_cols}</div>
-                            <button type="button" onClick={() => updateLayoutValue("bottom_max_cols", 1)} className="rounded-xl border border-emerald-900/60 bg-emerald-950/20 px-3 py-2 font-semibold text-emerald-100">+</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-sky-900/80 bg-sky-950/35 p-4">
-                      <div className="mb-4 text-lg font-semibold text-sky-100">Switch</div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-sky-200/70">Rows</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("switch_max_rows", -1)} className="rounded-xl border border-sky-900/60 bg-sky-950/20 px-3 py-2 font-semibold text-sky-100">−</button>
-                            <div className="flex-1 rounded-xl border border-sky-900/60 bg-sky-950/20 px-3 py-2 text-center font-semibold text-sky-100">{displayLayout.switch_max_rows}</div>
-                            <button type="button" onClick={() => updateLayoutValue("switch_max_rows", 1)} className="rounded-xl border border-sky-900/60 bg-sky-950/20 px-3 py-2 font-semibold text-sky-100">+</button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-sky-200/70">Columns</div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => updateLayoutValue("switch_max_cols", -1)} className="rounded-xl border border-sky-900/60 bg-sky-950/20 px-3 py-2 font-semibold text-sky-100">−</button>
-                            <div className="flex-1 rounded-xl border border-sky-900/60 bg-sky-950/20 px-3 py-2 text-center font-semibold text-sky-100">{displayLayout.switch_max_cols}</div>
-                            <button type="button" onClick={() => updateLayoutValue("switch_max_cols", 1)} className="rounded-xl border border-sky-900/60 bg-sky-950/20 px-3 py-2 font-semibold text-sky-100">+</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
                 <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4">
                   <div className="mb-3">
                     <div className="text-sm font-semibold text-slate-100">Display Text Size</div>
@@ -5771,7 +5528,7 @@ export default function App() {
                           : "border-slate-700 bg-slate-950 text-slate-200"
                       }`}
                     >
-                      <div className="font-semibold">Standard Entry Form</div>
+                      <div className="font-semibold">Standard</div>
                       <div className="mt-1 text-xs leading-5 text-slate-400">
                         Shows identity, seeking, orientation, intention, and open-to fields.
                       </div>
@@ -5786,7 +5543,7 @@ export default function App() {
                           : "border-slate-700 bg-slate-950 text-slate-200"
                       }`}
                     >
-                      <div className="font-semibold">Men-Only Simplified Form</div>
+                      <div className="font-semibold">Men Only</div>
                       <div className="mt-1 text-xs leading-5 text-slate-400">
                         Hides identity, seeking, and orientation for faster men-only party entry.
                       </div>
@@ -6476,7 +6233,7 @@ export default function App() {
             <div className={`mx-auto max-w-[1500px] ${isDiaperDebaucheryEntryForm ? "diaperGlowKiosk" : ""}`}>
               <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6">
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  {isDiaperDebaucheryEntryForm ? "Diaper Debauchery Glow Connection Board" : isMenOnlyEntryForm ? appConfig.eventName : "Add Entry"}
+                  {isDiaperDebaucheryEntryForm ? "KrINKles Connection Board" : isMenOnlyEntryForm ? appConfig.eventName : "Add Entry"}
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-400">
                   {isDiaperDebaucheryEntryForm
