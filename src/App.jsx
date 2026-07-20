@@ -573,7 +573,7 @@ function EntryLine({
 
       {renderDisplayDetailLine("Exp", experienceText, "text-orange-500", "mt-0.5")}
 
-      {renderDisplayDetailLine("Interests", interestText, "text-yellow-500", "mt-0.5")}
+      {renderDisplayDetailLine("Looking For", interestText, "text-yellow-500", "mt-0.5")}
 
       {renderDisplayDetailLine("Sex", sexualPreferenceText, "text-blue-500", "mt-0.5")}
     </div>
