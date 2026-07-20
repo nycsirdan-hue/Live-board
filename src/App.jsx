@@ -432,12 +432,43 @@ function EntryLine({
     .find((item) => typeof item === "string" && item.startsWith("Orientation: "))
     ?.replace("Orientation: ", "");
 
+  const groupedDisplayPrefixes = [
+    "Top likes to use:",
+    "Top likes to give:",
+    "Bottom likes to receive:",
+    "Limits:",
+    "Experience:",
+  ];
+
+  const getPrefixedDisplayItems = (prefixes) => {
+    const values = rawItems
+      .filter((item) => typeof item === "string")
+      .flatMap((item) => {
+        const match = prefixes.find((prefix) =>
+          item.toLowerCase().startsWith(prefix.toLowerCase())
+        );
+
+        if (!match) return [];
+
+        const value = item.slice(match.length).trim();
+        return value ? [value] : [];
+      });
+
+    return Array.from(new Set(values));
+  };
+
   const displayItems = rawItems
     .filter(
       (item) =>
         !(
           typeof item === "string" &&
-          (item.startsWith("Quick Tag: ") || item.startsWith("Orientation: "))
+          (
+            item.startsWith("Quick Tag: ") ||
+            item.startsWith("Orientation: ") ||
+            groupedDisplayPrefixes.some((prefix) =>
+              item.toLowerCase().startsWith(prefix.toLowerCase())
+            )
+          )
         )
     )
     .map(cleanDisplayItem)
@@ -465,9 +496,43 @@ function EntryLine({
     defaultInterestOptions
   );
 
+  const topLikesToGiveItems = orderByList(
+    getPrefixedDisplayItems(["Top likes to use:", "Top likes to give:"]),
+    spankingImplementOptions
+  );
+
+  const bottomLikesToReceiveItems = orderByList(
+    getPrefixedDisplayItems(["Bottom likes to receive:"]),
+    spankingImplementOptions
+  );
+
+  const limitItems = orderByList(
+    getPrefixedDisplayItems(["Limits:"]),
+    spankingLimitOptions
+  );
+
+  const experienceItems = orderByList(
+    getPrefixedDisplayItems(["Experience:"]),
+    spankingExperienceOptions
+  );
+
   const intentionText = intentionTags.join(", ");
   const sexualPreferenceText = joinItems(sexualPreferenceItems, itemLimit);
+  const topLikesToGiveText = joinItems(topLikesToGiveItems, itemLimit);
+  const bottomLikesToReceiveText = joinItems(bottomLikesToReceiveItems, itemLimit);
+  const limitsText = joinItems(limitItems, itemLimit);
+  const experienceText = joinItems(experienceItems, itemLimit);
   const interestText = joinItems(interestItems, itemLimit);
+
+  const detailTextClass = compact ? "text-sm md:text-lg" : "text-base md:text-xl";
+
+  const renderDisplayDetailLine = (label, value, labelClass, marginClass = "mt-1") =>
+    value ? (
+      <div className={`${detailTextClass} ${marginClass} text-slate-300 break-words leading-5`}>
+        <span className={`font-semibold ${labelClass}`}>{label}: </span>
+        <span>{value}</span>
+      </div>
+    ) : null;
 
   return (
     <div className="py-2">
@@ -499,17 +564,17 @@ function EntryLine({
         </div>
       ) : null}
 
-      {sexualPreferenceItems.length > 0 ? (
-        <div className={`${compact ? "text-sm md:text-lg" : "text-base md:text-xl"} mt-1 font-semibold text-rose-400/80 break-words leading-5`}>
-          {sexualPreferenceText}
-        </div>
-      ) : null}
+      {renderDisplayDetailLine("Sexual", sexualPreferenceText, "text-purple-300/90", "mt-1")}
 
-      {interestItems.length > 0 ? (
-        <div className={`${compact ? "text-sm md:text-lg" : "text-base md:text-xl"} ${sexualPreferenceItems.length > 0 ? "mt-1.5" : "mt-0.5"} text-slate-300 break-words leading-5`}>
-          {interestText}
-        </div>
-      ) : null}
+      {renderDisplayDetailLine("Top likes to give", topLikesToGiveText, "text-rose-300", sexualPreferenceText ? "mt-1.5" : "mt-1")}
+
+      {renderDisplayDetailLine("Bottom likes to receive", bottomLikesToReceiveText, "text-emerald-300", topLikesToGiveText || sexualPreferenceText ? "mt-1.5" : "mt-1")}
+
+      {renderDisplayDetailLine("Limits", limitsText, "text-amber-300", bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-1.5" : "mt-1")}
+
+      {renderDisplayDetailLine("Experience", experienceText, "text-zinc-300", limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-1.5" : "mt-1")}
+
+      {renderDisplayDetailLine("Interests", interestText, "text-violet-300/90", experienceText || limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-1.5" : "mt-1")}
     </div>
   );
 }
@@ -3578,7 +3643,7 @@ export default function App() {
       return;
     }
 
-    const taggedSpankingTopItems = finalSpankingTopItems.map((item) => `Top likes to use: ${item}`);
+    const taggedSpankingTopItems = finalSpankingTopItems.map((item) => `Top likes to give: ${item}`);
     const taggedSpankingBottomItems = finalSpankingBottomItems.map((item) => `Bottom likes to receive: ${item}`);
     const taggedSpankingLimitItems = finalSpankingLimitItems.map((item) => `Limits: ${item}`);
     const taggedSpankingExperienceItems = finalSpankingExperienceItems.map((item) => `Experience: ${item}`);
