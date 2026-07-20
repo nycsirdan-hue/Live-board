@@ -74,7 +74,7 @@ export default function KioskStartPage({ onStart }) {
   const [entryFormPreset, setEntryFormPreset] = useState(getPresetFromStorage);
   const [eventName, setEventName] = useState(getEventNameFromStorage);
   const isDiaperMode = entryFormPreset === "diaper_debauchery_glow";
-  const isMenMode = entryFormPreset === "men_only";
+  const isMenMode = entryFormPreset === "men_only" || entryFormPreset === "mens_spanking";
 
   useEffect(() => {
     let cancelled = false;

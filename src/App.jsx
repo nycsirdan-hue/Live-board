@@ -200,6 +200,10 @@ const diaperDebaucherySexualPreferenceOptions = [
 ];
 
 const handlePlatformOptions = ["FetLife", "Whappz", "Twitter", "Bluesky", "Instagram", "Other"];
+const spankingImplementOptions = ["Paddles", "Straps", "Belt", "Brushes", "Canes", "Hands"];
+const spankingLimitOptions = ["No wood", "No leather", "Domestic implements only"];
+const spankingIntentionOptions = ["Open to try", "Discuss Limits", "Open to Play", "Watching"];
+const spankingExperienceOptions = ["New - No Experience", "Beginner", "Intermediate", "Experienced"];
 
 const searchAliases = {
   rope: ["Rope Bondage", "Shibari", "Suspension", "Partial Suspension"],
@@ -1168,6 +1172,13 @@ export default function App() {
   const [interestInput, setInterestInput] = useState("");
   const [interestItems, setInterestItems] = useState([]);
   const [lookingForItems, setLookingForItems] = useState([]);
+  const [spankingTopImplements, setSpankingTopImplements] = useState([]);
+  const [spankingTopOther, setSpankingTopOther] = useState("");
+  const [spankingBottomImplements, setSpankingBottomImplements] = useState([]);
+  const [spankingBottomOther, setSpankingBottomOther] = useState("");
+  const [spankingLimitItems, setSpankingLimitItems] = useState([]);
+  const [spankingLimitsOther, setSpankingLimitsOther] = useState("");
+  const [spankingExperienceLevel, setSpankingExperienceLevel] = useState("");
   const [quickTags, setQuickTags] = useState([]);
   const [message, setMessage] = useState("");
   const [entrySuccess, setEntrySuccess] = useState(false);
@@ -1297,7 +1308,8 @@ export default function App() {
     switch_max_cols: clampLayoutValue(layoutSettings.switch_max_cols ?? defaultDisplayLayout.switch_max_cols),
   };
 
-  const isMenOnlyEntryForm = entryFormPreset === "men_only";
+  const isMensSpankingEntryForm = entryFormPreset === "mens_spanking";
+  const isMenOnlyEntryForm = entryFormPreset === "men_only" || isMensSpankingEntryForm;
   const isDiaperDebaucheryEntryForm = entryFormPreset === "diaper_debauchery_glow";
 
   const entryMenuSettings = isDiaperDebaucheryEntryForm
@@ -2413,7 +2425,7 @@ export default function App() {
   };
 
   const updateEntryFormPreset = async (nextPreset) => {
-    const allowedPresets = ["standard", "men_only", "diaper_debauchery_glow"];
+    const allowedPresets = ["standard", "men_only", "mens_spanking", "diaper_debauchery_glow"];
 
     if (!allowedPresets.includes(nextPreset)) return;
 
@@ -2469,9 +2481,11 @@ export default function App() {
     const label =
       nextPreset === "men_only"
         ? "Men Only"
-        : nextPreset === "diaper_debauchery_glow"
-          ? "KrINKles"
-          : "Standard";
+        : nextPreset === "mens_spanking"
+          ? "Men’s Spanking"
+          : nextPreset === "diaper_debauchery_glow"
+            ? "KrINKles"
+            : "Standard";
 
     setMessage("Entry form switched to " + label + ".");
     setTimeout(() => setMessage(""), 2500);
@@ -2745,6 +2759,9 @@ export default function App() {
     setName("");
     setSocialHandle("");
     setSocialPlatform(availableHandlePlatforms[0] || "FetLife");
+    setSocialHandleDraftPlatform(availableHandlePlatforms[0] || "FetLife");
+    setSocialHandleDraftValue("");
+    setSocialHandleItems([]);
     setPosition("");
     setWhoAmIInput("");
     setSeekingInput("");
@@ -2762,6 +2779,13 @@ export default function App() {
     setInterestInput("");
     setInterestItems([]);
     setLookingForItems([]);
+    setSpankingTopImplements([]);
+    setSpankingTopOther("");
+    setSpankingBottomImplements([]);
+    setSpankingBottomOther("");
+    setSpankingLimitItems([]);
+    setSpankingLimitsOther("");
+    setSpankingExperienceLevel("");
     setMessage("");
     setEntrySuccess(false);
   };
@@ -3376,6 +3400,16 @@ export default function App() {
     );
   };
 
+  const toggleListItem = (setter, item) => {
+    setter((current) =>
+      current.includes(item) ? current.filter((value) => value !== item) : [...current, item]
+    );
+  };
+
+  const toggleSpankingTopImplement = (item) => toggleListItem(setSpankingTopImplements, item);
+  const toggleSpankingBottomImplement = (item) => toggleListItem(setSpankingBottomImplements, item);
+  const toggleSpankingLimitItem = (item) => toggleListItem(setSpankingLimitItems, item);
+
   const formatSocialHandleLine = (platform, value) => {
     const cleanPlatform = String(platform || "").trim();
     const cleanValue = String(value || "").trim();
@@ -3499,19 +3533,63 @@ export default function App() {
       ...parsedInterestItems,
     ]));
 
+    const parseSpankingTextItems = (value) =>
+      String(value || "")
+        .split(/[\n,;]+/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+    const showSpankingTopSection =
+      isMensSpankingEntryForm && (position === "Top" || position === "Switch");
+    const showSpankingBottomSection =
+      isMensSpankingEntryForm && (position === "Bottom" || position === "Switch");
+    const showSpankingLimitsSection = isMensSpankingEntryForm && Boolean(position);
+
+    const finalSpankingTopItems = showSpankingTopSection
+      ? Array.from(new Set([...spankingTopImplements, ...parseSpankingTextItems(spankingTopOther)]))
+      : [];
+
+    const finalSpankingBottomItems = showSpankingBottomSection
+      ? Array.from(new Set([...spankingBottomImplements, ...parseSpankingTextItems(spankingBottomOther)]))
+      : [];
+
+    const finalSpankingLimitItems = showSpankingLimitsSection
+      ? Array.from(new Set([...spankingLimitItems, ...parseSpankingTextItems(spankingLimitsOther)]))
+      : [];
+
+    const finalSpankingExperienceItems =
+      isMensSpankingEntryForm && spankingExperienceLevel ? [spankingExperienceLevel] : [];
+
+    const finalSpankingEntryItems = [
+      ...finalSpankingTopItems,
+      ...finalSpankingBottomItems,
+      ...finalSpankingLimitItems,
+      ...finalSpankingExperienceItems,
+    ];
+
     if (
       finalSexualPreferenceItems.length < 1 &&
       finalInterestItems.length < 1 &&
+      finalSpankingEntryItems.length < 1 &&
+      !(isMensSpankingEntryForm && quickTags.length > 0) &&
       !isDiaperDebaucheryEntryForm
     ) {
-      setMessage("Please add at least one sexual preference or interest.");
+      setMessage("Please add at least one sexual preference, interest, intention, or scene detail.");
       return;
     }
 
+    const taggedSpankingTopItems = finalSpankingTopItems.map((item) => `Top likes to use: ${item}`);
+    const taggedSpankingBottomItems = finalSpankingBottomItems.map((item) => `Bottom likes to receive: ${item}`);
+    const taggedSpankingLimitItems = finalSpankingLimitItems.map((item) => `Limits: ${item}`);
+    const taggedSpankingExperienceItems = finalSpankingExperienceItems.map((item) => `Experience: ${item}`);
     const taggedSexualPreferenceItems = finalSexualPreferenceItems.map((item) => `Sexual: ${item}`);
     const taggedInterestItems = finalInterestItems.map((item) => `Interests: ${item}`);
 
     const finalOpenToItems = [
+      ...taggedSpankingTopItems,
+      ...taggedSpankingBottomItems,
+      ...taggedSpankingLimitItems,
+      ...taggedSpankingExperienceItems,
       ...taggedSexualPreferenceItems,
       ...taggedInterestItems,
     ];
@@ -4379,6 +4457,23 @@ export default function App() {
                         }`}
                       >
                         <div className="font-semibold">Men Only</div>
+                        <div className="mt-1 text-xs leading-5 text-slate-400">
+                          Hides identity, seeking, and orientation for faster men-only party entry.
+                        </div>
+                      </button>
+
+
+
+                      <button
+                        type="button"
+                        onClick={() => updateEntryFormPreset("mens_spanking")}
+                        className={`rounded-2xl border px-4 py-3 text-left ${
+                          entryFormPreset === "mens_spanking"
+                            ? "border-amber-400 bg-amber-400/10 text-amber-100"
+                            : "border-slate-700 bg-slate-950 text-slate-200"
+                        }`}
+                      >
+                        <div className="font-semibold">Men’s Spanking</div>
                         <div className="mt-1 text-xs leading-5 text-slate-400">
                           Hides identity, seeking, and orientation for faster men-only party entry.
                         </div>
@@ -5548,6 +5643,23 @@ export default function App() {
                         Hides identity, seeking, and orientation for faster men-only party entry.
                       </div>
                     </button>
+
+
+
+                    <button
+                      type="button"
+                      onClick={() => updateEntryFormPreset("mens_spanking")}
+                      className={`rounded-2xl border px-4 py-3 text-left ${
+                        entryFormPreset === "mens_spanking"
+                          ? "border-amber-400 bg-amber-400/10 text-amber-100"
+                          : "border-slate-700 bg-slate-950 text-slate-200"
+                      }`}
+                    >
+                      <div className="font-semibold">Men’s Spanking</div>
+                      <div className="mt-1 text-xs leading-5 text-slate-400">
+                        Hides identity, seeking, and orientation for faster men-only party entry.
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -6313,7 +6425,7 @@ export default function App() {
                                 onClick={addSocialHandleItem}
                                 className="w-full rounded-2xl border border-fuchsia-300 bg-fuchsia-400/20 px-4 py-3 text-sm font-bold text-fuchsia-50"
                               >
-                                + Add another
+                                Add handle
                               </button>
                             </div>
                           </div>
@@ -6333,7 +6445,7 @@ export default function App() {
                             </div>
                           ) : (
                             <p className="mt-3 text-xs leading-5 text-fuchsia-100/60">
-                              Add as many as you want. Press Enter or tap + Add another after each one.
+                              Press Enter to add another handle.
                             </p>
                           )}
                         </div>
@@ -6409,6 +6521,171 @@ export default function App() {
                       ))}
                     </div>
                   </div>
+
+                  {isMensSpankingEntryForm && position ? (
+                    <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                      {(position === "Top" || position === "Switch") ? (
+                        <div className="rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 shadow-[0_0_24px_rgba(225,29,72,0.12)]">
+                          <div className="mb-3 border-b border-rose-900/40 pb-2">
+                            <label className="block text-sm font-semibold text-rose-100">
+                              As a top I like to use
+                            </label>
+                            <p className="mt-1 text-xs leading-5 text-rose-100/60">
+                              Choose all that apply. These are conversation starters, not consent.
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                            {spankingImplementOptions.map((item) => {
+                              const active = spankingTopImplements.includes(item);
+
+                              return (
+                                <button
+                                  key={item}
+                                  type="button"
+                                  onClick={() => toggleSpankingTopImplement(item)}
+                                  className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
+                                    active
+                                      ? "border-rose-300 bg-rose-500/25 text-rose-50"
+                                      : "border-rose-500/45 bg-rose-500/10 text-rose-100"
+                                  }`}
+                                >
+                                  {item}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          <label className="mt-4 block text-sm font-bold text-rose-50">
+                            Other / type your own
+                          </label>
+                          <textarea
+                            value={spankingTopOther}
+                            onChange={(e) => setSpankingTopOther(e.target.value)}
+                            placeholder="Type any other implements you like to use"
+                            rows={2}
+                            className="mt-2 w-full rounded-2xl border border-rose-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-rose-300"
+                          />
+                        </div>
+                      ) : null}
+
+                      {(position === "Bottom" || position === "Switch") ? (
+                        <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-4 shadow-[0_0_24px_rgba(16,185,129,0.12)]">
+                          <div className="mb-3 border-b border-emerald-900/40 pb-2">
+                            <label className="block text-sm font-semibold text-emerald-100">
+                              As a bottom I like to receive
+                            </label>
+                            <p className="mt-1 text-xs leading-5 text-emerald-100/60">
+                              Choose all that apply. These are conversation starters, not consent.
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                            {spankingImplementOptions.map((item) => {
+                              const active = spankingBottomImplements.includes(item);
+
+                              return (
+                                <button
+                                  key={item}
+                                  type="button"
+                                  onClick={() => toggleSpankingBottomImplement(item)}
+                                  className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
+                                    active
+                                      ? "border-emerald-300 bg-emerald-500/25 text-emerald-50"
+                                      : "border-emerald-500/45 bg-emerald-500/10 text-emerald-100"
+                                  }`}
+                                >
+                                  {item}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          <label className="mt-4 block text-sm font-bold text-emerald-50">
+                            Other / type your own
+                          </label>
+                          <textarea
+                            value={spankingBottomOther}
+                            onChange={(e) => setSpankingBottomOther(e.target.value)}
+                            placeholder="Type any other implements you like to receive"
+                            rows={2}
+                            className="mt-2 w-full rounded-2xl border border-emerald-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-emerald-300"
+                          />
+                        </div>
+                      ) : null}
+
+                      <div className="rounded-2xl border border-amber-700/50 bg-amber-950/10 p-4 xl:col-span-2">
+                        <div className="mb-3 border-b border-amber-800/30 pb-2">
+                          <label className="block text-sm font-semibold text-amber-100">
+                            My limits
+                          </label>
+                          <p className="mt-1 text-xs leading-5 text-amber-100/60">
+                            Choose any limits you want visible and add anything else people should know.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                          {spankingLimitOptions.map((item) => {
+                            const active = spankingLimitItems.includes(item);
+
+                            return (
+                              <button
+                                key={item}
+                                type="button"
+                                onClick={() => toggleSpankingLimitItem(item)}
+                                className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
+                                  active
+                                    ? "border-amber-300 bg-amber-400/20 text-amber-50"
+                                    : "border-amber-500/45 bg-amber-500/10 text-amber-100"
+                                }`}
+                              >
+                                {item}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <label className="mt-4 block text-sm font-bold text-amber-50">
+                          Other / type your own
+                        </label>
+                        <textarea
+                          value={spankingLimitsOther}
+                          onChange={(e) => setSpankingLimitsOther(e.target.value)}
+                          placeholder="Example: no wood, no leather, light warm-up first, avoid thighs, ask before canes"
+                          rows={2}
+                          className="mt-2 w-full rounded-2xl border border-amber-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-300"
+                        />
+                      </div>
+
+                      <div className="rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2">
+                        <div className="mb-3 border-b border-zinc-700/70 pb-2">
+                          <label className="block text-sm font-semibold text-zinc-100">
+                            Experience Level
+                          </label>
+                          <p className="mt-1 text-xs leading-5 text-zinc-400">
+                            Choose the level that feels most accurate tonight.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                          {spankingExperienceOptions.map((item) => (
+                            <button
+                              key={item}
+                              type="button"
+                              onClick={() => setSpankingExperienceLevel(item)}
+                              className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
+                                spankingExperienceLevel === item
+                                  ? "border-zinc-200 bg-zinc-300/20 text-zinc-50"
+                                  : "border-zinc-700 bg-black/60 text-zinc-200"
+                              }`}
+                            >
+                              {item}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
 
                   {!isMenOnlyEntryForm ? (
                     <>
@@ -6563,7 +6840,12 @@ export default function App() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 xl:grid-cols-3">
-                      {(isDiaperDebaucheryEntryForm ? diaperDebaucheryVibeOptions : quickTagOptions).map((tag) => {
+                      {(isDiaperDebaucheryEntryForm
+                        ? diaperDebaucheryVibeOptions
+                        : isMensSpankingEntryForm
+                          ? spankingIntentionOptions
+                          : quickTagOptions
+                      ).map((tag) => {
                         const active = quickTags.includes(tag);
 
                         return (
