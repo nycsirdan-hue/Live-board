@@ -565,17 +565,17 @@ function EntryLine({
         </div>
       ) : null}
 
+      {renderDisplayDetailLine("Give", topLikesToGiveText, "text-red-500", "mt-0.5")}
+
+      {renderDisplayDetailLine("Receive", bottomLikesToReceiveText, "text-green-500", "mt-0.5")}
+
+      {renderDisplayDetailLine("Limits", limitsText, "text-yellow-600", "mt-0.5")}
+
+      {renderDisplayDetailLine("Exp", experienceText, "text-orange-500", "mt-0.5")}
+
+      {renderDisplayDetailLine("Interests", interestText, "text-yellow-500", "mt-0.5")}
+
       {renderDisplayDetailLine("Sex", sexualPreferenceText, "text-blue-500", "mt-0.5")}
-
-      {renderDisplayDetailLine("Give", topLikesToGiveText, "text-red-500", sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
-
-      {renderDisplayDetailLine("Receive", bottomLikesToReceiveText, "text-green-500", topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
-
-      {renderDisplayDetailLine("Limits", limitsText, "text-yellow-600", bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
-
-      {renderDisplayDetailLine("Exp", experienceText, "text-orange-500", limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
-
-      {renderDisplayDetailLine("Interests", interestText, "text-yellow-500", experienceText || limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
     </div>
   );
 }
