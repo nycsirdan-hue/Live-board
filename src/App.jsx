@@ -3733,11 +3733,6 @@ export default function App() {
       return;
     }
 
-    if (!hostRole) {
-      setMessage("Please choose Host, Co-Host, or DM.");
-      return;
-    }
-
     if (hostFunctions.length < 1) {
       setMessage("Please choose at least one support function.");
       return;
@@ -3759,6 +3754,7 @@ export default function App() {
     setHostSaving(true);
 
     const isDmRole = hostRole === "DM";
+    const isRolelessSupportEntry = !hostRole;
 
     const { error } = await supabase.from("board_entries").insert({
       name: hostName.trim(),
@@ -3766,7 +3762,7 @@ export default function App() {
       social_platform: null,
       who_am_i_text: null,
       seeking_text: null,
-      position: isDmRole ? null : hostRole,
+      position: isDmRole || isRolelessSupportEntry ? null : hostRole,
       dm_category: isDmRole ? hostFunctions.join(", ") : null,
       host_function: isDmRole ? null : hostFunctions.join(", "),
       items: standardItems.sort((a, b) => a.localeCompare(b)),
