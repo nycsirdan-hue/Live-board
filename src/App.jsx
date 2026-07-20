@@ -654,6 +654,102 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
+function ParticipantListDisplay({ entries = [] }) {
+  const getPositionRank = (entry) => {
+    if (entry.position === "Top") return 0;
+    if (entry.position === "Bottom") return 1;
+    if (entry.position === "Switch") return 2;
+    return 99;
+  };
+
+  const getPositionMeta = (position) => {
+    if (position === "Top") {
+      return {
+        label: "Top",
+        cardClass: "border-rose-500/50 bg-rose-500/15 shadow-[0_0_24px_rgba(244,63,94,0.14)]",
+        labelClass: "bg-rose-500/20 text-rose-100 border-rose-400/40",
+      };
+    }
+
+    if (position === "Bottom") {
+      return {
+        label: "Bottom",
+        cardClass: "border-emerald-500/50 bg-emerald-500/15 shadow-[0_0_24px_rgba(16,185,129,0.14)]",
+        labelClass: "bg-emerald-500/20 text-emerald-100 border-emerald-400/40",
+      };
+    }
+
+    return {
+      label: "Switch",
+      cardClass: "border-sky-500/50 bg-sky-500/15 shadow-[0_0_24px_rgba(14,165,233,0.14)]",
+      labelClass: "bg-sky-500/20 text-sky-100 border-sky-400/40",
+    };
+  };
+
+  const sortedEntries = [...entries].sort((a, b) => {
+    const rankDiff = getPositionRank(a) - getPositionRank(b);
+    if (rankDiff !== 0) return rankDiff;
+    return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+  });
+
+  return (
+    <section className="w-full rounded-[2rem] border border-slate-700/70 bg-slate-950/80 p-4 shadow-2xl">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="text-3xl font-black tracking-tight text-white">
+            Participants
+          </div>
+          <div className="mt-1 text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
+            Tops first · Bottoms second · Switches third
+          </div>
+        </div>
+
+        <div className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-black uppercase tracking-[0.14em] text-slate-200">
+          {sortedEntries.length} entries
+        </div>
+      </div>
+
+      {sortedEntries.length === 0 ? (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-6 text-center text-lg font-semibold text-slate-400">
+          No participant entries yet.
+        </div>
+      ) : (
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {sortedEntries.map((entry) => {
+            const meta = getPositionMeta(entry.position);
+            const mergedItems = sortDisplayItemsByConfiguredOrder([
+              ...(entry.items || []),
+              ...(entry.custom_items || []),
+            ]);
+
+            return (
+              <div
+                key={entry.id}
+                className={`rounded-3xl border px-4 py-3 ${meta.cardClass}`}
+              >
+                <div className={`mb-1 inline-flex rounded-full border px-3 py-1 text-xs font-black uppercase tracking-[0.14em] ${meta.labelClass}`}>
+                  {meta.label}
+                </div>
+
+                <EntryLine
+                  name={entry.name}
+                  socialHandle={entry.social_handle || ""}
+                  socialPlatform={entry.social_platform || ""}
+                  whoAmI={entry.who_am_i_text || ""}
+                  seeking={entry.seeking_text || ""}
+                  items={mergedItems}
+                  compact
+                  itemLimit={4}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function normalizeEventDisplayPreset(preset) {
   if (!preset) return null;
 
@@ -1981,6 +2077,7 @@ export default function App() {
   const currentRaffleDraw = useMemo(() => raffleDraws[0] || null, [raffleDraws]);
   const previousRaffleDraws = useMemo(() => raffleDraws.slice(1, 9), [raffleDraws]);
   const isRaffleDisplayActive = settings?.display_mode === "raffle";
+  const participantDisplayLayout = settings?.participant_display_layout === "list" ? "list" : "tiles";
 
   const getRaffleStatusLabel = (status) => {
     if (status === "winner") return "Winner";
@@ -2263,6 +2360,63 @@ export default function App() {
       );
       setTimeout(() => setMessage(""), 2500);
     }
+  };
+
+  const updateParticipantDisplayLayout = async (nextLayout) => {
+    if (!["tiles", "list"].includes(nextLayout)) return;
+
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const updatedAt = new Date().toISOString();
+    const payload = {
+      participant_display_layout: nextLayout,
+      updated_at: updatedAt,
+    };
+
+    if (settings?.id) {
+      const { data, error } = await supabase
+        .from("board_settings")
+        .update(payload)
+        .eq("id", settings.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        setMessage("Could not switch display layout: " + error.message);
+        return;
+      }
+
+      setSettings(data);
+    } else {
+      const { data, error } = await supabase
+        .from("board_settings")
+        .insert({
+          event_name: setupEventName || defaultConfig.eventName,
+          venue_name: setupVenueName || defaultConfig.venueName,
+          display_mode: "liveboard",
+          ...payload,
+        })
+        .select("*")
+        .single();
+
+      if (error) {
+        setMessage("Could not switch display layout: " + error.message);
+        return;
+      }
+
+      setSettings(data);
+    }
+
+    setMessage(
+      nextLayout === "list"
+        ? "Display layout switched to List View."
+        : "Display layout switched to Tile View."
+    );
+    setTimeout(() => setMessage(""), 2500);
   };
 
   const addRaffleDraw = async () => {
@@ -4435,6 +4589,51 @@ export default function App() {
 
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <h3 className="text-lg font-semibold text-white">
+                      Display Layout
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
+                      Choose how participant entries appear on the public display.
+                    </p>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={() => updateParticipantDisplayLayout("tiles")}
+                        className={`rounded-2xl border px-4 py-4 text-left transition ${
+                          participantDisplayLayout === "tiles"
+                            ? "border-sky-300 bg-sky-400 text-slate-950"
+                            : "border-slate-700 bg-slate-950 text-slate-100"
+                        }`}
+                      >
+                        <div className="font-black">Tile View</div>
+                        <div className={`mt-1 text-sm leading-5 ${
+                          participantDisplayLayout === "tiles" ? "text-slate-800" : "text-slate-400"
+                        }`}>
+                          Top, Bottom, and Switch display as separate cards.
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => updateParticipantDisplayLayout("list")}
+                        className={`rounded-2xl border px-4 py-4 text-left transition ${
+                          participantDisplayLayout === "list"
+                            ? "border-sky-300 bg-sky-400 text-slate-950"
+                            : "border-slate-700 bg-slate-950 text-slate-100"
+                        }`}
+                      >
+                        <div className="font-black">List View</div>
+                        <div className={`mt-1 text-sm leading-5 ${
+                          participantDisplayLayout === "list" ? "text-slate-800" : "text-slate-400"
+                        }`}>
+                          One continuous list: Tops first, Bottoms second, Switches third.
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-lg font-semibold text-white">
                       Display Text Size
                     </h3>
                     <p className="mt-1 text-sm leading-6 text-slate-400">
@@ -4501,7 +4700,7 @@ export default function App() {
                   </div>
 
                   <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm leading-6 text-emerald-100">
-                    Display Sizing is complete: rows, columns, board text size, and support-team text size are now available here.
+                    Display Sizing includes layout mode, board text size, and support-team text size.
                   </div>
                 </div>
               ) : activeSetupTab === "Entry Form" ? (
@@ -7421,6 +7620,12 @@ export default function App() {
                   theme={sectionThemes.Switch}
                   maxRows={8}
                   maxCols={5}
+                />
+              </div>
+            ) : participantDisplayLayout === "list" ? (
+              <div className="displayRoleRow displayConnectionRow">
+                <ParticipantListDisplay
+                  entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                 />
               </div>
             ) : (
