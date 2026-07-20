@@ -517,19 +517,20 @@ function EntryLine({
   );
 
   const intentionText = intentionTags.join(", ");
-  const sexualPreferenceText = joinItems(sexualPreferenceItems, itemLimit);
-  const topLikesToGiveText = joinItems(topLikesToGiveItems, itemLimit);
-  const bottomLikesToReceiveText = joinItems(bottomLikesToReceiveItems, itemLimit);
-  const limitsText = joinItems(limitItems, itemLimit);
-  const experienceText = joinItems(experienceItems, itemLimit);
-  const interestText = joinItems(interestItems, itemLimit);
+  const detailItemLimit = compact ? Math.min(itemLimit, 4) : Math.min(itemLimit, 5);
+  const sexualPreferenceText = joinItems(sexualPreferenceItems, Math.min(detailItemLimit, 4));
+  const topLikesToGiveText = joinItems(topLikesToGiveItems, detailItemLimit);
+  const bottomLikesToReceiveText = joinItems(bottomLikesToReceiveItems, detailItemLimit);
+  const limitsText = joinItems(limitItems, Math.min(detailItemLimit, 4));
+  const experienceText = joinItems(experienceItems, Math.min(detailItemLimit, 3));
+  const interestText = joinItems(interestItems, Math.min(detailItemLimit, 4));
 
-  const detailTextClass = compact ? "text-sm md:text-lg" : "text-base md:text-xl";
+  const detailTextClass = compact ? "text-[0.72rem] md:text-xs" : "text-xs md:text-sm";
 
-  const renderDisplayDetailLine = (label, value, labelClass, marginClass = "mt-1") =>
+  const renderDisplayDetailLine = (label, value, labelClass, marginClass = "mt-0.5") =>
     value ? (
-      <div className={`${detailTextClass} ${marginClass} text-slate-300 break-words leading-5`}>
-        <span className={`font-semibold ${labelClass}`}>{label}: </span>
+      <div className={`${detailTextClass} ${marginClass} text-slate-300 break-words leading-tight`}>
+        <span className={`mr-1 font-black uppercase tracking-[0.12em] ${labelClass}`}>{label}:</span>
         <span>{value}</span>
       </div>
     ) : null;
@@ -564,17 +565,17 @@ function EntryLine({
         </div>
       ) : null}
 
-      {renderDisplayDetailLine("Sexual", sexualPreferenceText, "text-purple-300/90", "mt-1")}
+      {renderDisplayDetailLine("Sex", sexualPreferenceText, "text-purple-600", "mt-0.5")}
 
-      {renderDisplayDetailLine("Top likes to give", topLikesToGiveText, "text-rose-300", sexualPreferenceText ? "mt-1.5" : "mt-1")}
+      {renderDisplayDetailLine("Give", topLikesToGiveText, "text-red-500", sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
 
-      {renderDisplayDetailLine("Bottom likes to receive", bottomLikesToReceiveText, "text-emerald-300", topLikesToGiveText || sexualPreferenceText ? "mt-1.5" : "mt-1")}
+      {renderDisplayDetailLine("Receive", bottomLikesToReceiveText, "text-green-500", topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
 
-      {renderDisplayDetailLine("Limits", limitsText, "text-amber-300", bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-1.5" : "mt-1")}
+      {renderDisplayDetailLine("Limits", limitsText, "text-yellow-600", bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
 
-      {renderDisplayDetailLine("Experience", experienceText, "text-zinc-300", limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-1.5" : "mt-1")}
+      {renderDisplayDetailLine("Exp", experienceText, "text-slate-400", limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
 
-      {renderDisplayDetailLine("Interests", interestText, "text-violet-300/90", experienceText || limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-1.5" : "mt-1")}
+      {renderDisplayDetailLine("Interests", interestText, "text-slate-400", experienceText || limitsText || bottomLikesToReceiveText || topLikesToGiveText || sexualPreferenceText ? "mt-0.5" : "mt-0.5")}
     </div>
   );
 }
