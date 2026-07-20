@@ -946,7 +946,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false 
               >
                 <EntryLine
                   name={entry.entry_kind === "host"
-                    ? `${entry.name} | ${entry.position || "Host"}`
+                    ? entry.position ? `${entry.name} | ${entry.position}` : entry.name
                     : entry.entry_kind === "dm"
                       ? `${entry.name} | DM`
                       : entry.name}
@@ -1252,7 +1252,9 @@ export default function App() {
   const [hostName, setHostName] = useState("");
   const [hostCategory, setHostCategory] = useState("");
   const [hostRole, setHostRole] = useState("");
+  const [hostCustomRole, setHostCustomRole] = useState("");
   const [hostFunctions, setHostFunctions] = useState([]);
+  const [hostCustomFunction, setHostCustomFunction] = useState("");
   const [hostItemInput, setHostItemInput] = useState("");
   const [hostSelectedItems, setHostSelectedItems] = useState([]);
 
@@ -2867,7 +2869,9 @@ export default function App() {
   const resetHostForm = () => {
     setHostName("");
       setHostRole("");
+      setHostCustomRole("");
       setHostFunctions([]);
+      setHostCustomFunction("");
     setHostCategory("");
     setHostItemInput("");
     setHostSelectedItems([]);
@@ -3733,8 +3737,18 @@ export default function App() {
       return;
     }
 
-    if (hostFunctions.length < 1) {
-      setMessage("Please choose at least one support function.");
+    const parsedCustomSupportFunctions = hostCustomFunction
+      .split(/[\n,;]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    const finalHostFunctions = Array.from(new Set([
+      ...hostFunctions,
+      ...parsedCustomSupportFunctions,
+    ]));
+
+    if (finalHostFunctions.length < 1) {
+      setMessage("Please choose or enter at least one support function.");
       return;
     }
 
@@ -3753,8 +3767,10 @@ export default function App() {
 
     setHostSaving(true);
 
-    const isDmRole = hostRole === "DM";
-    const isRolelessSupportEntry = !hostRole;
+    const finalSupportRole = hostCustomRole.trim() || hostRole;
+    const isDmRole = finalSupportRole === "DM";
+    const isRolelessSupportEntry = !finalSupportRole;
+    const supportFunctionText = finalHostFunctions.join(", ");
 
     const { error } = await supabase.from("board_entries").insert({
       name: hostName.trim(),
@@ -3762,9 +3778,9 @@ export default function App() {
       social_platform: null,
       who_am_i_text: null,
       seeking_text: null,
-      position: isDmRole || isRolelessSupportEntry ? null : hostRole,
-      dm_category: isDmRole ? hostFunctions.join(", ") : null,
-      host_function: isDmRole ? null : hostFunctions.join(", "),
+      position: isDmRole || isRolelessSupportEntry ? null : finalSupportRole,
+      dm_category: isDmRole ? supportFunctionText : null,
+      host_function: isDmRole ? null : supportFunctionText,
       items: standardItems.sort((a, b) => a.localeCompare(b)),
       custom_items: customItems.sort((a, b) => a.localeCompare(b)),
       entry_kind: isDmRole ? "dm" : "host",
@@ -4828,7 +4844,10 @@ export default function App() {
                           <button
                             key={role}
                             type="button"
-                            onClick={() => setHostRole(role)}
+                            onClick={() => {
+                          setHostRole(role);
+                          setHostCustomRole("");
+                        }}
                             className={`rounded-full px-4 py-2 text-sm font-semibold border ${
                               hostRole === role
                                 ? "bg-sky-400 text-slate-950 border-sky-400"
@@ -4840,6 +4859,22 @@ export default function App() {
                         ))}
                       </div>
                     </div>
+
+                    <div className="mt-4">
+                      <label className="mb-2 block text-sm font-semibold">Custom Role</label>
+                      <input
+                        value={hostCustomRole}
+                        onChange={(e) => {
+                          setHostCustomRole(e.target.value);
+                          if (e.target.value.trim()) setHostRole("");
+                        }}
+                        placeholder="Type custom role"
+                        className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                      />
+
+
+                    </div>
+
 
                     <div className="mt-4">
                       <label className="mb-2 block text-sm font-semibold">Function</label>
@@ -4870,6 +4905,20 @@ export default function App() {
                         })}
                       </div>
                     </div>
+
+                    <div className="mt-4">
+                      <label className="mb-2 block text-sm font-semibold">Custom Function</label>
+                      <input
+                        value={hostCustomFunction}
+                        onChange={(e) => setHostCustomFunction(e.target.value)}
+                        placeholder="Type custom function"
+                        className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                      />
+                      <p className="mt-1 text-xs text-slate-500">Use commas for more than one custom function.</p>
+
+
+                    </div>
+
 
                     <div className="mt-4">
                       <label className="mb-2 block text-sm font-semibold">Kinks and Fetishes</label>
@@ -5895,7 +5944,10 @@ export default function App() {
                         <button
                           key={role}
                           type="button"
-                          onClick={() => setHostRole(role)}
+                          onClick={() => {
+                          setHostRole(role);
+                          setHostCustomRole("");
+                        }}
                           className={`rounded-full px-4 py-2 text-sm font-semibold border ${
                             hostRole === role
                               ? "bg-sky-400 text-slate-950 border-sky-400"
@@ -5907,6 +5959,22 @@ export default function App() {
                       ))}
                     </div>
                   </div>
+
+                  <div className="mt-4">
+                    <label className="mb-2 block text-sm font-semibold">Custom Role</label>
+                    <input
+                      value={hostCustomRole}
+                      onChange={(e) => {
+                        setHostCustomRole(e.target.value);
+                        if (e.target.value.trim()) setHostRole("");
+                      }}
+                      placeholder="Type custom role"
+                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                    />
+
+
+                  </div>
+
 
                   <div className="mt-4">
                     <label className="mb-2 block text-sm font-semibold">Function</label>
@@ -5936,6 +6004,20 @@ export default function App() {
                       })}
                     </div>
                   </div>
+
+                  <div className="mt-4">
+                    <label className="mb-2 block text-sm font-semibold">Custom Function</label>
+                    <input
+                      value={hostCustomFunction}
+                      onChange={(e) => setHostCustomFunction(e.target.value)}
+                      placeholder="Type custom function"
+                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                    />
+                    <p className="mt-1 text-xs text-slate-500">Use commas for more than one custom function.</p>
+
+
+                  </div>
+
 
                   <div className="mt-4">
                     <label className="mb-2 block text-sm font-semibold">Kinks and Fetishes</label>
@@ -6029,6 +6111,22 @@ export default function App() {
                   </div>
 
                   <div className="mt-4">
+                    <label className="mb-2 block text-sm font-semibold">Custom Role</label>
+                    <input
+                      value={hostCustomRole}
+                      onChange={(e) => {
+                        setHostCustomRole(e.target.value);
+                        if (e.target.value.trim()) setHostRole("");
+                      }}
+                      placeholder="Type custom role"
+                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                    />
+
+
+                  </div>
+
+
+                  <div className="mt-4">
                     <label className="mb-2 block text-sm font-semibold">Function</label>
                     <div className="flex flex-wrap gap-2">
                       {["Monitor", "Safety", "Tastings", "Q/A"].map((role) => {
@@ -6056,6 +6154,20 @@ export default function App() {
                       })}
                     </div>
                   </div>
+
+                  <div className="mt-4">
+                    <label className="mb-2 block text-sm font-semibold">Custom Function</label>
+                    <input
+                      value={hostCustomFunction}
+                      onChange={(e) => setHostCustomFunction(e.target.value)}
+                      placeholder="Type custom function"
+                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                    />
+                    <p className="mt-1 text-xs text-slate-500">Use commas for more than one custom function.</p>
+
+
+                  </div>
+
 
                   <div className="mt-4">
                     <label className="mb-2 block text-sm font-semibold">Kinks and Fetishes</label>
