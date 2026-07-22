@@ -11,6 +11,89 @@ const supabase =
     : null;
 
 const EVENT_DISPLAY_BUCKET = "event-display-slides";
+const EVENT_SCHEDULE_PATTERN = /\n?\[\[LIVEBOARD_SCHEDULE:(\{[^\n]*\})\]\]\s*$/;
+
+function parseEventScheduleDescription(value) {
+  const rawDescription = String(value || "");
+  const match = rawDescription.match(EVENT_SCHEDULE_PATTERN);
+
+  if (!match) {
+    return { description: rawDescription, eventStartTime: "", eventEndTime: "" };
+  }
+
+  try {
+    const schedule = JSON.parse(match[1]);
+    return {
+      description: rawDescription.replace(EVENT_SCHEDULE_PATTERN, "").trimEnd(),
+      eventStartTime: /^\d{2}:\d{2}$/.test(schedule.start || "") ? schedule.start : "",
+      eventEndTime: /^\d{2}:\d{2}$/.test(schedule.end || "") ? schedule.end : "",
+    };
+  } catch {
+    return { description: rawDescription, eventStartTime: "", eventEndTime: "" };
+  }
+}
+
+function serializeEventScheduleDescription(description, eventStartTime, eventEndTime) {
+  const cleanDescription = String(description || "").replace(EVENT_SCHEDULE_PATTERN, "").trim();
+
+  if (!eventStartTime && !eventEndTime) return cleanDescription;
+
+  const schedule = JSON.stringify({ start: eventStartTime || "", end: eventEndTime || "" });
+  return `${cleanDescription}\n[[LIVEBOARD_SCHEDULE:${schedule}]]`.trim();
+}
+
+function getEasternSecondsOfDay(date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+
+  return Number(values.hour) * 3600 + Number(values.minute) * 60 + Number(values.second);
+}
+
+function getEventCountdown(eventStartTime, eventEndTime, now) {
+  if (!/^\d{2}:\d{2}$/.test(eventEndTime || "")) return null;
+
+  const toSeconds = (value) => {
+    const [hours, minutes] = value.split(":").map(Number);
+    return hours * 3600 + minutes * 60;
+  };
+  const nowSeconds = getEasternSecondsOfDay(now);
+  const endSeconds = toSeconds(eventEndTime);
+  const hasStartTime = /^\d{2}:\d{2}$/.test(eventStartTime || "");
+  let remainingSeconds;
+
+  if (!hasStartTime) {
+    remainingSeconds = endSeconds - nowSeconds;
+  } else {
+    const startSeconds = toSeconds(eventStartTime);
+    const isOvernightEvent = endSeconds <= startSeconds;
+
+    if (isOvernightEvent) {
+      if (nowSeconds >= startSeconds) {
+        remainingSeconds = 86400 - nowSeconds + endSeconds;
+      } else if (nowSeconds < endSeconds) {
+        remainingSeconds = endSeconds - nowSeconds;
+      } else {
+        remainingSeconds = 0;
+      }
+    } else {
+      remainingSeconds = nowSeconds < endSeconds ? endSeconds - nowSeconds : 0;
+    }
+  }
+
+  if (remainingSeconds <= 0) return "Event ended";
+
+  const hours = Math.floor(remainingSeconds / 3600);
+  const minutes = Math.floor((remainingSeconds % 3600) / 60);
+  const seconds = remainingSeconds % 60;
+
+  return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+}
 
 function slugifyEventDisplay(value) {
   return String(value || "event-display")
@@ -20,10 +103,14 @@ function slugifyEventDisplay(value) {
 }
 
 function mapEventDisplayPresetRow(row) {
+  const schedule = parseEventScheduleDescription(row.event_description);
+
   return {
     id: row.id,
     eventName: row.event_name || "Untitled Event",
-    eventDescription: row.event_description || "",
+    eventDescription: schedule.description,
+    eventStartTime: schedule.eventStartTime,
+    eventEndTime: schedule.eventEndTime,
     liveboardDurationSeconds: Number(row.liveboard_duration_seconds) || 300,
     transitionSeconds: Number(row.transition_seconds) || 0.5,
     images: Array.isArray(row.images) ? row.images : [],
@@ -1461,18 +1548,16 @@ export default function App() {
 
   const [entries, setEntries] = useState([]);
   const [raffleDraws, setRaffleDraws] = useState([]);
-  const formatEasternDisplayTime = () =>
+  const formatEasternDisplayTime = (date) =>
     new Intl.DateTimeFormat("en-US", {
       timeZone: "America/New_York",
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
-    })
-      .format(new Date())
-      .replace(/\s?[AP]M$/i, "");
+    }).format(date);
 
   const [raffleTicketInput, setRaffleTicketInput] = useState("");
-  const [displayEasternTime, setDisplayEasternTime] = useState(() => formatEasternDisplayTime());
+  const [displayNow, setDisplayNow] = useState(() => new Date());
   const [raffleSaving, setRaffleSaving] = useState(false);
   const [lastRemovedEntry, setLastRemovedEntry] = useState(null);
   const [settings, setSettings] = useState(null);
@@ -1552,6 +1637,8 @@ export default function App() {
 
   const [displayEventName, setDisplayEventName] = useState("");
   const [displayEventDescription, setDisplayEventDescription] = useState("");
+  const [displayEventStartTime, setDisplayEventStartTime] = useState("");
+  const [displayEventEndTime, setDisplayEventEndTime] = useState("");
   const [displayImageDurationSeconds, setDisplayImageDurationSeconds] = useState("60");
   const [displayLiveboardDurationSeconds, setDisplayLiveboardDurationSeconds] = useState("300");
   const [displayImages, setDisplayImages] = useState([]);
@@ -1740,6 +1827,8 @@ export default function App() {
     setEditingEventDisplayId(activeEventDisplay.id);
     setDisplayEventName(activeEventDisplay.eventName || "");
     setDisplayEventDescription(activeEventDisplay.eventDescription || "");
+    setDisplayEventStartTime(activeEventDisplay.eventStartTime || "");
+    setDisplayEventEndTime(activeEventDisplay.eventEndTime || "");
     setDisplayImages(Array.isArray(activeEventDisplay.images) ? activeEventDisplay.images : []);
 
     const imageDuration =
@@ -2121,6 +2210,12 @@ export default function App() {
     eventName: activeEventDisplay?.eventName || settings?.event_name || defaultConfig.eventName,
     venueName: activeEventDisplay?.eventDescription || settings?.venue_name || defaultConfig.venueName,
   };
+  const displayEasternTime = formatEasternDisplayTime(displayNow);
+  const eventCountdown = getEventCountdown(
+    activeEventDisplay?.eventStartTime,
+    activeEventDisplay?.eventEndTime,
+    displayNow
+  );
 
   const availableHandlePlatforms = [
     allowFetLife ? "FetLife" : null,
@@ -2264,7 +2359,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    const updateEasternTime = () => setDisplayEasternTime(formatEasternDisplayTime());
+    const updateEasternTime = () => setDisplayNow(new Date());
 
     updateEasternTime();
 
@@ -3456,6 +3551,11 @@ export default function App() {
       return;
     }
 
+    if (Boolean(displayEventStartTime) !== Boolean(displayEventEndTime)) {
+      setMessage("Please enter both an event start time and end time.");
+      return;
+    }
+
     if (!displayImages.length) {
       setMessage("Please add at least one image.");
       return;
@@ -3507,7 +3607,11 @@ export default function App() {
         .from("event_display_presets")
         .update({
           event_name: name,
-          event_description: displayEventDescription.trim(),
+          event_description: serializeEventScheduleDescription(
+            displayEventDescription,
+            displayEventStartTime,
+            displayEventEndTime
+          ),
           liveboard_duration_seconds: liveboardDuration,
           transition_seconds: 0.5,
           images: uploadedImages,
@@ -3541,6 +3645,8 @@ export default function App() {
       setEditingEventDisplayId("");
       setDisplayEventName("");
       setDisplayEventDescription("");
+      setDisplayEventStartTime("");
+      setDisplayEventEndTime("");
       setDisplayImageDurationSeconds("60");
       setDisplayLiveboardDurationSeconds("300");
       setDisplayImages([]);
@@ -3554,7 +3660,11 @@ export default function App() {
       .from("event_display_presets")
       .insert({
         event_name: name,
-        event_description: displayEventDescription.trim(),
+        event_description: serializeEventScheduleDescription(
+          displayEventDescription,
+          displayEventStartTime,
+          displayEventEndTime
+        ),
         liveboard_duration_seconds: liveboardDuration,
         transition_seconds: 0.5,
         images: uploadedImages,
@@ -3576,6 +3686,8 @@ export default function App() {
 
     setDisplayEventName("");
     setDisplayEventDescription("");
+    setDisplayEventStartTime("");
+    setDisplayEventEndTime("");
     setDisplayImageDurationSeconds("60");
     setDisplayLiveboardDurationSeconds("300");
     setDisplayImages([]);
@@ -3609,6 +3721,8 @@ export default function App() {
     setEditingEventDisplayId(activePreset.id);
     setDisplayEventName(activePreset.eventName || "");
     setDisplayEventDescription(activePreset.eventDescription || "");
+    setDisplayEventStartTime(activePreset.eventStartTime || "");
+    setDisplayEventEndTime(activePreset.eventEndTime || "");
     setDisplayImageDurationSeconds(String(imageDuration));
     setDisplayLiveboardDurationSeconds(String(liveboardDuration));
     setDisplayImages(activePreset.images || []);
@@ -3621,6 +3735,8 @@ export default function App() {
     setEditingEventDisplayId("");
     setDisplayEventName("");
     setDisplayEventDescription("");
+    setDisplayEventStartTime("");
+    setDisplayEventEndTime("");
     setDisplayImageDurationSeconds("60");
     setDisplayLiveboardDurationSeconds("300");
     setDisplayImages([]);
@@ -4528,6 +4644,32 @@ export default function App() {
                           className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
                         />
                       </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <label className="mb-2 block text-sm font-semibold">Event starts</label>
+                          <input
+                            type="time"
+                            value={displayEventStartTime}
+                            onChange={(event) => setDisplayEventStartTime(event.target.value)}
+                            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-sky-400"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-2 block text-sm font-semibold">Event ends</label>
+                          <input
+                            type="time"
+                            value={displayEventEndTime}
+                            onChange={(event) => setDisplayEventEndTime(event.target.value)}
+                            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-sky-400"
+                          />
+                        </div>
+                      </div>
+
+                      <p className="text-xs leading-5 text-slate-500">
+                        Times use Eastern Time. If the end time is earlier than the start time, the event is treated as ending after midnight.
+                      </p>
 
                       <div className="grid gap-2 sm:grid-cols-2">
                         <button
@@ -7703,11 +7845,29 @@ export default function App() {
                   />
                 </div>
 
-                <div
-                  className="min-w-32 rounded-2xl border border-white/20 bg-black/30 px-5 py-2 text-center text-3xl font-black leading-none tracking-[0.08em] text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
-                  aria-label={"Current Eastern time: " + displayEasternTime}
-                >
-                  {displayEasternTime}
+                <div className="flex items-stretch gap-2">
+                  <div
+                    className="min-w-40 rounded-2xl border border-white/20 bg-black/30 px-5 py-2 text-center text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+                    aria-label={"Current Eastern time: " + displayEasternTime}
+                  >
+                    <div className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-slate-300">
+                      Current time
+                    </div>
+                    <div className="mt-1 text-2xl font-black leading-none tracking-[0.04em]">
+                      {displayEasternTime}
+                    </div>
+                  </div>
+
+                  {eventCountdown ? (
+                    <div className="min-w-40 rounded-2xl border border-white/20 bg-black/30 px-5 py-2 text-center text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+                      <div className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-slate-300">
+                        Ends in
+                      </div>
+                      <div className="mt-1 text-2xl font-black leading-none tracking-[0.04em]">
+                        {eventCountdown}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
