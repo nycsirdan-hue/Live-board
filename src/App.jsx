@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { eventDisplayPresets } from "./eventDisplayPresets";
 import { createClient } from "@supabase/supabase-js";
 
@@ -771,46 +771,6 @@ function EntryLine({
   );
 }
 
-function AutoFitParticipantName({ name }) {
-  const containerRef = useRef(null);
-  const [fontSize, setFontSize] = useState(31);
-
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const fitName = () => {
-      const availableWidth = container.clientWidth;
-      if (!availableWidth) return;
-
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      context.font = "900 31px Inter, system-ui, sans-serif";
-      const measuredWidth = context.measureText(name).width;
-      const nextSize = measuredWidth > availableWidth
-        ? Math.max(10, 31 * (availableWidth / measuredWidth))
-        : 31;
-      setFontSize(nextSize);
-    };
-
-    fitName();
-    const observer = new ResizeObserver(fitName);
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [name]);
-
-  return (
-    <span ref={containerRef} className="min-w-0 overflow-hidden">
-      <span
-        className="block whitespace-nowrap"
-        style={{ fontSize: `${fontSize}px` }}
-      >
-        {name}
-      </span>
-    </span>
-  );
-}
-
 function DisplayCrownIcon() {
   return (
     <svg viewBox="0 0 64 64" aria-hidden="true" className="displaySectionIconSvg">
@@ -1051,6 +1011,11 @@ function ParticipantListDisplay({ entries = [] }) {
           ]));
           const participantPhoto = getParticipantPhoto(entry.custom_items || []);
           const participantName = entry.name || "Unnamed";
+          const availableNameWidth = participantPhoto ? 240 : 300;
+          const participantNameFontSize = Math.max(
+            14,
+            Math.min(31, availableNameWidth / Math.max(1, participantName.length * 0.58))
+          );
 
           const quickTags = getSimpleValues(mergedItems, "Quick Tag:");
           const topGive = getPrefixedValues(mergedItems, [
@@ -1128,7 +1093,12 @@ function ParticipantListDisplay({ entries = [] }) {
                 ) : null}
                 <div className="min-w-0">
                 <div className="participantListTitle flex min-w-0 items-center gap-2 text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
-                  <AutoFitParticipantName name={participantName} />
+                  <span
+                    className="min-w-0 whitespace-nowrap"
+                    style={{ fontSize: `${participantNameFontSize}px` }}
+                  >
+                    {participantName}
+                  </span>
                   <span className="shrink-0 text-slate-400">|</span>
                   <span
                     className={"flex h-9 w-9 shrink-0 items-center justify-center " + meta.iconClass}
