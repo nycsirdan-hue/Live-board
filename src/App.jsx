@@ -2035,7 +2035,7 @@ export default function App() {
           layout: "topBottomSwitch",
         };
 
-  const usesMultipleSocialHandles = entryMenuSettings.usesMultipleSocialHandles;
+  const usesMultipleSocialHandles = true;
   const usesSingleConnectionBoard = displayBoardSettings.layout === "singleConnectionBoard";
   const isConnectionEntryForm = entryMenuSettings.type === "abdl";
 
@@ -2360,6 +2360,7 @@ export default function App() {
       const { data: existingSettings } = await supabase
         .from("board_settings")
         .select("id")
+        .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
@@ -2692,6 +2693,7 @@ export default function App() {
       const { data, error } = await supabase
         .from("board_settings")
         .select("*")
+        .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
