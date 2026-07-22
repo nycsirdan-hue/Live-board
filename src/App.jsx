@@ -390,7 +390,7 @@ const diaperDebaucherySexualPreferenceOptions = [
   "Diaper Sexual",
 ];
 
-const handlePlatformOptions = ["FetLife", "Whappz", "Twitter", "Bluesky", "Instagram", "Other"];
+const handlePlatformOptions = ["FetLife", "Whappz", "Twitter", "Bluesky", "Instagram / IG"];
 const spankingImplementOptions = ["Paddles", "Straps", "Belt", "Brushes", "Canes", "Hands"];
 const spankingLimitOptions = ["No wood", "No leather", "Domestic implements only"];
 const spankingIntentionOptions = ["Open to try", "Discuss Limits", "Open to Play", "Watching"];
@@ -586,6 +586,79 @@ function gridPlacement(index, cols) {
   };
 }
 
+function SocialPlatformIcon({ platform, className = "" }) {
+  const normalized = String(platform || "").trim().toLowerCase();
+  const baseClass = `inline-flex h-[1.35em] min-w-[1.35em] shrink-0 items-center justify-center rounded-[0.35em] text-[0.82em] font-black leading-none ${className}`;
+
+  if (normalized.includes("instagram") || normalized === "ig") {
+    return (
+      <span className={`${baseClass} bg-gradient-to-br from-amber-400 via-pink-500 to-violet-600 text-white`} title="Instagram" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" className="h-[0.9em] w-[0.9em] fill-none stroke-current" aria-hidden="true">
+          <rect x="3.5" y="3.5" width="17" height="17" rx="5" strokeWidth="2" />
+          <circle cx="12" cy="12" r="4" strokeWidth="2" />
+          <circle cx="17.5" cy="6.8" r="1" fill="currentColor" stroke="none" />
+        </svg>
+      </span>
+    );
+  }
+
+  if (normalized.includes("bluesky")) {
+    return <span className={`${baseClass} bg-sky-500 text-white`} title="Bluesky" aria-label="Bluesky">🦋</span>;
+  }
+
+  if (normalized === "x" || normalized.includes("twitter")) {
+    return <span className={`${baseClass} bg-black text-white ring-1 ring-white/30`} title="X / Twitter" aria-label="X / Twitter">𝕏</span>;
+  }
+
+  if (normalized.includes("fetlife")) {
+    return <span className={`${baseClass} bg-red-700 text-white`} title="FetLife" aria-label="FetLife">FL</span>;
+  }
+
+  if (normalized.includes("whappz")) {
+    return <span className={`${baseClass} bg-emerald-600 text-white`} title="Whappz" aria-label="Whappz">W</span>;
+  }
+
+  return <span className={`${baseClass} bg-slate-600 text-white`} title={platform || "Social handle"} aria-label={platform || "Social handle"}>@</span>;
+}
+
+function SocialPlatformLabel({ platform }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <SocialPlatformIcon platform={platform} />
+      <span>{platform}</span>
+    </span>
+  );
+}
+
+function SocialHandleDisplay({ platform, handle }) {
+  const rawHandle = String(handle || "").trim();
+  if (!rawHandle) return null;
+
+  const knownPlatforms = ["Instagram / IG", "Instagram", "FetLife", "Bluesky", "Twitter", "X", "Whappz", "Other"];
+  const lines = rawHandle.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  const displayLines = platform
+    ? [{ platform, handle: rawHandle }]
+    : lines.map((line) => {
+        const match = line.match(/^([^:]+):\s*(.+)$/);
+        const parsedPlatform = match?.[1]?.trim() || "";
+        const recognized = knownPlatforms.find((name) => name.toLowerCase() === parsedPlatform.toLowerCase());
+        return recognized
+          ? { platform: recognized, handle: match[2].trim() }
+          : { platform: "Other", handle: line };
+      });
+
+  return (
+    <span className="inline-flex flex-col gap-0.5">
+      {displayLines.map((line, index) => (
+        <span key={`${line.platform}-${line.handle}-${index}`} className="inline-flex items-center gap-1.5">
+          <SocialPlatformIcon platform={line.platform} />
+          <span>{line.handle}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function EntryLine({
   name,
   participantPhoto = null,
@@ -743,7 +816,7 @@ function EntryLine({
 
       {!isDM && socialHandle ? (
         <div className="mt-0.5 text-sm md:text-base font-semibold tracking-[0.08em] text-slate-400 break-words">
-          {socialPlatform ? `${socialPlatform}: ${socialHandle}` : socialHandle}
+          <SocialHandleDisplay platform={socialPlatform} handle={socialHandle} />
         </div>
       ) : null}
 
@@ -1122,7 +1195,7 @@ function ParticipantListDisplay({ entries = [] }) {
 
                 {entry.social_handle ? (
                   <div className="participantListDetail mt-1 break-words text-[0.85rem] font-black leading-tight tracking-[0.08em] text-slate-400 md:text-[0.95rem]">
-                    {(entry.social_platform ? entry.social_platform + ": " : "") + entry.social_handle}
+                    <SocialHandleDisplay platform={entry.social_platform || ""} handle={entry.social_handle} />
                   </div>
                 ) : null}
 
@@ -2442,7 +2515,7 @@ export default function App() {
     allowWhappz ? "Whappz" : null,
     allowTwitter ? "Twitter" : null,
     allowBluesky ? "Bluesky" : null,
-    allowOtherPlatform ? "Other" : null,
+    allowOtherPlatform ? "Instagram / IG" : null,
   ].filter(Boolean);
 
   useEffect(() => {
@@ -4106,7 +4179,7 @@ export default function App() {
 
     if (!cleanValue) return "";
 
-    const platformNames = ["FetLife", "Bluesky", "X", "Instagram", "Twitter", "Whappz"];
+    const platformNames = ["Instagram / IG", "FetLife", "Bluesky", "X", "Instagram", "Twitter", "Whappz"];
 
     const normalizeHandleLines = (rawValue) => {
       let normalized = String(rawValue || "");
@@ -4128,7 +4201,7 @@ export default function App() {
 
     const cleanLines = normalizeHandleLines(cleanValue);
 
-    if (!cleanPlatform || cleanPlatform === "Other") return cleanLines;
+    if (!cleanPlatform) return cleanLines;
 
     if (new RegExp(`^${cleanPlatform}\\s*:`, "i").test(cleanLines)) {
       return cleanLines;
@@ -5685,7 +5758,7 @@ export default function App() {
                         </label>
                         <label className="flex items-center gap-3 text-sm text-slate-100">
                           <input type="checkbox" checked={allowOtherPlatform} onChange={(e) => setAllowOtherPlatform(e.target.checked)} className="h-4 w-4" />
-                          Other
+                          <SocialPlatformLabel platform="Instagram / IG" />
                         </label>
                       </div>
                     ) : null}
@@ -6787,7 +6860,7 @@ export default function App() {
                       </label>
                       <label className="flex items-center gap-3 text-sm text-slate-100">
                         <input type="checkbox" checked={allowOtherPlatform} onChange={(e) => setAllowOtherPlatform(e.target.checked)} className="h-4 w-4" />
-                        Other
+                        <SocialPlatformLabel platform="Instagram / IG" />
                       </label>
                     </div>
                   ) : null}
@@ -7594,7 +7667,7 @@ export default function App() {
                                 Platform
                               </div>
                               <div className="flex flex-wrap gap-1.5">
-                                {["FetLife", "Bluesky", "X", "Instagram", "Other"].map((platform) => (
+                                {["FetLife", "Bluesky", "X", "Instagram / IG"].map((platform) => (
                                   <button
                                     key={platform}
                                     type="button"
@@ -7605,7 +7678,7 @@ export default function App() {
                                         : "krinklesOptionIdle border-fuchsia-500/35 bg-fuchsia-500/10 text-fuchsia-100"
                                     }`}
                                   >
-                                    {platform}
+                                    <SocialPlatformLabel platform={platform} />
                                   </button>
                                 ))}
                               </div>
@@ -7627,8 +7700,8 @@ export default function App() {
                                 placeholder={
                                   socialHandleDraftPlatform === "Bluesky"
                                     ? "@name.bsky.social"
-                                    : socialHandleDraftPlatform === "Other"
-                                      ? "Platform: @name"
+                                    : socialHandleDraftPlatform === "Instagram / IG"
+                                      ? "@name"
                                       : "@name"
                                 }
                                 className="w-full rounded-2xl border border-fuchsia-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-fuchsia-300"
@@ -7687,7 +7760,7 @@ export default function App() {
                                       : "border-slate-700 bg-slate-950 text-slate-200"
                                   }`}
                                 >
-                                  {platform}
+                                  <SocialPlatformLabel platform={platform} />
                                 </button>
                               ))}
                             </div>
