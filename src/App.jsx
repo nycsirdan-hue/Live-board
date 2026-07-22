@@ -735,6 +735,7 @@ function EntryLine({
   category = "",
   isDM = false,
   isHost = false,
+  preserveTaggedCategories = false,
 }) {
   const rawItems = getVisibleEntryItems(items || []);
 
@@ -814,13 +815,28 @@ function EntryLine({
       return 0;
     });
 
+  const taggedSexualPreferenceItems = getPrefixedDisplayItems([
+    "Sexual:",
+    "Sexual Preference:",
+    "Sexual Preferences:",
+  ]);
+
+  const taggedInterestItems = getPrefixedDisplayItems([
+    "Interests:",
+    "Interest:",
+  ]);
+
   const sexualPreferenceItems = orderByList(
-    displayItems.filter((item) => defaultSexualPreferenceOptions.includes(item)),
+    preserveTaggedCategories
+      ? taggedSexualPreferenceItems
+      : displayItems.filter((item) => defaultSexualPreferenceOptions.includes(item)),
     defaultSexualPreferenceOptions
   );
 
   const interestItems = orderByList(
-    displayItems.filter((item) => !defaultSexualPreferenceOptions.includes(item)),
+    preserveTaggedCategories
+      ? taggedInterestItems
+      : displayItems.filter((item) => !defaultSexualPreferenceOptions.includes(item)),
     defaultInterestOptions
   );
 
@@ -1659,6 +1675,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
                     itemLimit={compact ? 8 : 10}
                     isDM={false}
                     isHost={false}
+                    preserveTaggedCategories={connectionBoard}
                   />
                 </div>
               );
