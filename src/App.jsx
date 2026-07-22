@@ -7520,11 +7520,12 @@ export default function App() {
                           <img
                             src={participantCropSource.url}
                             alt="Adjustable square crop preview"
+                            draggable="false"
                             onLoad={(event) => setParticipantCropDimensions({
                               width: event.currentTarget.naturalWidth,
                               height: event.currentTarget.naturalHeight,
                             })}
-                            className="absolute max-w-none"
+                            className="pointer-events-none absolute max-w-none select-none"
                             style={participantCropPreviewStyle}
                           />
                         </div>
