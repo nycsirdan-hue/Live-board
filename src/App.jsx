@@ -1074,7 +1074,7 @@ function ParticipantListDisplay({ entries = [] }) {
                   <img
                     src={participantPhoto.url}
                     alt={`${entry.name || "Participant"}'s profile`}
-                    className="float-left mb-2 mr-3 h-20 w-20 rounded-2xl border border-white/20 object-cover shadow-lg"
+                    className="float-left mb-2 mr-3 h-24 w-24 rounded-2xl border border-white/20 object-cover shadow-lg"
                   />
                 ) : null}
                 <div className="min-w-0">
@@ -1104,7 +1104,7 @@ function ParticipantListDisplay({ entries = [] }) {
                   </div>
                 ) : null}
 
-                <div className="mt-2 min-w-0 space-y-1">
+                <div className={`${participantPhoto ? "clear-left" : ""} mt-2 min-w-0 space-y-1`}>
                   {renderDetail("🔴", topGive)}
                   {renderDetail("🟢", bottomReceive)}
                   {renderDetail("⛔", limits)}
