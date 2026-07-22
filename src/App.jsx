@@ -955,7 +955,7 @@ function ParticipantListDisplay({ entries = [] }) {
     return (
       <div className="participantListDetail flex min-w-0 gap-2 text-[0.9rem] font-semibold leading-tight text-slate-100 md:text-[1rem]">
         <div className="w-10 shrink-0 whitespace-nowrap text-center leading-tight">{icon}</div>
-        <div className="min-w-0 w-[40ch] max-w-[40ch]">
+        <div className="min-w-0">
           {lines.slice(0, 2).map((line, index) => (
             <div key={icon + "-" + index} className="break-words">
               {line}
@@ -1059,8 +1059,8 @@ function ParticipantListDisplay({ entries = [] }) {
               className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
-                width: "calc(40ch + 5.5rem)",
-                maxWidth: "calc(40ch + 5.5rem)",
+                width: "calc(40ch + 2rem)",
+                maxWidth: "calc(40ch + 2rem)",
                 flex: "0 0 auto",
                 breakInside: "avoid",
                 WebkitColumnBreakInside: "avoid",
