@@ -874,7 +874,7 @@ function EntryLine({
   const renderDisplayDetailLine = (label, value, labelClass, marginClass = "mt-0.5") =>
     value ? (
       <div className={`${detailTextClass} ${marginClass} text-slate-300 break-words leading-tight`}>
-        <span className={`mr-1.5 inline-block font-black ${labelClass}`}>{label}</span>
+        {label ? <span className={`mr-1.5 inline-block font-black ${labelClass}`}>{label}</span> : null}
         <span>{value}</span>
       </div>
     ) : null;
@@ -920,7 +920,7 @@ function EntryLine({
 
       {renderDisplayDetailLine("🟠", experienceText, "text-orange-500", "mt-0.5")}
 
-      {renderDisplayDetailLine("👀", interestText, "text-yellow-500", "mt-0.5")}
+      {renderDisplayDetailLine((isDM || isHost) ? "" : "👀", interestText, "text-yellow-500", "mt-0.5")}
 
       {renderDisplayDetailLine("🍑🍆", sexualPreferenceText, "text-blue-500", "mt-0.5")}
       </div>

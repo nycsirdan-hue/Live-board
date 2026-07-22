@@ -2358,6 +2358,32 @@ body:has(.displayBoardSurface) #root {
     0 0 22px rgba(217, 70, 239, 0.08) !important;
 }
 
+/* Keep Host/DM content inside the header space available before the legend. */
+.displayStaffRowCombined,
+.displayStaffRowCombined > .displaySectionCard,
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) {
+  flex-wrap: wrap !important;
+}
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) > * {
+  flex: 0 1 auto !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  white-space: normal !important;
+}
+
+.displayStaffRowCombined .displaySectionCard > :not(.displaySectionHeader) > * * {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+}
+
 /* KrINKles uses the regular compact card footprint without position groups. */
 .diaperGlowDisplayBoard .displayConnectionEntries {
   padding: 0.65rem !important;
