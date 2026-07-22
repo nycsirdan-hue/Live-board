@@ -53,7 +53,7 @@ async function uploadParticipantPhoto(file) {
   return { path, url: data.publicUrl };
 }
 
-async function prepareParticipantPhoto(file) {
+async function prepareParticipantPhoto(file, zoom = 1, horizontalPosition = 50, verticalPosition = 50) {
   if (!file?.type?.startsWith("image/")) {
     throw new Error("Please choose an image file.");
   }
@@ -71,9 +71,16 @@ async function prepareParticipantPhoto(file) {
       loader.onerror = () => reject(new Error("This photo format could not be read."));
       loader.src = sourceUrl;
     });
-    const side = Math.min(image.naturalWidth, image.naturalHeight);
-    const sourceX = Math.max(0, (image.naturalWidth - side) / 2);
-    const sourceY = Math.max(0, (image.naturalHeight - side) / 2);
+    const safeZoom = Math.min(3, Math.max(1, Number(zoom) || 1));
+    const side = Math.min(image.naturalWidth, image.naturalHeight) / safeZoom;
+    const sourceX = Math.max(
+      0,
+      (image.naturalWidth - side) * (Math.min(100, Math.max(0, horizontalPosition)) / 100)
+    );
+    const sourceY = Math.max(
+      0,
+      (image.naturalHeight - side) * (Math.min(100, Math.max(0, verticalPosition)) / 100)
+    );
     const canvas = document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 512;
@@ -1719,9 +1726,29 @@ export default function App() {
   const [entrySuccess, setEntrySuccess] = useState(false);
   const [participantPhotoFile, setParticipantPhotoFile] = useState(null);
   const [participantPhotoPreview, setParticipantPhotoPreview] = useState("");
+  const [participantCropSource, setParticipantCropSource] = useState(null);
+  const [participantCropZoom, setParticipantCropZoom] = useState(1);
+  const [participantCropX, setParticipantCropX] = useState(50);
+  const [participantCropY, setParticipantCropY] = useState(50);
+  const [participantCropDimensions, setParticipantCropDimensions] = useState(null);
   const [participantCameraOpen, setParticipantCameraOpen] = useState(false);
   const participantCameraVideoRef = useRef(null);
   const participantCameraStreamRef = useRef(null);
+  const participantCropPreviewStyle = useMemo(() => {
+    if (!participantCropDimensions) return { visibility: "hidden" };
+
+    const { width, height } = participantCropDimensions;
+    const side = Math.min(width, height) / participantCropZoom;
+    const sourceX = (width - side) * (participantCropX / 100);
+    const sourceY = (height - side) * (participantCropY / 100);
+
+    return {
+      width: `${(width / side) * 100}%`,
+      height: `${(height / side) * 100}%`,
+      left: `${-(sourceX / side) * 100}%`,
+      top: `${-(sourceY / side) * 100}%`,
+    };
+  }, [participantCropDimensions, participantCropZoom, participantCropX, participantCropY]);
 
   const [hostName, setHostName] = useState("");
   const [hostCategory, setHostCategory] = useState("");
@@ -4104,29 +4131,59 @@ export default function App() {
     setSocialHandleItems((current) => current.filter((item) => item !== line));
   };
 
-  const handleParticipantPhotoChange = async (event) => {
+  const openParticipantCropper = (file) => {
+    if (participantCropSource?.url) URL.revokeObjectURL(participantCropSource.url);
+    setParticipantCropSource({ file, url: URL.createObjectURL(file) });
+    setParticipantCropZoom(1);
+    setParticipantCropX(50);
+    setParticipantCropY(50);
+    setParticipantCropDimensions(null);
+  };
+
+  const cancelParticipantCrop = () => {
+    if (participantCropSource?.url) URL.revokeObjectURL(participantCropSource.url);
+    setParticipantCropSource(null);
+  };
+
+  const applyParticipantCrop = async () => {
+    if (!participantCropSource?.file) return;
+
+    try {
+      setMessage("Preparing photo...");
+      const preparedPhoto = await prepareParticipantPhoto(
+        participantCropSource.file,
+        participantCropZoom,
+        participantCropX,
+        participantCropY
+      );
+      if (participantPhotoPreview) URL.revokeObjectURL(participantPhotoPreview);
+      setParticipantPhotoFile(preparedPhoto);
+      setParticipantPhotoPreview(URL.createObjectURL(preparedPhoto));
+      cancelParticipantCrop();
+      setMessage("");
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
+
+  const handleParticipantPhotoChange = (event) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
 
-    try {
-      setMessage("Preparing photo...");
-      const preparedPhoto = await prepareParticipantPhoto(file);
-      if (participantPhotoPreview) URL.revokeObjectURL(participantPhotoPreview);
-      setParticipantPhotoFile(preparedPhoto);
-      setParticipantPhotoPreview(URL.createObjectURL(preparedPhoto));
-      setMessage("");
-    } catch (error) {
-      setParticipantPhotoFile(null);
-      setParticipantPhotoPreview("");
-      setMessage(error.message);
+    if (!file.type?.startsWith("image/") || file.size > 15 * 1024 * 1024) {
+      setMessage("Please choose an image smaller than 15 MB.");
+      return;
     }
+
+    openParticipantCropper(file);
   };
 
   const removeParticipantPhoto = () => {
     if (participantPhotoPreview) URL.revokeObjectURL(participantPhotoPreview);
     setParticipantPhotoFile(null);
     setParticipantPhotoPreview("");
+    cancelParticipantCrop();
   };
 
   const stopParticipantCamera = () => {
@@ -4175,13 +4232,11 @@ export default function App() {
       return;
     }
 
-    const side = Math.min(video.videoWidth, video.videoHeight);
-    const sourceX = Math.max(0, (video.videoWidth - side) / 2);
-    const sourceY = Math.max(0, (video.videoHeight - side) / 2);
+    const scale = Math.min(1, 1600 / Math.max(video.videoWidth, video.videoHeight));
     const canvas = document.createElement("canvas");
-    canvas.width = 512;
-    canvas.height = 512;
-    canvas.getContext("2d").drawImage(video, sourceX, sourceY, side, side, 0, 0, 512, 512);
+    canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+    canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 
     const photo = await new Promise((resolve) =>
       canvas.toBlob(resolve, "image/jpeg", 0.78)
@@ -4192,10 +4247,8 @@ export default function App() {
       return;
     }
 
-    if (participantPhotoPreview) URL.revokeObjectURL(participantPhotoPreview);
-    setParticipantPhotoFile(photo);
-    setParticipantPhotoPreview(URL.createObjectURL(photo));
     stopParticipantCamera();
+    openParticipantCropper(photo);
     setMessage("");
   };
 
@@ -7398,6 +7451,91 @@ export default function App() {
                           </div>
                         </div>
                       ) : null}
+                    </div>
+                  ) : null}
+
+                  {participantCropSource ? (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
+                      <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="participant-crop-title"
+                        className="w-full max-w-xl rounded-3xl border border-sky-500/30 bg-slate-950 p-5 shadow-2xl"
+                      >
+                        <h3 id="participant-crop-title" className="text-2xl font-bold text-white">
+                          Frame your profile photo
+                        </h3>
+                        <p className="mt-1 text-sm leading-6 text-slate-400">
+                          Zoom in and move the focus until the square shows exactly what you want on the board.
+                        </p>
+
+                        <div className="relative mx-auto mt-5 aspect-square w-full max-w-sm overflow-hidden rounded-3xl border-2 border-sky-400 bg-black">
+                          <img
+                            src={participantCropSource.url}
+                            alt="Adjustable square crop preview"
+                            onLoad={(event) => setParticipantCropDimensions({
+                              width: event.currentTarget.naturalWidth,
+                              height: event.currentTarget.naturalHeight,
+                            })}
+                            className="absolute max-w-none"
+                            style={participantCropPreviewStyle}
+                          />
+                        </div>
+
+                        <div className="mt-5 grid gap-4">
+                          <label className="text-sm font-semibold text-slate-200">
+                            Zoom: {Number(participantCropZoom).toFixed(1)}×
+                            <input
+                              type="range"
+                              min="1"
+                              max="3"
+                              step="0.1"
+                              value={participantCropZoom}
+                              onChange={(event) => setParticipantCropZoom(Number(event.target.value))}
+                              className="mt-2 w-full accent-sky-400"
+                            />
+                          </label>
+                          <label className="text-sm font-semibold text-slate-200">
+                            Move left or right
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={participantCropX}
+                              onChange={(event) => setParticipantCropX(Number(event.target.value))}
+                              className="mt-2 w-full accent-sky-400"
+                            />
+                          </label>
+                          <label className="text-sm font-semibold text-slate-200">
+                            Move up or down
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={participantCropY}
+                              onChange={(event) => setParticipantCropY(Number(event.target.value))}
+                              className="mt-2 w-full accent-sky-400"
+                            />
+                          </label>
+                        </div>
+
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                          <button
+                            type="button"
+                            onClick={applyParticipantCrop}
+                            className="rounded-2xl bg-sky-400 px-5 py-3 font-bold text-slate-950"
+                          >
+                            Use this framing
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelParticipantCrop}
+                            className="rounded-2xl border border-slate-600 bg-slate-900 px-5 py-3 font-semibold text-slate-100"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   ) : null}
 
