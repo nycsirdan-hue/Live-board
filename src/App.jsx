@@ -177,7 +177,7 @@ function getEventCountdown(eventStartTime, eventEndTime, now) {
   const minutes = Math.floor((remainingSeconds % 3600) / 60);
   const seconds = remainingSeconds % 60;
 
-  return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 function slugifyEventDisplay(value) {
@@ -8466,10 +8466,7 @@ export default function App() {
                     className="flex min-h-0 flex-1 flex-col justify-center rounded-2xl border border-white/20 bg-black/30 px-4 py-3 text-center text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
                     aria-label={"Current Eastern time: " + displayEasternTime}
                   >
-                    <div className="text-sm font-bold uppercase tracking-[0.16em] text-slate-300">
-                      Current time
-                    </div>
-                    <div className="mt-2 text-4xl font-black leading-none tracking-[0.04em]">
+                    <div className="text-6xl font-black leading-none tracking-[0.04em]">
                       {displayEasternTime}
                     </div>
                   </div>

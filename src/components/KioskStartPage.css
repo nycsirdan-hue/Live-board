@@ -1641,3 +1641,45 @@ body,
   background-position: 70% center !important;
   background-repeat: no-repeat !important;
 }
+
+/* FINAL KrINKles theme override — keep the spectrum understated and consistent. */
+.kioskStartPageDiaper .connectionPreview {
+  border-color: rgba(250, 204, 21, 0.30) !important;
+  background:
+    radial-gradient(circle at 7% 8%, rgba(248, 113, 113, 0.11), transparent 28%),
+    radial-gradient(circle at 36% 0%, rgba(251, 191, 36, 0.09), transparent 28%),
+    radial-gradient(circle at 68% 4%, rgba(74, 222, 128, 0.08), transparent 28%),
+    radial-gradient(circle at 96% 8%, rgba(167, 139, 250, 0.11), transparent 30%),
+    rgba(4, 7, 16, 0.94) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.035),
+    -14px 0 36px rgba(248, 113, 113, 0.06),
+    14px 0 36px rgba(74, 222, 128, 0.05),
+    0 18px 48px rgba(0,0,0,0.42) !important;
+}
+
+.kioskStartPageDiaper .displayStyleHeader h1 {
+  color: #ffffff !important;
+  text-shadow: 0 0 18px rgba(250, 204, 21, 0.24), 0 0 30px rgba(74, 222, 128, 0.10) !important;
+}
+
+.kioskStartPageDiaper .previewHeader::after {
+  background: linear-gradient(90deg, #f87171, #fbbf24, #4ade80, #60a5fa, #a78bfa) !important;
+  opacity: 0.72 !important;
+}
+
+.kioskStartPageDiaper .supportCard,
+.kioskStartPageDiaper .startInfoBox,
+.kioskStartPageDiaper .exampleEntryCard {
+  border-color: rgba(255,255,255,0.14) !important;
+  background:
+    linear-gradient(105deg, rgba(248,113,113,0.035), rgba(251,191,36,0.03), rgba(74,222,128,0.026), rgba(167,139,250,0.035)),
+    rgba(8, 11, 22, 0.84) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.24) !important;
+}
+
+.kioskStartPageDiaper .kioskStartButton {
+  border-color: rgba(255,255,255,0.30) !important;
+  background: linear-gradient(110deg, #b91c1c, #b45309 28%, #15803d 57%, #6d28d9 100%) !important;
+  box-shadow: 0 14px 38px rgba(0,0,0,0.46), 0 0 24px rgba(250,204,21,0.10) !important;
+}
