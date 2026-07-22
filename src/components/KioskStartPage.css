@@ -22,6 +22,16 @@
   gap: 2.2vh;
 }
 
+.kioskPreviewAreaButton {
+  cursor: pointer;
+  border-radius: 32px;
+  outline: none;
+}
+
+.kioskPreviewAreaButton:focus-visible {
+  box-shadow: 0 0 0 4px rgba(243, 212, 106, 0.85);
+}
+
 .connectionPreview {
   width: 100%;
   border-radius: 30px;
@@ -294,10 +304,13 @@
     0 18px 55px rgba(207, 163, 42, 0.42);
   transition: transform 160ms ease, box-shadow 160ms ease;
   touch-action: manipulation;
+  pointer-events: none;
 }
 
 .kioskStartButton:hover,
-.kioskStartButton:focus-visible {
+.kioskStartButton:focus-visible,
+.kioskPreviewAreaButton:hover .kioskStartButton,
+.kioskPreviewAreaButton:focus-visible .kioskStartButton {
   transform: translateY(-2px) scale(1.01);
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.26) inset,
