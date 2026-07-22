@@ -832,12 +832,6 @@ function EntryLine({
         {name}
       </div>
 
-      {!isDM && socialHandle ? (
-        <div className="mt-0.5 text-sm md:text-base font-semibold tracking-[0.08em] text-slate-400 break-words">
-          <SocialHandleDisplay platform={socialPlatform} handle={socialHandle} />
-        </div>
-      ) : null}
-
       {!isDM && !isHost && (whoAmI || seeking || orientationText) ? (
         <div className="mt-0.5 text-base md:text-xl text-white break-words leading-5">
           {whoAmI || "—"}{seeking ? ` → ${seeking}` : ""}{orientationText ? ` | ${orientationText}` : ""}
@@ -869,6 +863,12 @@ function EntryLine({
 
       {renderDisplayDetailLine("🍑🍆", sexualPreferenceText, "text-blue-500", "mt-0.5")}
       </div>
+
+      {!isDM && socialHandle ? (
+        <div className={`${participantPhoto ? "clear-left " : ""}mt-1 text-sm font-semibold tracking-[0.08em] text-slate-400 break-words md:text-base`}>
+          <SocialHandleDisplay platform={socialPlatform} handle={socialHandle} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1134,6 +1134,7 @@ function ParticipantListDisplay({ entries = [] }) {
           const limits = getPrefixedValues(mergedItems, ["Limits:", "Limit:"]);
           const experience = getPrefixedValues(mergedItems, ["Experience:", "Experience Level:"]);
           const interests = getPrefixedValues(mergedItems, ["Interests:", "Looking For:", "Looking for:"]);
+          const orientation = getPrefixedValues(mergedItems, ["Orientation:"]);
           const sexual = getPrefixedValues(mergedItems, [
             "Sexual:",
             "Sex:",
@@ -1211,9 +1212,11 @@ function ParticipantListDisplay({ entries = [] }) {
                   </span>
                 </div>
 
-                {entry.social_handle ? (
-                  <div className="participantListDetail mt-1 break-words text-[0.85rem] font-black leading-tight tracking-[0.08em] text-slate-400 md:text-[0.95rem]">
-                    <SocialHandleDisplay platform={entry.social_platform || ""} handle={entry.social_handle} />
+                {(entry.who_am_i_text || entry.seeking_text || orientation.length) ? (
+                  <div className="participantListDetail mt-1 break-words text-[0.9rem] font-semibold leading-tight text-white md:text-[1rem]">
+                    {entry.who_am_i_text || "—"}
+                    {entry.seeking_text ? ` → ${entry.seeking_text}` : ""}
+                    {orientation.length ? ` | ${orientation.join(", ")}` : ""}
                   </div>
                 ) : null}
 
@@ -1233,6 +1236,12 @@ function ParticipantListDisplay({ entries = [] }) {
                   {renderDetail("👀", interests.length ? interests : plainItems)}
                   {renderDetail("🍑🍆", sexual)}
                 </div>
+
+                {entry.social_handle ? (
+                  <div className="participantListDetail mt-2 break-words text-[0.85rem] font-black leading-tight tracking-[0.08em] text-slate-400 md:text-[0.95rem]">
+                    <SocialHandleDisplay platform={entry.social_platform || ""} handle={entry.social_handle} />
+                  </div>
+                ) : null}
                 </div>
               </div>
             </div>
