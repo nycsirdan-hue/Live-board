@@ -588,7 +588,7 @@ function gridPlacement(index, cols) {
 
 function SocialPlatformIcon({ platform, className = "" }) {
   const normalized = String(platform || "").trim().toLowerCase();
-  const baseClass = `inline-flex h-[1.35em] min-w-[1.35em] shrink-0 items-center justify-center rounded-[0.35em] text-[0.82em] font-black leading-none ${className}`;
+  const baseClass = `inline-flex h-[1.35em] w-[1.35em] shrink-0 items-center justify-center overflow-hidden rounded-[0.35em] text-[0.82em] font-black leading-none ${className}`;
 
   if (normalized.includes("instagram") || normalized === "ig") {
     return (
@@ -603,7 +603,13 @@ function SocialPlatformIcon({ platform, className = "" }) {
   }
 
   if (normalized.includes("bluesky")) {
-    return <span className={`${baseClass} bg-sky-500 text-white`} title="Bluesky" aria-label="Bluesky">🦋</span>;
+    return (
+      <span className={`${baseClass} bg-[#101827]`} title="Bluesky" aria-label="Bluesky">
+        <svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden="true">
+          <path fill="#1677ff" d="M11.95 10.15C10.7 7.75 7.3 3.3 4.15 1.2 1.15-.8 0 0 0 2.1c0 .43.25 3.62.4 4.14.55 1.88 2.5 2.5 4.3 2.25-3.15.47-5.95 1.62-2.28 5.7 4.03 4.17 5.53-.9 7.48-3.47 1.95 2.57 3.45 7.64 7.48 3.47 3.67-4.08.87-5.23-2.28-5.7 1.8.25 3.75-.37 4.3-2.25.15-.52.4-3.71.4-4.14 0-2.1-1.15-2.9-4.15-.9-3.15 2.1-6.55 6.55-7.8 8.95Z" />
+        </svg>
+      </span>
+    );
   }
 
   if (normalized === "x" || normalized.includes("twitter")) {
@@ -611,11 +617,23 @@ function SocialPlatformIcon({ platform, className = "" }) {
   }
 
   if (normalized.includes("fetlife")) {
-    return <span className={`${baseClass} bg-red-700 text-white`} title="FetLife" aria-label="FetLife">FL</span>;
+    return (
+      <span className={`${baseClass} bg-[#080b10] ring-1 ring-white/10`} title="FetLife" aria-label="FetLife">
+        <svg viewBox="0 0 24 24" className="h-[1.08em] w-[1.08em]" aria-hidden="true">
+          <path fill="#c90812" d="M12 22S3.4 17.1 3.4 10.2c0-2.6 1.45-4.65 3.7-5.5L5.95 1c2.72.75 4.55 2.2 6.05 4.35C13.5 3.2 15.33 1.75 18.05 1L16.9 4.7c2.25.85 3.7 2.9 3.7 5.5C20.6 17.1 12 22 12 22Z" />
+        </svg>
+      </span>
+    );
   }
 
   if (normalized.includes("whappz")) {
-    return <span className={`${baseClass} bg-emerald-600 text-white`} title="Whappz" aria-label="Whappz">W</span>;
+    return (
+      <span className={`${baseClass} bg-[#17191d] ring-1 ring-white/20`} title="Whappz" aria-label="Whappz">
+        <svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden="true">
+          <text x="11.3" y="18" textAnchor="middle" fill="#ffe126" fontSize="18" fontWeight="950" fontStyle="italic">W</text>
+        </svg>
+      </span>
+    );
   }
 
   return <span className={`${baseClass} bg-slate-600 text-white`} title={platform || "Social handle"} aria-label={platform || "Social handle"}>@</span>;
