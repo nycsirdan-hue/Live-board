@@ -756,7 +756,7 @@ function EntryLine({
         </div>
       ) : null}
 
-      {renderDisplayDetailLine("🔴", topLikesToGiveText, "text-red-500", "mt-0.5")}
+      {renderDisplayDetailLine("🔵", topLikesToGiveText, "text-blue-500", "mt-0.5")}
 
       {renderDisplayDetailLine("🟢", bottomLikesToReceiveText, "text-green-500", "mt-0.5")}
 
@@ -1124,7 +1124,7 @@ function ParticipantListDisplay({ entries = [] }) {
                 ) : null}
 
                 <div className={`${participantPhoto ? "clear-left" : ""} mt-2 min-w-0 space-y-1`}>
-                  {renderDetail("🔴", topGive)}
+                  {renderDetail("🔵", topGive)}
                   {renderDetail("🟢", bottomReceive)}
                   {renderDetail("⛔", limits)}
                   {renderDetail("🟠", experience)}
@@ -8440,7 +8440,7 @@ export default function App() {
                 aria-label="Board icon guide"
               >
                 <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-2xl font-bold leading-tight">
-                  <div className="flex items-center gap-4"><span className="text-3xl">🔴</span><span>Likes to give</span></div>
+                  <div className="flex items-center gap-4"><span className="text-3xl">🔵</span><span>Likes to give</span></div>
                   <div className="flex items-center gap-4"><span className="text-3xl">🟢</span><span>Likes to receive</span></div>
                   <div className="flex items-center gap-4"><span className="text-3xl">⛔</span><span>Limits</span></div>
                   <div className="flex items-center gap-4"><span className="text-3xl">🟠</span><span>Experience</span></div>
