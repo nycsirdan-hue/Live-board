@@ -1010,6 +1010,12 @@ function ParticipantListDisplay({ entries = [] }) {
             ...(entry.custom_items || []),
           ]));
           const participantPhoto = getParticipantPhoto(entry.custom_items || []);
+          const participantName = entry.name || "Unnamed";
+          const nameSpace = participantPhoto ? 120 : 225;
+          const participantNameFontSize = Math.max(
+            10,
+            Math.min(31, nameSpace / Math.max(1, participantName.length * 0.58))
+          );
 
           const quickTags = getSimpleValues(mergedItems, "Quick Tag:");
           const topGive = getPrefixedValues(mergedItems, [
@@ -1067,8 +1073,8 @@ function ParticipantListDisplay({ entries = [] }) {
               className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
-                width: "fit-content",
-                maxWidth: "calc(40ch + 2rem)",
+                width: "40ch",
+                maxWidth: "40ch",
                 flex: "0 0 auto",
                 breakInside: "avoid",
                 WebkitColumnBreakInside: "avoid",
@@ -1087,7 +1093,12 @@ function ParticipantListDisplay({ entries = [] }) {
                 ) : null}
                 <div className="min-w-0">
                 <div className="participantListTitle flex min-w-0 items-center gap-2 text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
-                  <span className="min-w-0 break-words">{entry.name || "Unnamed"}</span>
+                  <span
+                    className="min-w-0 whitespace-nowrap"
+                    style={{ fontSize: `${participantNameFontSize}px` }}
+                  >
+                    {participantName}
+                  </span>
                   <span className="shrink-0 text-slate-400">|</span>
                   <span
                     className={"flex h-9 w-9 shrink-0 items-center justify-center " + meta.iconClass}
@@ -1734,6 +1745,7 @@ export default function App() {
   const [participantCameraOpen, setParticipantCameraOpen] = useState(false);
   const participantCameraVideoRef = useRef(null);
   const participantCameraStreamRef = useRef(null);
+  const participantCropDragRef = useRef(null);
   const participantCropPreviewStyle = useMemo(() => {
     if (!participantCropDimensions) return { visibility: "hidden" };
 
@@ -4163,6 +4175,35 @@ export default function App() {
       setMessage("");
     } catch (error) {
       setMessage(error.message);
+    }
+  };
+
+  const startParticipantCropDrag = (event) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    participantCropDragRef.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startCropX: participantCropX,
+      startCropY: participantCropY,
+      width: event.currentTarget.clientWidth,
+      height: event.currentTarget.clientHeight,
+    };
+  };
+
+  const moveParticipantCrop = (event) => {
+    const drag = participantCropDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const horizontalChange = ((event.clientX - drag.startClientX) / drag.width) * 100;
+    const verticalChange = ((event.clientY - drag.startClientY) / drag.height) * 100;
+    setParticipantCropX(Math.min(100, Math.max(0, drag.startCropX - horizontalChange)));
+    setParticipantCropY(Math.min(100, Math.max(0, drag.startCropY - verticalChange)));
+  };
+
+  const stopParticipantCropDrag = (event) => {
+    if (participantCropDragRef.current?.pointerId === event.pointerId) {
+      participantCropDragRef.current = null;
     }
   };
 
@@ -7466,10 +7507,16 @@ export default function App() {
                           Frame your profile photo
                         </h3>
                         <p className="mt-1 text-sm leading-6 text-slate-400">
-                          Zoom in and move the focus until the square shows exactly what you want on the board.
+                          Drag the picture under the square and zoom until the frame shows exactly what you want on the board.
                         </p>
 
-                        <div className="relative mx-auto mt-5 aspect-square w-full max-w-sm overflow-hidden rounded-3xl border-2 border-sky-400 bg-black">
+                        <div
+                          className="relative mx-auto mt-5 aspect-square w-full max-w-sm touch-none overflow-hidden rounded-3xl border-2 border-sky-400 bg-black cursor-grab active:cursor-grabbing"
+                          onPointerDown={startParticipantCropDrag}
+                          onPointerMove={moveParticipantCrop}
+                          onPointerUp={stopParticipantCropDrag}
+                          onPointerCancel={stopParticipantCropDrag}
+                        >
                           <img
                             src={participantCropSource.url}
                             alt="Adjustable square crop preview"
@@ -7495,28 +7542,9 @@ export default function App() {
                               className="mt-2 w-full accent-sky-400"
                             />
                           </label>
-                          <label className="text-sm font-semibold text-slate-200">
-                            Move left or right
-                            <input
-                              type="range"
-                              min="0"
-                              max="100"
-                              value={participantCropX}
-                              onChange={(event) => setParticipantCropX(Number(event.target.value))}
-                              className="mt-2 w-full accent-sky-400"
-                            />
-                          </label>
-                          <label className="text-sm font-semibold text-slate-200">
-                            Move up or down
-                            <input
-                              type="range"
-                              min="0"
-                              max="100"
-                              value={participantCropY}
-                              onChange={(event) => setParticipantCropY(Number(event.target.value))}
-                              className="mt-2 w-full accent-sky-400"
-                            />
-                          </label>
+                          <p className="text-center text-xs font-semibold uppercase tracking-[0.14em] text-sky-200/70">
+                            Drag the photo to reposition it inside the square
+                          </p>
                         </div>
 
                         <div className="mt-5 grid gap-3 sm:grid-cols-2">
