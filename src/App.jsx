@@ -8218,18 +8218,17 @@ export default function App() {
                     }`}>
                       <label className={`block text-sm font-semibold ${
                         isMenOnlyEntryForm ? "text-violet-100" : "text-amber-100"
-                      }`}>{isDiaperDebaucheryEntryForm ? "Kinks / Fetishes / Responsibilities" : "Interests"}</label>
+                      }`}>{isDiaperDebaucheryEntryForm ? "Kinks | Fetishes | Responsibilities" : "Interests"}</label>
                       <p className={`mt-1 text-xs leading-5 ${
                         isMenOnlyEntryForm ? "text-violet-100/60" : "text-amber-100/60"
                       }`}>
                         {isDiaperDebaucheryEntryForm
-                          ? "Type what you want people to know. Examples: diaper play, impact, service, rope, caregiver energy."
+                          ? "Choose any that apply, then type anything else you want people to know."
                           : "Choose any that apply. These are conversation starters, not consent."}
                       </p>
                     </div>
 
-                    {!isDiaperDebaucheryEntryForm ? (
-                      <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                         {allInterestOptions
                           .filter((option) => visibleInterestOptions.includes(option))
                           .map((option) => {
@@ -8269,8 +8268,7 @@ export default function App() {
                               </button>
                             );
                           })}
-                      </div>
-                    ) : null}
+                    </div>
 
                     {interestItems.length > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2">
