@@ -668,17 +668,23 @@ function ParticipantListDisplay({ entries = [] }) {
     if (position === "Top") {
       return {
         accentClass: "bg-red-500",
+        icon: <DisplayUpArrowIcon />,
+        iconClass: "text-red-400",
       };
     }
 
     if (position === "Bottom") {
       return {
         accentClass: "bg-emerald-500",
+        icon: <DisplayDownArrowIcon />,
+        iconClass: "text-emerald-400",
       };
     }
 
     return {
       accentClass: "bg-sky-500",
+      icon: <DisplayRotateIcon />,
+      iconClass: "text-sky-400",
     };
   };
 
@@ -860,11 +866,6 @@ function ParticipantListDisplay({ entries = [] }) {
             .map((item) => String(item).trim())
             .filter(Boolean);
 
-          const titleLines = wrapText(
-            (entry.name || "Unnamed") + " | " + (entry.position || "Entry"),
-            maxLineLength
-          );
-
           return (
             <div
               key={entry.id}
@@ -878,10 +879,16 @@ function ParticipantListDisplay({ entries = [] }) {
               <div className={"absolute left-0 top-0 h-full w-1.5 " + meta.accentClass} />
 
               <div className="min-w-0 pl-2">
-                <div className="break-words text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
-                  {titleLines.slice(0, 2).map((line, index) => (
-                    <div key={"title-" + index}>{line}</div>
-                  ))}
+                <div className="flex min-w-0 items-center gap-2 text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
+                  <span className="min-w-0 break-words">{entry.name || "Unnamed"}</span>
+                  <span className="shrink-0 text-slate-400">|</span>
+                  <span
+                    className={"flex h-9 w-9 shrink-0 items-center justify-center " + meta.iconClass}
+                    role="img"
+                    aria-label={entry.position || "Entry"}
+                  >
+                    {meta.icon}
+                  </span>
                 </div>
 
                 {entry.social_handle ? (
