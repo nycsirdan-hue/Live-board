@@ -2371,3 +2371,14 @@ body:has(.displayBoardSurface) #root {
   content: none !important;
   background: none !important;
 }
+
+/* Apply the backend participant text-size control to List View cards. */
+.participantListTitle {
+  font-size: var(--participant-list-name-size, 1.95rem) !important;
+  line-height: 1.04 !important;
+}
+
+.participantListDetail {
+  font-size: var(--participant-list-detail-size, 1rem) !important;
+  line-height: 1.12 !important;
+}

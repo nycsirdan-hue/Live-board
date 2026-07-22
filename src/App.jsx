@@ -862,7 +862,7 @@ function ParticipantListDisplay({ entries = [] }) {
     if (lines.length === 0) return null;
 
     return (
-      <div className="flex min-w-0 gap-2 text-[0.9rem] font-semibold leading-tight text-slate-100 md:text-[1rem]">
+      <div className="participantListDetail flex min-w-0 gap-2 text-[0.9rem] font-semibold leading-tight text-slate-100 md:text-[1rem]">
         <div className="w-8 shrink-0 text-center leading-tight">{icon}</div>
         <div className="min-w-0">
           {lines.slice(0, 2).map((line, index) => (
@@ -972,7 +972,7 @@ function ParticipantListDisplay({ entries = [] }) {
               <div className={"absolute left-0 top-0 h-full w-1.5 " + meta.accentClass} />
 
               <div className="min-w-0 pl-2">
-                <div className="flex min-w-0 items-center gap-2 text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
+                <div className="participantListTitle flex min-w-0 items-center gap-2 text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
                   <span className="min-w-0 break-words">{entry.name || "Unnamed"}</span>
                   <span className="shrink-0 text-slate-400">|</span>
                   <span
@@ -985,13 +985,13 @@ function ParticipantListDisplay({ entries = [] }) {
                 </div>
 
                 {entry.social_handle ? (
-                  <div className="mt-1 break-words text-[0.85rem] font-black leading-tight tracking-[0.08em] text-slate-400 md:text-[0.95rem]">
+                  <div className="participantListDetail mt-1 break-words text-[0.85rem] font-black leading-tight tracking-[0.08em] text-slate-400 md:text-[0.95rem]">
                     {(entry.social_platform ? entry.social_platform + ": " : "") + entry.social_handle}
                   </div>
                 ) : null}
 
                 {quickTags.length ? (
-                  <div className="mt-1 break-words text-[0.9rem] font-black leading-tight text-amber-100 md:text-[1rem]">
+                  <div className="participantListDetail mt-1 break-words text-[0.9rem] font-black leading-tight text-amber-100 md:text-[1rem]">
                     {joinAndWrap(quickTags, maxLineLength).slice(0, 2).map((line, index) => (
                       <div key={"quick-" + index}>{line}</div>
                     ))}
@@ -7775,6 +7775,8 @@ export default function App() {
             style={{
               "--board-entry-detail-size": `${1.535 + clampTextSizeStep(boardEntryTextSize) * 0.045}rem`,
               "--board-entry-name-size": `${2.23 + clampTextSizeStep(boardEntryTextSize) * 0.07}rem`,
+              "--participant-list-detail-size": `${1 + clampTextSizeStep(boardEntryTextSize) * 0.03}rem`,
+              "--participant-list-name-size": `${1.95 + clampTextSizeStep(boardEntryTextSize) * 0.06}rem`,
               "--staff-detail-size": `${1.36 + clampTextSizeStep(staffTextSize) * 0.04}rem`,
               "--staff-name-size": `${1.88 + clampTextSizeStep(staffTextSize) * 0.06}rem`,
             }}
