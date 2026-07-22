@@ -8461,42 +8461,40 @@ export default function App() {
                 </div>
               </aside>
 
-              <div className="flex h-full w-[24rem] shrink-0 self-stretch flex-col items-stretch gap-2">
-                <div className="flex flex-1 items-center gap-4 rounded-2xl border border-white/20 bg-black/30 px-5 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
-                  <p className="m-0 max-w-[14rem] flex-1 text-right text-xl font-bold leading-tight text-white md:text-2xl">
-                    Scan with your phone to add yourself to the Board
-                  </p>
-                  <img
-                    src="/liveboard-entry-qr.png"
-                    alt="QR code to join the LiveBoard"
-                    className="h-28 w-28 shrink-0 rounded-xl bg-white p-1.5"
-                  />
-                </div>
-
-                <div className="flex w-full items-stretch gap-2">
+              <div className="flex h-full w-[14rem] shrink-0 self-stretch flex-col items-stretch gap-2">
                   <div
-                    className="min-w-0 flex-1 rounded-2xl border border-white/20 bg-black/30 px-5 py-3 text-center text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+                    className="flex min-h-0 flex-1 flex-col justify-center rounded-2xl border border-white/20 bg-black/30 px-4 py-3 text-center text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
                     aria-label={"Current Eastern time: " + displayEasternTime}
                   >
-                    <div className="text-xs font-bold uppercase tracking-[0.16em] text-slate-300">
+                    <div className="text-sm font-bold uppercase tracking-[0.16em] text-slate-300">
                       Current time
                     </div>
-                    <div className="mt-1 text-3xl font-black leading-none tracking-[0.04em]">
+                    <div className="mt-2 text-4xl font-black leading-none tracking-[0.04em]">
                       {displayEasternTime}
                     </div>
                   </div>
 
                   {eventCountdown ? (
-                    <div className="min-w-0 flex-1 rounded-2xl border border-white/20 bg-black/30 px-5 py-3 text-center text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
-                      <div className="text-xs font-bold uppercase tracking-[0.16em] text-slate-300">
+                    <div className="flex min-h-0 flex-1 flex-col justify-center rounded-2xl border border-white/20 bg-black/30 px-4 py-3 text-center text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+                      <div className="text-sm font-bold uppercase tracking-[0.16em] text-slate-300">
                         Ends in
                       </div>
-                      <div className="mt-1 text-3xl font-black leading-none tracking-[0.04em]">
+                      <div className="mt-2 text-4xl font-black leading-none tracking-[0.04em]">
                         {eventCountdown}
                       </div>
                     </div>
                   ) : null}
-                </div>
+              </div>
+
+              <div className="flex h-full w-[30rem] shrink-0 self-stretch items-center gap-5 rounded-2xl border border-white/20 bg-black/30 px-6 py-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+                <p className="m-0 flex-1 text-right text-2xl font-bold leading-tight text-white">
+                  Scan with your phone to add yourself to the Board
+                </p>
+                <img
+                  src="/liveboard-entry-qr.png"
+                  alt="QR code to join the LiveBoard"
+                  className="h-44 w-44 shrink-0 rounded-2xl bg-white p-2"
+                />
               </div>
             </div>
 
