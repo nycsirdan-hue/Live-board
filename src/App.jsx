@@ -103,7 +103,7 @@ function parseEventScheduleDescription(value) {
   const match = rawDescription.match(EVENT_SCHEDULE_PATTERN);
 
   if (!match) {
-    return { description: rawDescription, eventStartTime: "", eventEndTime: "" };
+    return { description: rawDescription, eventStartTime: "", eventEndTime: "", slidesEnabled: true };
   }
 
   try {
@@ -112,18 +112,23 @@ function parseEventScheduleDescription(value) {
       description: rawDescription.replace(EVENT_SCHEDULE_PATTERN, "").trimEnd(),
       eventStartTime: /^\d{2}:\d{2}$/.test(schedule.start || "") ? schedule.start : "",
       eventEndTime: /^\d{2}:\d{2}$/.test(schedule.end || "") ? schedule.end : "",
+      slidesEnabled: schedule.slidesEnabled !== false,
     };
   } catch {
-    return { description: rawDescription, eventStartTime: "", eventEndTime: "" };
+    return { description: rawDescription, eventStartTime: "", eventEndTime: "", slidesEnabled: true };
   }
 }
 
-function serializeEventScheduleDescription(description, eventStartTime, eventEndTime) {
+function serializeEventScheduleDescription(description, eventStartTime, eventEndTime, slidesEnabled = true) {
   const cleanDescription = String(description || "").replace(EVENT_SCHEDULE_PATTERN, "").trim();
 
-  if (!eventStartTime && !eventEndTime) return cleanDescription;
+  if (!eventStartTime && !eventEndTime && slidesEnabled) return cleanDescription;
 
-  const schedule = JSON.stringify({ start: eventStartTime || "", end: eventEndTime || "" });
+  const schedule = JSON.stringify({
+    start: eventStartTime || "",
+    end: eventEndTime || "",
+    slidesEnabled: Boolean(slidesEnabled),
+  });
   return `${cleanDescription}\n[[LIVEBOARD_SCHEDULE:${schedule}]]`.trim();
 }
 
@@ -196,6 +201,7 @@ function mapEventDisplayPresetRow(row) {
     eventDescription: schedule.description,
     eventStartTime: schedule.eventStartTime,
     eventEndTime: schedule.eventEndTime,
+    slidesEnabled: schedule.slidesEnabled,
     liveboardDurationSeconds: Number(row.liveboard_duration_seconds) || 300,
     transitionSeconds: Number(row.transition_seconds) || 0.5,
     images: Array.isArray(row.images) ? row.images : [],
@@ -338,6 +344,7 @@ const defaultInterestOptions = [
 
 const REMOVED_ENTRY_OPTION_PREFIX = "__liveboard_removed_option__:";
 const PARTICIPANT_PHOTO_SETTING_PREFIX = "__liveboard_setting__:participant_photos=";
+const TELEGRAM_SETTING_PREFIX = "__liveboard_setting__:telegram=";
 
 const getRemovedEntryOptionMarker = (option) => REMOVED_ENTRY_OPTION_PREFIX + option;
 const isRemovedEntryOptionMarker = (option) =>
@@ -354,6 +361,18 @@ const withParticipantPhotoSetting = (options, enabled) => [
 ];
 const withoutParticipantPhotoSetting = (options) =>
   (options || []).filter((option) => !isParticipantPhotoSettingMarker(option));
+const isTelegramSettingMarker = (option) =>
+  String(option || "").startsWith(TELEGRAM_SETTING_PREFIX);
+const getTelegramSetting = (options) => {
+  const marker = (options || []).find(isTelegramSettingMarker);
+  return marker ? marker === TELEGRAM_SETTING_PREFIX + "on" : true;
+};
+const withTelegramSetting = (options, enabled) => [
+  ...(options || []).filter((option) => !isTelegramSettingMarker(option)),
+  TELEGRAM_SETTING_PREFIX + (enabled ? "on" : "off"),
+];
+const withoutTelegramSetting = (options) =>
+  (options || []).filter((option) => !isTelegramSettingMarker(option));
 const quickTagOptions = ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"];
 
 const diaperDebaucheryVibeOptions = [
@@ -390,7 +409,7 @@ const diaperDebaucherySexualPreferenceOptions = [
   "Diaper Sexual",
 ];
 
-const handlePlatformOptions = ["FetLife", "Whappz", "Twitter", "Bluesky", "Instagram / IG"];
+const handlePlatformOptions = ["FetLife", "Whappz", "Twitter", "Bluesky", "Instagram / IG", "Telegram"];
 const spankingImplementOptions = ["Paddles", "Straps", "Belt", "Brushes", "Canes", "Hands"];
 const spankingLimitOptions = ["No wood", "No leather", "Domestic implements only"];
 const spankingIntentionOptions = ["Open to try", "Discuss Limits", "Open to Play", "Watching"];
@@ -636,6 +655,17 @@ function SocialPlatformIcon({ platform, className = "" }) {
     );
   }
 
+  if (normalized.includes("telegram")) {
+    return (
+      <span className={`${baseClass} bg-[#12151a] ring-1 ring-white/20`} title="Telegram" aria-label="Telegram">
+        <svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden="true">
+          <circle cx="12" cy="12" r="9.7" fill="#229ed9" />
+          <path fill="#fff" d="M18.55 6.25 16.7 17.2c-.14.78-.58.96-1.17.6l-2.86-2.11-1.38 1.33c-.15.15-.28.28-.57.28l.2-2.92 5.32-4.8c.23-.21-.05-.33-.36-.12L9.3 13.6l-2.83-.89c-.78-.24-.79-.77.16-1.14l11.07-4.27c.65-.24 1.22.16.87 1.57Z" />
+        </svg>
+      </span>
+    );
+  }
+
   return <span className={`${baseClass} bg-slate-600 text-white`} title={platform || "Social handle"} aria-label={platform || "Social handle"}>@</span>;
 }
 
@@ -652,7 +682,7 @@ function SocialHandleDisplay({ platform, handle }) {
   const rawHandle = String(handle || "").trim();
   if (!rawHandle) return null;
 
-  const knownPlatforms = ["Instagram / IG", "Instagram", "FetLife", "Bluesky", "Twitter", "X", "Whappz", "Other"];
+  const knownPlatforms = ["Instagram / IG", "Instagram", "FetLife", "Bluesky", "Twitter", "X", "Whappz", "Telegram", "Other"];
   const lines = rawHandle.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   const displayLines = platform
     ? [{ platform, handle: rawHandle }]
@@ -666,11 +696,11 @@ function SocialHandleDisplay({ platform, handle }) {
       });
 
   return (
-    <span className="inline-flex flex-col gap-0.5">
+    <span className="grid w-full grid-cols-2 gap-x-3 gap-y-1">
       {displayLines.map((line, index) => (
-        <span key={`${line.platform}-${line.handle}-${index}`} className="inline-flex items-center gap-1.5">
+        <span key={`${line.platform}-${line.handle}-${index}`} className="inline-flex min-w-0 items-center gap-1.5">
           <SocialPlatformIcon platform={line.platform} />
-          <span>{line.handle}</span>
+          <span className="min-w-0 break-all">{line.handle}</span>
         </span>
       ))}
     </span>
@@ -1363,7 +1393,9 @@ function DisplayRotationOverlay({ eventDisplay }) {
     [eventDisplay]
   );
 
-  const images = normalizedEventDisplay?.images || [];
+  const images = normalizedEventDisplay?.slidesEnabled === false
+    ? []
+    : normalizedEventDisplay?.images || [];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showImage, setShowImage] = useState(false);
   const [loadedImages, setLoadedImages] = useState({});
@@ -1914,6 +1946,7 @@ export default function App() {
   const [displayImageDurationSeconds, setDisplayImageDurationSeconds] = useState("60");
   const [displayLiveboardDurationSeconds, setDisplayLiveboardDurationSeconds] = useState("300");
   const [displayImages, setDisplayImages] = useState([]);
+  const [displaySlidesEnabled, setDisplaySlidesEnabled] = useState(true);
   const [editingEventDisplayId, setEditingEventDisplayId] = useState("");
   const [draggedDisplayImageId, setDraggedDisplayImageId] = useState("");
 
@@ -1931,6 +1964,13 @@ export default function App() {
   const [allowWhappz, setAllowWhappz] = useState(true);
   const [allowTwitter, setAllowTwitter] = useState(true);
   const [allowBluesky, setAllowBluesky] = useState(true);
+  const [allowTelegram, setAllowTelegram] = useState(() => {
+    try {
+      return window.localStorage.getItem("allowTelegram") !== "false";
+    } catch {
+      return true;
+    }
+  });
   const [allowOtherPlatform, setAllowOtherPlatform] = useState(true);
   const [entryFormPreset, setEntryFormPreset] = useState(() => {
     try {
@@ -2212,6 +2252,14 @@ export default function App() {
     }
   }, [allowParticipantPhotos]);
 
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("allowTelegram", String(allowTelegram));
+    } catch {
+      // Local storage may be unavailable in some browser privacy modes.
+    }
+  }, [allowTelegram]);
+
   // LIVE ENTRY FORM SETTINGS SYNC
   // Keeps kiosk/setup/display pages in the same browser updated after Entry Form settings change.
   useEffect(() => {
@@ -2232,6 +2280,8 @@ export default function App() {
         );
         const storedAllowParticipantPhotos =
           window.localStorage.getItem("allowParticipantPhotos") !== "false";
+        const storedAllowTelegram =
+          window.localStorage.getItem("allowTelegram") !== "false";
 
         if (storedPreset && storedPreset !== entryFormPreset) {
           setEntryFormPreset(storedPreset);
@@ -2261,6 +2311,10 @@ export default function App() {
         if (storedAllowParticipantPhotos !== allowParticipantPhotos) {
           setAllowParticipantPhotos(storedAllowParticipantPhotos);
         }
+
+        if (storedAllowTelegram !== allowTelegram) {
+          setAllowTelegram(storedAllowTelegram);
+        }
       } catch {
         // Ignore localStorage read errors.
       }
@@ -2279,6 +2333,7 @@ export default function App() {
     visibleInterestOptions,
     customInterestOptions,
     allowParticipantPhotos,
+    allowTelegram,
   ]);
 
   useEffect(() => {
@@ -2543,6 +2598,7 @@ export default function App() {
     allowWhappz ? "Whappz" : null,
     allowTwitter ? "Twitter" : null,
     allowBluesky ? "Bluesky" : null,
+    allowTelegram ? "Telegram" : null,
     allowOtherPlatform ? "Instagram / IG" : null,
   ].filter(Boolean);
 
@@ -2550,7 +2606,7 @@ export default function App() {
     if (!availableHandlePlatforms.includes(socialPlatform)) {
       setSocialPlatform(availableHandlePlatforms[0] || "FetLife");
     }
-  }, [allowFetLife, allowWhappz, allowTwitter, allowBluesky, allowOtherPlatform]); // eslint-disable-line
+  }, [allowFetLife, allowWhappz, allowTwitter, allowBluesky, allowTelegram, allowOtherPlatform]); // eslint-disable-line
 
   useEffect(() => {
     if (!isKioskEntryMode || !entrySuccess) return;
@@ -2755,7 +2811,10 @@ export default function App() {
 
         if (Array.isArray(data.custom_interest_options)) {
           setAllowParticipantPhotos(getParticipantPhotoSetting(data.custom_interest_options));
-          setCustomInterestOptions(withoutParticipantPhotoSetting(data.custom_interest_options));
+          setAllowTelegram(getTelegramSetting(data.custom_interest_options));
+          setCustomInterestOptions(
+            withoutTelegramSetting(withoutParticipantPhotoSetting(data.custom_interest_options))
+          );
         }
       }
 
@@ -3197,7 +3256,10 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+      custom_interest_options: withTelegramSetting(
+        withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+        allowTelegram
+      ),
       updated_at: new Date().toISOString(),
     };
 
@@ -3619,7 +3681,10 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+      custom_interest_options: withTelegramSetting(
+        withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+        allowTelegram
+      ),
       active_event_display_preset_id: activeEventDisplayId || null,
       updated_at: new Date().toISOString(),
     };
@@ -3765,7 +3830,10 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+      custom_interest_options: withTelegramSetting(
+        withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+        allowTelegram
+      ),
       active_event_display_preset_id: presetId || null,
       updated_at: new Date().toISOString(),
     };
@@ -3899,7 +3967,7 @@ export default function App() {
       return;
     }
 
-    if (!displayImages.length) {
+    if (displaySlidesEnabled && !displayImages.length) {
       setMessage("Please add at least one image.");
       return;
     }
@@ -3953,7 +4021,8 @@ export default function App() {
           event_description: serializeEventScheduleDescription(
             displayEventDescription,
             displayEventStartTime,
-            displayEventEndTime
+            displayEventEndTime,
+            displaySlidesEnabled
           ),
           liveboard_duration_seconds: liveboardDuration,
           transition_seconds: 0.5,
@@ -3993,6 +4062,7 @@ export default function App() {
       setDisplayImageDurationSeconds("60");
       setDisplayLiveboardDurationSeconds("300");
       setDisplayImages([]);
+      setDisplaySlidesEnabled(true);
 
       setMessage("Event display preset updated.");
       setTimeout(() => setMessage(""), 2500);
@@ -4006,7 +4076,8 @@ export default function App() {
         event_description: serializeEventScheduleDescription(
           displayEventDescription,
           displayEventStartTime,
-          displayEventEndTime
+          displayEventEndTime,
+          displaySlidesEnabled
         ),
         liveboard_duration_seconds: liveboardDuration,
         transition_seconds: 0.5,
@@ -4034,6 +4105,7 @@ export default function App() {
     setDisplayImageDurationSeconds("60");
     setDisplayLiveboardDurationSeconds("300");
     setDisplayImages([]);
+    setDisplaySlidesEnabled(true);
 
     setMessage("Event display preset saved to Supabase.");
     setTimeout(() => setMessage(""), 2500);
@@ -4066,6 +4138,7 @@ export default function App() {
     setDisplayEventDescription(activePreset.eventDescription || "");
     setDisplayEventStartTime(activePreset.eventStartTime || "");
     setDisplayEventEndTime(activePreset.eventEndTime || "");
+    setDisplaySlidesEnabled(activePreset.slidesEnabled !== false);
     setDisplayImageDurationSeconds(String(imageDuration));
     setDisplayLiveboardDurationSeconds(String(liveboardDuration));
     setDisplayImages(activePreset.images || []);
@@ -4080,6 +4153,7 @@ export default function App() {
     setDisplayEventDescription("");
     setDisplayEventStartTime("");
     setDisplayEventEndTime("");
+    setDisplaySlidesEnabled(true);
     setDisplayImageDurationSeconds("60");
     setDisplayLiveboardDurationSeconds("300");
     setDisplayImages([]);
@@ -4179,6 +4253,7 @@ export default function App() {
       setDisplayImageDurationSeconds("60");
       setDisplayLiveboardDurationSeconds("300");
       setDisplayImages([]);
+      setDisplaySlidesEnabled(true);
     }
 
     setMessage("Event display preset deleted from Supabase.");
@@ -4208,7 +4283,7 @@ export default function App() {
 
     if (!cleanValue) return "";
 
-    const platformNames = ["Instagram / IG", "FetLife", "Bluesky", "X", "Instagram", "Twitter", "Whappz"];
+    const platformNames = ["Instagram / IG", "FetLife", "Bluesky", "X", "Instagram", "Twitter", "Whappz", "Telegram"];
 
     const normalizeHandleLines = (rawValue) => {
       let normalized = String(rawValue || "");
@@ -5222,6 +5297,21 @@ export default function App() {
                       Add slides, set how long each image stays up, and set how long the liveboard appears.
                     </p>
 
+                    <label className="mt-4 flex items-center gap-3 rounded-2xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm font-semibold text-white">
+                      <input
+                        type="checkbox"
+                        checked={displaySlidesEnabled}
+                        onChange={(event) => setDisplaySlidesEnabled(event.target.checked)}
+                        className="h-5 w-5 accent-sky-400"
+                      />
+                      <span>
+                        Enable rotating slides
+                        <span className="ml-2 font-normal text-slate-400">
+                          {displaySlidesEnabled ? "Slides and LiveBoard will rotate." : "LiveBoard only—slides will not appear."}
+                        </span>
+                      </span>
+                    </label>
+
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                       <div>
                         <label className="mb-2 block text-sm font-semibold">Image duration, in seconds</label>
@@ -5784,6 +5874,10 @@ export default function App() {
                         <label className="flex items-center gap-3 text-sm text-slate-100">
                           <input type="checkbox" checked={allowBluesky} onChange={(e) => setAllowBluesky(e.target.checked)} className="h-4 w-4" />
                           Bluesky
+                        </label>
+                        <label className="flex items-center gap-3 text-sm text-slate-100">
+                          <input type="checkbox" checked={allowTelegram} onChange={(e) => setAllowTelegram(e.target.checked)} className="h-4 w-4" />
+                          <SocialPlatformLabel platform="Telegram" />
                         </label>
                         <label className="flex items-center gap-3 text-sm text-slate-100">
                           <input type="checkbox" checked={allowOtherPlatform} onChange={(e) => setAllowOtherPlatform(e.target.checked)} className="h-4 w-4" />
@@ -6886,6 +6980,10 @@ export default function App() {
                       <label className="flex items-center gap-3 text-sm text-slate-100">
                         <input type="checkbox" checked={allowBluesky} onChange={(e) => setAllowBluesky(e.target.checked)} className="h-4 w-4" />
                         Bluesky
+                      </label>
+                      <label className="flex items-center gap-3 text-sm text-slate-100">
+                        <input type="checkbox" checked={allowTelegram} onChange={(e) => setAllowTelegram(e.target.checked)} className="h-4 w-4" />
+                        <SocialPlatformLabel platform="Telegram" />
                       </label>
                       <label className="flex items-center gap-3 text-sm text-slate-100">
                         <input type="checkbox" checked={allowOtherPlatform} onChange={(e) => setAllowOtherPlatform(e.target.checked)} className="h-4 w-4" />
