@@ -250,6 +250,12 @@ const defaultInterestOptions = [
   "Heavy Impact",
   "Warm-Up Needed",
 ];
+
+const REMOVED_ENTRY_OPTION_PREFIX = "__liveboard_removed_option__:";
+
+const getRemovedEntryOptionMarker = (option) => REMOVED_ENTRY_OPTION_PREFIX + option;
+const isRemovedEntryOptionMarker = (option) =>
+  String(option || "").startsWith(REMOVED_ENTRY_OPTION_PREFIX);
 const quickTagOptions = ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"];
 
 const diaperDebaucheryVibeOptions = [
@@ -1771,15 +1777,41 @@ export default function App() {
   const usesSingleConnectionBoard = displayBoardSettings.layout === "singleConnectionBoard";
   const isConnectionEntryForm = entryMenuSettings.type === "abdl";
 
-  const allSexualPreferenceOptions = useMemo(
-    () => Array.from(new Set([...defaultSexualPreferenceOptions, ...customSexualPreferenceOptions])).filter(Boolean),
-    [customSexualPreferenceOptions]
-  );
+  const allSexualPreferenceOptions = useMemo(() => {
+    const removedOptions = new Set(
+      customSexualPreferenceOptions
+        .filter(isRemovedEntryOptionMarker)
+        .map((option) => option.slice(REMOVED_ENTRY_OPTION_PREFIX.length))
+    );
+    const customOptions = customSexualPreferenceOptions.filter(
+      (option) => !isRemovedEntryOptionMarker(option)
+    );
 
-  const allInterestOptions = useMemo(
-    () => Array.from(new Set([...defaultInterestOptions, ...customInterestOptions])).filter(Boolean),
-    [customInterestOptions]
-  );
+    return Array.from(
+      new Set([
+        ...defaultSexualPreferenceOptions.filter((option) => !removedOptions.has(option)),
+        ...customOptions,
+      ])
+    ).filter(Boolean);
+  }, [customSexualPreferenceOptions]);
+
+  const allInterestOptions = useMemo(() => {
+    const removedOptions = new Set(
+      customInterestOptions
+        .filter(isRemovedEntryOptionMarker)
+        .map((option) => option.slice(REMOVED_ENTRY_OPTION_PREFIX.length))
+    );
+    const customOptions = customInterestOptions.filter(
+      (option) => !isRemovedEntryOptionMarker(option)
+    );
+
+    return Array.from(
+      new Set([
+        ...defaultInterestOptions.filter((option) => !removedOptions.has(option)),
+        ...customOptions,
+      ])
+    ).filter(Boolean);
+  }, [customInterestOptions]);
 
   const clampTextSizeStep = (value) => Math.max(-20, Math.min(10, Number(value) || 0));
 
@@ -3089,7 +3121,10 @@ export default function App() {
       return;
     }
 
-    const nextCustomSexualPreferenceOptions = [...customSexualPreferenceOptions, value];
+    const removedMarker = getRemovedEntryOptionMarker(value);
+    const nextCustomSexualPreferenceOptions = defaultSexualPreferenceOptions.includes(value)
+      ? customSexualPreferenceOptions.filter((option) => option !== removedMarker)
+      : [...customSexualPreferenceOptions.filter((option) => option !== removedMarker), value];
     const nextVisibleSexualPreferenceOptions = visibleSexualPreferenceOptions.includes(value)
       ? visibleSexualPreferenceOptions
       : [...visibleSexualPreferenceOptions, value];
@@ -3106,7 +3141,13 @@ export default function App() {
   };
 
   const removeCustomSexualPreferenceOption = (item) => {
-    const nextCustomSexualPreferenceOptions = customSexualPreferenceOptions.filter((value) => value !== item);
+    const removedMarker = getRemovedEntryOptionMarker(item);
+    const withoutOption = customSexualPreferenceOptions.filter(
+      (value) => value !== item && value !== removedMarker
+    );
+    const nextCustomSexualPreferenceOptions = defaultSexualPreferenceOptions.includes(item)
+      ? [...withoutOption, removedMarker]
+      : withoutOption;
     const nextVisibleSexualPreferenceOptions = visibleSexualPreferenceOptions.filter((value) => value !== item);
 
     setCustomSexualPreferenceOptions(nextCustomSexualPreferenceOptions);
@@ -3116,7 +3157,7 @@ export default function App() {
     persistSexualPreferenceButtonOptions(
       nextVisibleSexualPreferenceOptions,
       nextCustomSexualPreferenceOptions,
-      item + " removed from custom Sexual Preference options."
+      item + " removed from Sexual Preference options."
     );
   };
 
@@ -3136,7 +3177,10 @@ export default function App() {
       return;
     }
 
-    const nextCustomInterestOptions = [...customInterestOptions, value];
+    const removedMarker = getRemovedEntryOptionMarker(value);
+    const nextCustomInterestOptions = defaultInterestOptions.includes(value)
+      ? customInterestOptions.filter((option) => option !== removedMarker)
+      : [...customInterestOptions.filter((option) => option !== removedMarker), value];
     const nextVisibleInterestOptions = visibleInterestOptions.includes(value)
       ? visibleInterestOptions
       : [...visibleInterestOptions, value];
@@ -3153,7 +3197,13 @@ export default function App() {
   };
 
   const removeCustomInterestOption = (item) => {
-    const nextCustomInterestOptions = customInterestOptions.filter((value) => value !== item);
+    const removedMarker = getRemovedEntryOptionMarker(item);
+    const withoutOption = customInterestOptions.filter(
+      (value) => value !== item && value !== removedMarker
+    );
+    const nextCustomInterestOptions = defaultInterestOptions.includes(item)
+      ? [...withoutOption, removedMarker]
+      : withoutOption;
     const nextVisibleInterestOptions = visibleInterestOptions.filter((value) => value !== item);
 
     setCustomInterestOptions(nextCustomInterestOptions);
@@ -3163,7 +3213,7 @@ export default function App() {
     persistInterestButtonOptions(
       nextVisibleInterestOptions,
       nextCustomInterestOptions,
-      item + " removed from custom Interest options."
+      item + " removed from Interest options."
     );
   };
 
@@ -5067,8 +5117,6 @@ export default function App() {
 
                         <div className="grid gap-2">
                           {allSexualPreferenceOptions.map((option) => {
-                            const isCustom = customSexualPreferenceOptions.includes(option);
-
                             return (
                               <div key={option} className="flex items-center justify-between gap-3">
                                 <label className="flex min-w-0 items-center gap-3 text-sm text-slate-100">
@@ -5081,15 +5129,13 @@ export default function App() {
                                   <span className="truncate">{option}</span>
                                 </label>
 
-                                {isCustom ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => removeCustomSexualPreferenceOption(option)}
-                                    className="shrink-0 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100"
-                                  >
-                                    Remove
-                                  </button>
-                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() => removeCustomSexualPreferenceOption(option)}
+                                  className="shrink-0 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100"
+                                >
+                                  Remove
+                                </button>
                               </div>
                             );
                           })}
@@ -5136,8 +5182,6 @@ export default function App() {
 
                         <div className="grid gap-2">
                           {allInterestOptions.map((option) => {
-                            const isCustom = customInterestOptions.includes(option);
-
                             return (
                               <div key={option} className="flex items-center justify-between gap-3">
                                 <label className="flex min-w-0 items-center gap-3 text-sm text-slate-100">
@@ -5150,15 +5194,13 @@ export default function App() {
                                   <span className="truncate">{option}</span>
                                 </label>
 
-                                {isCustom ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => removeCustomInterestOption(option)}
-                                    className="shrink-0 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100"
-                                  >
-                                    Remove
-                                  </button>
-                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() => removeCustomInterestOption(option)}
+                                  className="shrink-0 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-100"
+                                >
+                                  Remove
+                                </button>
                               </div>
                             );
                           })}
