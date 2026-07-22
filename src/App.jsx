@@ -8617,7 +8617,9 @@ export default function App() {
                   <h1 className="displayBoardInlineTitle">
                     <span className="displayBoardEventName">{appConfig.eventName}</span>
                     <span className="displayBoardTitleDivider">|</span>
-                    <span className="displayBoardEventDescription">{appConfig.venueName}</span>
+                    <span className="displayBoardEventDescription">
+                      <span className="displayBoardEventDescriptionText">{appConfig.venueName}</span>
+                    </span>
                   </h1>
                 </div>
 

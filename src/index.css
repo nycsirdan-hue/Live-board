@@ -2517,8 +2517,37 @@ body:has(.displayBoardSurface) #root {
 }
 
 .diaperGlowDisplayBoard .displayBoardTitleDivider {
-  color: rgba(250, 204, 21, 0.90) !important;
-  text-shadow: 0 0 16px rgba(250, 204, 21, 0.34) !important;
+  color: rgba(203, 213, 225, 0.72) !important;
+  text-shadow: none !important;
+}
+
+/* Display description: reserve two lines and build upward from the baseline. */
+.displayBoardEventDescription {
+  align-self: flex-end !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  height: 2.1em !important;
+  padding-bottom: 0.07em !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+}
+
+.displayBoardEventDescriptionText {
+  display: -webkit-box !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  line-height: 1.02 !important;
+}
+
+.displayBoardTitleDivider,
+.diaperGlowDisplayBoard .displayBoardTitleDivider {
+  color: rgba(203, 213, 225, 0.72) !important;
+  text-shadow: none !important;
 }
 
 .diaperGlowDisplayBoard .displayConnectionRow > .displaySectionCard {
