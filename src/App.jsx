@@ -1554,7 +1554,9 @@ export default function App() {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
-    }).format(date);
+    })
+      .format(date)
+      .replace(/\s?[AP]M$/i, "");
 
   const [raffleTicketInput, setRaffleTicketInput] = useState("");
   const [displayNow, setDisplayNow] = useState(() => new Date());
