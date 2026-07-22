@@ -8436,10 +8436,10 @@ export default function App() {
               </div>
 
               <aside
-                className="displayIconLegend flex h-full w-[34rem] shrink-0 self-stretch flex-col justify-center rounded-2xl border border-white/20 bg-black/30 px-6 py-5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+                className="displayIconLegend flex h-full w-[30rem] shrink-0 self-stretch flex-col justify-center px-2 py-4 text-white"
                 aria-label="Board icon guide"
               >
-                <div className="grid grid-cols-2 gap-x-8 gap-y-6 text-2xl font-bold leading-tight">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-2xl font-bold leading-tight">
                   <div className="flex items-center gap-4"><span className="text-3xl">🔴</span><span>Likes to give</span></div>
                   <div className="flex items-center gap-4"><span className="text-3xl">🟢</span><span>Likes to receive</span></div>
                   <div className="flex items-center gap-4"><span className="text-3xl">⛔</span><span>Limits</span></div>
