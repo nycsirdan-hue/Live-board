@@ -800,7 +800,7 @@ function AutoFitParticipantName({ name }) {
   }, [name]);
 
   return (
-    <span ref={containerRef} className="min-w-0 flex-1 overflow-hidden">
+    <span ref={containerRef} className="min-w-0 overflow-hidden">
       <span
         className="block whitespace-nowrap"
         style={{ fontSize: `${fontSize}px` }}
