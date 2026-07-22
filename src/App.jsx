@@ -8439,16 +8439,13 @@ export default function App() {
                 className="displayIconLegend flex h-full w-[34rem] shrink-0 self-stretch flex-col justify-center rounded-2xl border border-white/20 bg-black/30 px-6 py-5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
                 aria-label="Board icon guide"
               >
-                <div className="mb-4 text-base font-black uppercase tracking-[0.18em] text-slate-300">
-                  Board key
-                </div>
-                <div className="grid grid-cols-3 gap-x-5 gap-y-5 text-lg font-bold leading-tight">
-                  <div className="flex items-center gap-3"><span className="text-2xl">🔴</span><span>Likes to give</span></div>
-                  <div className="flex items-center gap-3"><span className="text-2xl">🟢</span><span>Likes to receive</span></div>
-                  <div className="flex items-center gap-3"><span className="text-2xl">⛔</span><span>Limits</span></div>
-                  <div className="flex items-center gap-3"><span className="text-2xl">🟠</span><span>Experience</span></div>
-                  <div className="flex items-center gap-3"><span className="text-2xl">👀</span><span>Interests</span></div>
-                  <div className="flex items-center gap-3"><span className="whitespace-nowrap text-2xl">🍑🍆</span><span>Sexual preferences</span></div>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-6 text-2xl font-bold leading-tight">
+                  <div className="flex items-center gap-4"><span className="text-3xl">🔴</span><span>Likes to give</span></div>
+                  <div className="flex items-center gap-4"><span className="text-3xl">🟢</span><span>Likes to receive</span></div>
+                  <div className="flex items-center gap-4"><span className="text-3xl">⛔</span><span>Limits</span></div>
+                  <div className="flex items-center gap-4"><span className="text-3xl">🟠</span><span>Experience</span></div>
+                  <div className="flex items-center gap-4"><span className="text-3xl">👀</span><span>Interests</span></div>
+                  <div className="flex items-center gap-4"><span className="whitespace-nowrap text-3xl">🍑🍆</span><span>Sexual preferences</span></div>
                 </div>
               </aside>
 
