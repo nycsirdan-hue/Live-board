@@ -655,7 +655,7 @@ function getDisplaySectionMeta(title) {
 }
 
 function ParticipantListDisplay({ entries = [] }) {
-  const maxLineLength = 60;
+  const maxLineLength = 40;
 
   const getPositionRank = (entry) => {
     if (entry.position === "Top") return 0;
@@ -798,7 +798,7 @@ function ParticipantListDisplay({ entries = [] }) {
         className="w-full"
         style={{
           height: "calc(100vh - 15.5rem)",
-          columnWidth: "26rem",
+          columnWidth: "22rem",
           columnGap: "0.7rem",
           columnFill: "auto",
         }}
@@ -868,7 +868,7 @@ function ParticipantListDisplay({ entries = [] }) {
           return (
             <div
               key={entry.id}
-              className="relative mb-2.5 w-full overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+              className="relative mb-2.5 w-fit max-w-[22rem] overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 breakInside: "avoid",
                 WebkitColumnBreakInside: "avoid",
