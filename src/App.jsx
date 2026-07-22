@@ -588,6 +588,7 @@ function gridPlacement(index, cols) {
 
 function EntryLine({
   name,
+  participantPhoto = null,
   socialHandle,
   socialPlatform,
   whoAmI,
@@ -727,7 +728,15 @@ function EntryLine({
     ) : null;
 
   return (
-    <div className="py-2">
+    <div className="flow-root py-2">
+      {participantPhoto ? (
+        <img
+          src={participantPhoto.url}
+          alt={`${name || "Participant"}'s profile`}
+          className="float-left mb-2 mr-3 h-24 w-24 rounded-2xl border border-white/20 object-cover shadow-lg"
+        />
+      ) : null}
+
       <div className="text-3xl md:text-4xl font-bold text-slate-100 break-words">
         {name}
       </div>
@@ -756,6 +765,7 @@ function EntryLine({
         </div>
       ) : null}
 
+      <div className={participantPhoto ? "clear-left" : ""}>
       {renderDisplayDetailLine("🔵", topLikesToGiveText, "text-blue-500", "mt-0.5")}
 
       {renderDisplayDetailLine("🟢", bottomLikesToReceiveText, "text-green-500", "mt-0.5")}
@@ -767,6 +777,7 @@ function EntryLine({
       {renderDisplayDetailLine("👀", interestText, "text-yellow-500", "mt-0.5")}
 
       {renderDisplayDetailLine("🍑🍆", sexualPreferenceText, "text-blue-500", "mt-0.5")}
+      </div>
     </div>
   );
 }
@@ -1488,6 +1499,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false 
                 >
                   <EntryLine
                     name={entry.name}
+                    participantPhoto={getParticipantPhoto(entry.custom_items || [])}
                     socialHandle={entry.social_handle || ""}
                     socialPlatform={entry.social_platform || ""}
                     whoAmI={entry.who_am_i_text || ""}
