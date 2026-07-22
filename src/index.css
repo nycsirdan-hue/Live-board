@@ -221,7 +221,7 @@ body,
 }
 
 .displayBoardHeader.displayBoardHeaderWithLegend {
-  grid-template-columns: minmax(0, 1fr) 30rem 24rem !important;
+  grid-template-columns: minmax(0, 1fr) 34rem 24rem !important;
 }
 
 .displayBoardTitleBlock h1 {
