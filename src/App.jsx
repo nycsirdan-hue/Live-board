@@ -897,9 +897,9 @@ function ParticipantListDisplay({ entries = [] }) {
         className="w-full"
         style={{
           height: "calc(100vh - 15.5rem)",
-          columnWidth: "16rem",
-          columnGap: "0.25rem",
-          columnFill: "auto",
+          display: "flex",
+          flexFlow: "column wrap",
+          alignContent: "flex-start",
         }}
       >
         {sortedEntries.map((entry) => {
@@ -962,8 +962,13 @@ function ParticipantListDisplay({ entries = [] }) {
           return (
             <div
               key={entry.id}
-              className="relative mb-2.5 w-fit min-w-[16.5rem] max-w-[22rem] overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+              className="relative mb-2.5 overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
+                fontSize: "var(--participant-list-detail-size, 1rem)",
+                width: "40ch",
+                maxWidth: "40ch",
+                marginRight: "0.25rem",
+                flex: "0 0 auto",
                 breakInside: "avoid",
                 WebkitColumnBreakInside: "avoid",
                 pageBreakInside: "avoid",
