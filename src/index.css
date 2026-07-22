@@ -220,6 +220,10 @@ body,
   min-height: clamp(82px, 10vh, 140px) !important;
 }
 
+.displayBoardHeader.displayBoardHeaderWithLegend {
+  grid-template-columns: minmax(0, 1fr) 30rem 24rem !important;
+}
+
 .displayBoardTitleBlock h1 {
   margin: 0 !important;
   display: flex !important;

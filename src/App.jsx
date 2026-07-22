@@ -8401,7 +8401,7 @@ export default function App() {
               </div>
             ) : null}
 
-            <div className="displayBoardHeader">
+            <div className="displayBoardHeader displayBoardHeaderWithLegend">
               <div className="flex min-w-0 flex-col gap-2">
                 <div className="displayBoardTitleBlock">
                   <h1 className="displayBoardInlineTitle">
@@ -8434,6 +8434,23 @@ export default function App() {
                   />
                 </div>
               </div>
+
+              <aside
+                className="displayIconLegend w-[30rem] shrink-0 self-end rounded-2xl border border-white/20 bg-black/30 px-4 py-3 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+                aria-label="Board icon guide"
+              >
+                <div className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-slate-300">
+                  Board key
+                </div>
+                <div className="grid grid-cols-3 gap-x-4 gap-y-2 text-sm font-bold leading-tight">
+                  <div className="flex items-center gap-2"><span className="text-xl">🔴</span><span>Likes to give</span></div>
+                  <div className="flex items-center gap-2"><span className="text-xl">🟢</span><span>Likes to receive</span></div>
+                  <div className="flex items-center gap-2"><span className="text-xl">⛔</span><span>Limits</span></div>
+                  <div className="flex items-center gap-2"><span className="text-xl">🟠</span><span>Experience</span></div>
+                  <div className="flex items-center gap-2"><span className="text-xl">👀</span><span>Interests</span></div>
+                  <div className="flex items-center gap-2"><span className="whitespace-nowrap text-xl">🍑🍆</span><span>Sexual preferences</span></div>
+                </div>
+              </aside>
 
               <div className="flex h-full w-[24rem] shrink-0 self-stretch flex-col items-stretch gap-2">
                 <div className="flex flex-1 items-center gap-4 rounded-2xl border border-white/20 bg-black/30 px-5 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
