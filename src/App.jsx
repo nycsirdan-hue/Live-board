@@ -574,9 +574,8 @@ function clampLayoutValue(value, min = 1, max = 12) {
   return Math.max(min, Math.min(max, n));
 }
 
-function joinItems(items, limit = 8) {
-  if (items.length <= limit) return items.join(", ");
-  return `${items.slice(0, limit).join(", ")}, +${items.length - limit} more`;
+function joinItems(items) {
+  return items.join(", ");
 }
 
 function sortDisplayItemsByConfiguredOrder(items = []) {
@@ -1111,7 +1110,7 @@ function ParticipantListDisplay({ entries = [], columns = 4 }) {
       <div className="participantListDetail flex min-w-0 gap-2 text-[0.9rem] font-semibold leading-tight text-slate-100 md:text-[1rem]">
         <div className="w-10 shrink-0 whitespace-nowrap text-center leading-tight">{icon}</div>
         <div className="min-w-0">
-          {lines.slice(0, 2).map((line, index) => (
+          {lines.map((line, index) => (
             <div key={icon + "-" + index} className="break-words">
               {line}
             </div>
@@ -1267,7 +1266,7 @@ function ParticipantListDisplay({ entries = [], columns = 4 }) {
 
                 {quickTags.length ? (
                   <div className="participantListDetail mt-1 break-words text-[0.9rem] font-black leading-tight text-amber-100 md:text-[1rem]">
-                    {joinAndWrap(quickTags, maxLineLength).slice(0, 2).map((line, index) => (
+                    {joinAndWrap(quickTags, maxLineLength).map((line, index) => (
                       <div key={"quick-" + index}>{line}</div>
                     ))}
                   </div>
