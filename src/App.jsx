@@ -4391,15 +4391,21 @@ export default function App() {
 
   const clearBoard = async () => {
     if (!supabase) return;
-    if (!window.confirm("Clear the entire board?")) return;
+    if (!window.confirm("Permanently delete every entry from the board? This cannot be undone.")) return;
 
-    await supabase
+    const { error } = await supabase
       .from("board_entries")
-      .update({ active: false, deleted_at: new Date().toISOString() })
-      .eq("active", true);
+      .delete()
+      .not("id", "is", null);
+
+    if (error) {
+      setMessage(`Could not clear board: ${error.message}`);
+      return;
+    }
 
     setLastRemovedEntry(null);
-    setMessage("Board cleared.");
+    setEntries([]);
+    setMessage("Board cleared and all entries permanently deleted.");
     setTimeout(() => setMessage(""), 2500);
   };
 
