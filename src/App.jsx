@@ -1512,9 +1512,10 @@ function DisplayRotationOverlay({ eventDisplay }) {
   );
 }
 
-function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false }) {
+function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false, connectionBoard = false }) {
   const { rows, cols } = getSectionGrid(entries.length, maxRows, maxCols);
-  const compact = rows >= 4 || cols >= 3 || entries.length > 8;
+  const gridCols = connectionBoard ? Math.max(1, Number(maxCols) || 4) : cols;
+  const compact = rows >= 4 || gridCols >= 3 || entries.length > 8;
   const sectionMeta = getDisplaySectionMeta(title);
   const showInlineRoleSubtitle = ["Top", "Bottom", "Switch"].includes(title);
 
@@ -1606,11 +1607,11 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false 
           })}
         </div>
       ) : (
-        <div className={`rounded-2xl border p-5 md:p-6 h-full ${theme.inner}`}>
+        <div className={`displaySectionEntries rounded-2xl border p-5 md:p-6 h-full ${connectionBoard ? "displayConnectionEntries" : ""} ${theme.inner}`}>
           <div
-            className="grid gap-x-4 gap-y-1 items-start content-start"
+            className={`grid items-start content-start ${connectionBoard ? "displayConnectionEntriesGrid" : "gap-x-4 gap-y-1"}`}
             style={{
-              gridTemplateColumns: `repeat(${Math.max(1, cols)}, minmax(0, 1fr))`,
+              gridTemplateColumns: `repeat(${Math.max(1, gridCols)}, minmax(0, 1fr))`,
               gridTemplateRows: `repeat(${Math.max(1, rows)}, minmax(0, auto))`,
               gridAutoFlow: "row",
               width: "100%",
@@ -1621,13 +1622,15 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false 
                 ...(entry.items || []),
                 ...(entry.custom_items || []),
               ]);
-              const placement = gridPlacement(index, cols);
+              const placement = gridPlacement(index, gridCols);
 
               return (
                 <div
                   key={entry.id}
                   style={placement}
-                  className="min-h-0 self-start border-b border-slate-700/40 last:border-b-0"
+                  className={connectionBoard
+                    ? "displayConnectionEntry min-h-0 self-start"
+                    : "min-h-0 self-start border-b border-slate-700/40 last:border-b-0"}
                 >
                   <EntryLine
                     name={entry.name}
@@ -8702,7 +8705,8 @@ export default function App() {
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   theme={sectionThemes.Switch}
                   maxRows={8}
-                  maxCols={5}
+                  maxCols={4}
+                  connectionBoard
                 />
               </div>
             ) : participantDisplayLayout === "list" ? (
