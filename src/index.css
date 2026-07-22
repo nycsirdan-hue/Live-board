@@ -2364,3 +2364,10 @@ body:has(.displayBoardSurface) #root {
 .diaperGlowDisplayBoard .text-sky-200 {
   white-space: pre-line !important;
 }
+
+/* Temporarily remove display branding while the logo placement is reconsidered. */
+.displayBoardSurface::after,
+.displayRoleRow > .displaySectionCard:nth-child(2)::after {
+  content: none !important;
+  background: none !important;
+}

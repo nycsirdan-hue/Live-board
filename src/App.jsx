@@ -7754,11 +7754,16 @@ export default function App() {
                 </h1>
               </div>
 
-              <img
-                src={DISPLAY_LOGO_SRC}
-                alt="Sanctuary Sessions logo"
-                className="displayBoardLogo"
-              />
+              <div className="flex shrink-0 items-center gap-3 rounded-2xl border border-white/20 bg-black/30 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+                <p className="m-0 max-w-[13rem] text-right text-lg font-bold leading-tight text-white md:text-xl">
+                  Scan with your phone to add yourself to the Board
+                </p>
+                <img
+                  src="/liveboard-entry-qr.png"
+                  alt="QR code to join the LiveBoard"
+                  className="h-24 w-24 shrink-0 rounded-lg bg-white p-1"
+                />
+              </div>
             </div>
 
             <div className="displayStaffRow displayStaffRowCombined">
