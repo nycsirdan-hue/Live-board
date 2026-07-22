@@ -164,7 +164,7 @@ function getEventCountdown(eventStartTime, eventEndTime, now) {
       } else if (nowSeconds < endSeconds) {
         remainingSeconds = endSeconds - nowSeconds;
       } else {
-        remainingSeconds = 0;
+        remainingSeconds = 86400 - nowSeconds + endSeconds;
       }
     } else {
       remainingSeconds = nowSeconds < endSeconds ? endSeconds - nowSeconds : 0;
@@ -7590,7 +7590,7 @@ export default function App() {
                         <div className="krinklesSocialSection rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/10 p-3">
                           <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
                             <div>
-                              <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
+                              <div className="krinklesSocialLabel mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
                                 Platform
                               </div>
                               <div className="flex flex-wrap gap-1.5">
@@ -7601,8 +7601,8 @@ export default function App() {
                                     onClick={() => setSocialHandleDraftPlatform(platform)}
                                     className={`rounded-2xl border px-3 py-1.5 text-xs font-semibold ${
                                       socialHandleDraftPlatform === platform
-                                        ? "border-fuchsia-300 bg-fuchsia-400/20 text-fuchsia-50"
-                                        : "border-fuchsia-500/35 bg-fuchsia-500/10 text-fuchsia-100"
+                                        ? "krinklesOptionActive border-fuchsia-300 bg-fuchsia-400/20 text-fuchsia-50"
+                                        : "krinklesOptionIdle border-fuchsia-500/35 bg-fuchsia-500/10 text-fuchsia-100"
                                     }`}
                                   >
                                     {platform}
@@ -7612,7 +7612,7 @@ export default function App() {
                             </div>
 
                             <div>
-                              <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
+                              <div className="krinklesSocialLabel mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
                                 Handle
                               </div>
                               <input
@@ -8090,7 +8090,7 @@ export default function App() {
 
                 {isDiaperDebaucheryEntryForm ? (
                   <div className="krinklesLookingForSection mt-4 rounded-2xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
-                    <div className="mb-3 border-b border-fuchsia-500/30 pb-2">
+                    <div className="krinklesLookingForHeader mb-3 border-b border-fuchsia-500/30 pb-2">
                       <label className="block text-sm font-semibold text-fuchsia-100">Looking For</label>
                       <p className="mt-1 text-xs leading-5 text-fuchsia-100/60">
                         Choose what kind of connection you are open to tonight. This is not consent.
@@ -8108,8 +8108,8 @@ export default function App() {
                             onClick={() => toggleLookingForItem(item)}
                             className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
                               active
-                                ? "border-fuchsia-300 bg-fuchsia-400/20 text-fuchsia-50"
-                                : "border-fuchsia-500/35 bg-fuchsia-500/10 text-fuchsia-100"
+                                ? "krinklesOptionActive border-fuchsia-300 bg-fuchsia-400/20 text-fuchsia-50"
+                                : "krinklesOptionIdle border-fuchsia-500/35 bg-fuchsia-500/10 text-fuchsia-100"
                             }`}
                           >
                             {item}
