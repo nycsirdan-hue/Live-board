@@ -345,6 +345,7 @@ const defaultInterestOptions = [
 const REMOVED_ENTRY_OPTION_PREFIX = "__liveboard_removed_option__:";
 const PARTICIPANT_PHOTO_SETTING_PREFIX = "__liveboard_setting__:participant_photos=";
 const TELEGRAM_SETTING_PREFIX = "__liveboard_setting__:telegram=";
+const PARTICIPANT_COLUMNS_SETTING_PREFIX = "__liveboard_setting__:participant_columns=";
 
 const getRemovedEntryOptionMarker = (option) => REMOVED_ENTRY_OPTION_PREFIX + option;
 const isRemovedEntryOptionMarker = (option) =>
@@ -373,6 +374,21 @@ const withTelegramSetting = (options, enabled) => [
 ];
 const withoutTelegramSetting = (options) =>
   (options || []).filter((option) => !isTelegramSettingMarker(option));
+const isParticipantColumnsSettingMarker = (option) =>
+  String(option || "").startsWith(PARTICIPANT_COLUMNS_SETTING_PREFIX);
+const clampParticipantColumns = (value) => Math.min(6, Math.max(3, Number(value) || 4));
+const getParticipantColumnsSetting = (options) => {
+  const marker = (options || []).find(isParticipantColumnsSettingMarker);
+  return marker
+    ? clampParticipantColumns(marker.slice(PARTICIPANT_COLUMNS_SETTING_PREFIX.length))
+    : 4;
+};
+const withParticipantColumnsSetting = (options, columns) => [
+  ...(options || []).filter((option) => !isParticipantColumnsSettingMarker(option)),
+  PARTICIPANT_COLUMNS_SETTING_PREFIX + clampParticipantColumns(columns),
+];
+const withoutParticipantColumnsSetting = (options) =>
+  (options || []).filter((option) => !isParticipantColumnsSettingMarker(option));
 const quickTagOptions = ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"];
 
 const diaperDebaucheryVibeOptions = [
@@ -977,7 +993,7 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
-function ParticipantListDisplay({ entries = [] }) {
+function ParticipantListDisplay({ entries = [], columns = 4 }) {
   const maxLineLength = 40;
 
   const getPositionRank = (entry) => {
@@ -1206,8 +1222,7 @@ function ParticipantListDisplay({ entries = [] }) {
               className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
-                width: "40ch",
-                maxWidth: "40ch",
+                width: `calc((100vw - ${(clampParticipantColumns(columns) - 1) * 0.625}rem - 3rem) / ${clampParticipantColumns(columns)})`,
                 flex: "0 0 auto",
                 breakInside: "avoid",
                 WebkitColumnBreakInside: "avoid",
@@ -1928,6 +1943,7 @@ export default function App() {
   const [setupEventName, setSetupEventName] = useState("");
   const [setupVenueName, setSetupVenueName] = useState("");
   const [layoutSettings, setLayoutSettings] = useState(defaultDisplayLayout);
+  const [participantDisplayColumns, setParticipantDisplayColumns] = useState(4);
   const [activeEventDisplayId, setActiveEventDisplayId] = useState(() => {
     return window.localStorage.getItem("activeEventDisplayId") || eventDisplayPresets[0]?.id || "";
   });
@@ -2815,8 +2831,11 @@ export default function App() {
         if (Array.isArray(data.custom_interest_options)) {
           setAllowParticipantPhotos(getParticipantPhotoSetting(data.custom_interest_options));
           setAllowTelegram(getTelegramSetting(data.custom_interest_options));
+          setParticipantDisplayColumns(getParticipantColumnsSetting(data.custom_interest_options));
           setCustomInterestOptions(
-            withoutTelegramSetting(withoutParticipantPhotoSetting(data.custom_interest_options))
+            withoutParticipantColumnsSetting(
+              withoutTelegramSetting(withoutParticipantPhotoSetting(data.custom_interest_options))
+            )
           );
         }
       }
@@ -3005,6 +3024,49 @@ export default function App() {
         ? "Display layout switched to List View."
         : "Display layout switched to Tile View."
     );
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const updateParticipantDisplayColumns = async (nextColumns) => {
+    const columns = clampParticipantColumns(nextColumns);
+
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const payload = {
+      custom_interest_options: withParticipantColumnsSetting(
+        withTelegramSetting(
+          withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+          allowTelegram
+        ),
+        columns
+      ),
+      updated_at: new Date().toISOString(),
+    };
+
+    const query = settings?.id
+      ? supabase.from("board_settings").update(payload).eq("id", settings.id)
+      : supabase.from("board_settings").insert({
+          event_name: setupEventName || defaultConfig.eventName,
+          venue_name: setupVenueName || defaultConfig.venueName,
+          display_mode: "liveboard",
+          ...payload,
+        });
+
+    const { data, error } = await query.select("*").single();
+
+    if (error) {
+      setMessage("Could not change display columns: " + error.message);
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
+    setParticipantDisplayColumns(columns);
+    setSettings(data);
+    setMessage(`Participant display changed to ${columns} columns.`);
     setTimeout(() => setMessage(""), 2500);
   };
 
@@ -3259,9 +3321,12 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: withTelegramSetting(
-        withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
-        allowTelegram
+      custom_interest_options: withParticipantColumnsSetting(
+        withTelegramSetting(
+          withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+          allowTelegram
+        ),
+        participantDisplayColumns
       ),
       updated_at: new Date().toISOString(),
     };
@@ -3684,9 +3749,12 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: withTelegramSetting(
-        withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
-        allowTelegram
+      custom_interest_options: withParticipantColumnsSetting(
+        withTelegramSetting(
+          withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+          allowTelegram
+        ),
+        participantDisplayColumns
       ),
       active_event_display_preset_id: activeEventDisplayId || null,
       updated_at: new Date().toISOString(),
@@ -3833,9 +3901,12 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: withTelegramSetting(
-        withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
-        allowTelegram
+      custom_interest_options: withParticipantColumnsSetting(
+        withTelegramSetting(
+          withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+          allowTelegram
+        ),
+        participantDisplayColumns
       ),
       active_event_display_preset_id: presetId || null,
       updated_at: new Date().toISOString(),
@@ -5564,8 +5635,39 @@ export default function App() {
                     </div>
                   </div>
 
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-lg font-semibold text-white">
+                      Participant Columns
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
+                      Choose how many entry columns appear on Standard, Men Only, Men&apos;s Spanking, and KrINKles displays.
+                    </p>
+
+                    <div className="mt-4 grid grid-cols-4 gap-3">
+                      {[3, 4, 5, 6].map((columns) => (
+                        <button
+                          key={columns}
+                          type="button"
+                          onClick={() => updateParticipantDisplayColumns(columns)}
+                          className={`rounded-2xl border px-4 py-4 text-center transition ${
+                            participantDisplayColumns === columns
+                              ? "border-sky-300 bg-sky-400 text-slate-950"
+                              : "border-slate-700 bg-slate-950 text-slate-100"
+                          }`}
+                        >
+                          <div className="text-2xl font-black">{columns}</div>
+                          <div className={`mt-1 text-xs font-semibold uppercase tracking-[0.12em] ${
+                            participantDisplayColumns === columns ? "text-slate-800" : "text-slate-400"
+                          }`}>
+                            Columns
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm leading-6 text-emerald-100">
-                    Display Sizing includes layout mode, board text size, and support-team text size.
+                    Display Sizing includes layout mode, participant columns, board text size, and support-team text size.
                   </div>
                 </div>
               ) : activeSetupTab === "Entry Form" ? (
@@ -8705,7 +8807,7 @@ export default function App() {
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   theme={sectionThemes.Switch}
                   maxRows={8}
-                  maxCols={4}
+                  maxCols={participantDisplayColumns}
                   connectionBoard
                 />
               </div>
@@ -8713,6 +8815,7 @@ export default function App() {
               <div className="displayConnectionRow relative z-[8] min-h-0 flex-1">
                 <ParticipantListDisplay
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
+                  columns={participantDisplayColumns}
                 />
               </div>
             ) : (
@@ -8722,7 +8825,7 @@ export default function App() {
                   entries={topEntries}
                   theme={sectionThemes.Top}
                   maxRows={displayLayout.top_max_rows}
-                  maxCols={Number(displayLayout.top_max_cols) || 1}
+                  maxCols={participantDisplayColumns}
                 />
 
                 <DisplaySection
@@ -8730,7 +8833,7 @@ export default function App() {
                   entries={bottomEntries}
                   theme={sectionThemes.Bottom}
                   maxRows={displayLayout.bottom_max_rows}
-                  maxCols={displayLayout.bottom_max_cols}
+                  maxCols={participantDisplayColumns}
                 />
 
                 <DisplaySection
@@ -8738,7 +8841,7 @@ export default function App() {
                   entries={switchEntries}
                   theme={sectionThemes.Switch}
                   maxRows={displayLayout.switch_max_rows}
-                  maxCols={displayLayout.switch_max_cols}
+                  maxCols={participantDisplayColumns}
                 />
               </div>
             )}
