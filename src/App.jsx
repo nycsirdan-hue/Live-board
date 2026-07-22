@@ -897,7 +897,7 @@ function ParticipantListDisplay({ entries = [] }) {
         className="w-full"
         style={{
           height: "calc(100vh - 15.5rem)",
-          columnWidth: "14rem",
+          columnWidth: "16rem",
           columnGap: "0.25rem",
           columnFill: "auto",
         }}
@@ -962,7 +962,7 @@ function ParticipantListDisplay({ entries = [] }) {
           return (
             <div
               key={entry.id}
-              className="relative mb-2.5 w-fit max-w-[14rem] overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+              className="relative mb-2.5 w-fit min-w-[16.5rem] max-w-[22rem] overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 breakInside: "avoid",
                 WebkitColumnBreakInside: "avoid",
