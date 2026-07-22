@@ -2391,16 +2391,34 @@ body:has(.displayBoardSurface) #root {
 .diaperGlowKiosk > .rounded-3xl {
   border-color: rgba(250, 204, 21, 0.34) !important;
   background:
-    radial-gradient(circle at 8% 8%, rgba(248, 113, 113, 0.12), transparent 28%),
-    radial-gradient(circle at 35% 0%, rgba(251, 191, 36, 0.10), transparent 28%),
-    radial-gradient(circle at 68% 4%, rgba(74, 222, 128, 0.09), transparent 28%),
-    radial-gradient(circle at 96% 10%, rgba(167, 139, 250, 0.12), transparent 30%),
+    radial-gradient(circle at 8% 8%, rgba(248, 113, 113, 0.22), transparent 30%),
+    radial-gradient(circle at 35% 0%, rgba(251, 191, 36, 0.18), transparent 30%),
+    radial-gradient(circle at 68% 4%, rgba(74, 222, 128, 0.16), transparent 30%),
+    radial-gradient(circle at 96% 10%, rgba(167, 139, 250, 0.20), transparent 32%),
     rgba(2, 6, 23, 0.94) !important;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.035),
     -18px 0 46px rgba(248, 113, 113, 0.07),
     0 16px 52px rgba(250, 204, 21, 0.06),
     18px 0 46px rgba(74, 222, 128, 0.06) !important;
+}
+
+.diaperGlowKiosk > .rounded-3xl::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  height: 5px;
+  background: linear-gradient(90deg, #f87171, #fb923c, #facc15, #4ade80, #60a5fa, #a78bfa);
+  box-shadow: 0 0 22px rgba(250, 204, 21, 0.22);
+  pointer-events: none;
+}
+
+.diaperGlowKiosk .krinklesSocialSection,
+.diaperGlowKiosk .krinklesLookingForSection {
+  border-color: rgba(216, 180, 254, 0.25) !important;
+  background: rgba(88, 28, 135, 0.07) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.025) !important;
 }
 
 .diaperGlowKiosk h2 {
@@ -2416,15 +2434,15 @@ body:has(.displayBoardSurface) #root {
 
 .diaperGlowDisplayBoard {
   background:
-    radial-gradient(circle at 5% 16%, rgba(248, 113, 113, 0.13), transparent 28%),
-    radial-gradient(circle at 30% 0%, rgba(251, 191, 36, 0.10), transparent 28%),
-    radial-gradient(circle at 58% 105%, rgba(74, 222, 128, 0.09), transparent 34%),
-    radial-gradient(circle at 92% 12%, rgba(167, 139, 250, 0.13), transparent 32%),
+    radial-gradient(circle at 5% 16%, rgba(248, 113, 113, 0.23), transparent 30%),
+    radial-gradient(circle at 30% 0%, rgba(251, 191, 36, 0.18), transparent 30%),
+    radial-gradient(circle at 58% 105%, rgba(74, 222, 128, 0.17), transparent 36%),
+    radial-gradient(circle at 92% 12%, rgba(167, 139, 250, 0.22), transparent 34%),
     linear-gradient(135deg, #030712 0%, #090b16 48%, #040611 100%) !important;
 }
 
 .diaperGlowDisplayBoard::before {
-  opacity: 0.34 !important;
+  opacity: 0.58 !important;
   background: linear-gradient(
     100deg,
     rgba(248, 113, 113, 0.12),
@@ -2437,8 +2455,11 @@ body:has(.displayBoardSurface) #root {
 
 .diaperGlowDisplayBoard .displayBoardEventName,
 .diaperGlowDisplayBoard .displayConnectionRow .displaySectionTitle {
-  color: #ffffff !important;
-  text-shadow: 0 0 18px rgba(250, 204, 21, 0.22), 0 0 28px rgba(74, 222, 128, 0.10) !important;
+  color: transparent !important;
+  background: linear-gradient(90deg, #fecaca, #fed7aa, #fef08a, #bbf7d0, #bfdbfe, #ddd6fe);
+  background-clip: text;
+  -webkit-background-clip: text;
+  text-shadow: 0 0 22px rgba(250, 204, 21, 0.13) !important;
 }
 
 .diaperGlowDisplayBoard .displayBoardTitleDivider {
@@ -2447,11 +2468,24 @@ body:has(.displayBoardSurface) #root {
 }
 
 .diaperGlowDisplayBoard .displayConnectionRow > .displaySectionCard {
+  position: relative;
+  overflow: hidden;
   border-color: rgba(250, 204, 21, 0.22) !important;
   background:
     linear-gradient(110deg, rgba(248, 113, 113, 0.045), rgba(251, 191, 36, 0.04), rgba(74, 222, 128, 0.035), rgba(167, 139, 250, 0.05)),
     rgba(2, 6, 23, 0.48) !important;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.035), 0 14px 42px rgba(0,0,0,0.24) !important;
+}
+
+.diaperGlowDisplayBoard .displayConnectionRow > .displaySectionCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  height: 5px;
+  background: linear-gradient(90deg, #f87171, #fb923c, #facc15, #4ade80, #60a5fa, #a78bfa);
+  box-shadow: 0 0 20px rgba(250,204,21,0.16);
+  pointer-events: none;
 }
 
 .diaperGlowDisplayBoard .displayConnectionRow .rounded-2xl {

@@ -1644,12 +1644,12 @@ body,
 
 /* FINAL KrINKles theme override — keep the spectrum understated and consistent. */
 .kioskStartPageDiaper .connectionPreview {
-  border-color: rgba(250, 204, 21, 0.30) !important;
+  border-color: rgba(250, 204, 21, 0.46) !important;
   background:
-    radial-gradient(circle at 7% 8%, rgba(248, 113, 113, 0.11), transparent 28%),
-    radial-gradient(circle at 36% 0%, rgba(251, 191, 36, 0.09), transparent 28%),
-    radial-gradient(circle at 68% 4%, rgba(74, 222, 128, 0.08), transparent 28%),
-    radial-gradient(circle at 96% 8%, rgba(167, 139, 250, 0.11), transparent 30%),
+    radial-gradient(circle at 7% 8%, rgba(248, 113, 113, 0.19), transparent 30%),
+    radial-gradient(circle at 36% 0%, rgba(251, 191, 36, 0.16), transparent 30%),
+    radial-gradient(circle at 68% 4%, rgba(74, 222, 128, 0.14), transparent 30%),
+    radial-gradient(circle at 96% 8%, rgba(167, 139, 250, 0.18), transparent 32%),
     rgba(4, 7, 16, 0.94) !important;
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.035),
@@ -1659,13 +1659,17 @@ body,
 }
 
 .kioskStartPageDiaper .displayStyleHeader h1 {
-  color: #ffffff !important;
-  text-shadow: 0 0 18px rgba(250, 204, 21, 0.24), 0 0 30px rgba(74, 222, 128, 0.10) !important;
+  color: transparent !important;
+  background: linear-gradient(90deg, #fecaca, #fed7aa, #fef08a, #bbf7d0, #bfdbfe, #ddd6fe) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  text-shadow: 0 0 18px rgba(250, 204, 21, 0.12) !important;
 }
 
 .kioskStartPageDiaper .previewHeader::after {
   background: linear-gradient(90deg, #f87171, #fbbf24, #4ade80, #60a5fa, #a78bfa) !important;
-  opacity: 0.72 !important;
+  height: 5px !important;
+  opacity: 0.92 !important;
 }
 
 .kioskStartPageDiaper .supportCard,

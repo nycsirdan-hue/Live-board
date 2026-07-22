@@ -7587,7 +7587,7 @@ export default function App() {
                       </label>
 
                       {usesMultipleSocialHandles ? (
-                        <div className="rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/10 p-3">
+                        <div className="krinklesSocialSection rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/10 p-3">
                           <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
                             <div>
                               <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
@@ -8089,7 +8089,7 @@ export default function App() {
 
 
                 {isDiaperDebaucheryEntryForm ? (
-                  <div className="mt-4 rounded-2xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
+                  <div className="krinklesLookingForSection mt-4 rounded-2xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
                     <div className="mb-3 border-b border-fuchsia-500/30 pb-2">
                       <label className="block text-sm font-semibold text-fuchsia-100">Looking For</label>
                       <p className="mt-1 text-xs leading-5 text-fuchsia-100/60">
