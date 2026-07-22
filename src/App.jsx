@@ -900,6 +900,8 @@ function ParticipantListDisplay({ entries = [] }) {
           display: "flex",
           flexFlow: "column wrap",
           alignContent: "flex-start",
+          rowGap: "0.625rem",
+          columnGap: "0.625rem",
         }}
       >
         {sortedEntries.map((entry) => {
@@ -962,12 +964,11 @@ function ParticipantListDisplay({ entries = [] }) {
           return (
             <div
               key={entry.id}
-              className="relative mb-2.5 overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+              className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
                 width: "40ch",
                 maxWidth: "40ch",
-                marginRight: "0.25rem",
                 flex: "0 0 auto",
                 breakInside: "avoid",
                 WebkitColumnBreakInside: "avoid",
@@ -7935,7 +7936,7 @@ export default function App() {
                 />
               </div>
             ) : participantDisplayLayout === "list" ? (
-              <div className="displayRoleRow displayConnectionRow">
+              <div className="displayConnectionRow relative z-[8] min-h-0 flex-1">
                 <ParticipantListDisplay
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                 />
