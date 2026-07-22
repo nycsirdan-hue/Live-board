@@ -1069,15 +1069,15 @@ function ParticipantListDisplay({ entries = [] }) {
             >
               <div className={"absolute left-0 top-0 h-full w-1.5 " + meta.accentClass} />
 
-              <div className="flex min-w-0 gap-3 pl-2">
+              <div className="flow-root min-w-0 pl-2">
                 {participantPhoto ? (
                   <img
                     src={participantPhoto.url}
                     alt={`${entry.name || "Participant"}'s profile`}
-                    className="h-20 w-20 shrink-0 rounded-2xl border border-white/20 object-cover shadow-lg"
+                    className="float-right mb-2 ml-3 h-20 w-20 rounded-2xl border border-white/20 object-cover shadow-lg"
                   />
                 ) : null}
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0">
                 <div className="participantListTitle flex min-w-0 items-center gap-2 text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
                   <span className="min-w-0 break-words">{entry.name || "Unnamed"}</span>
                   <span className="shrink-0 text-slate-400">|</span>
