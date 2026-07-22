@@ -4477,7 +4477,7 @@ export default function App() {
 
         {isSetupTabsMode ? (
           <div className="mx-auto max-w-6xl rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl">
-            <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
               <div>
                 <h2 className="text-3xl font-semibold tracking-tight text-slate-100">
                   Backend
@@ -4485,30 +4485,6 @@ export default function App() {
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
                   Manage events, support team, entry forms, display sizing, entries, and raffle controls.
                 </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => window.open(`${window.location.pathname}?mode=entry&kiosk=1`, "_blank")}
-                  className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-2 font-semibold text-slate-100"
-                >
-                  Kiosk
-                </button>
-                <button
-                  type="button"
-                  onClick={() => window.open(`${window.location.pathname}?mode=entry`, "_blank")}
-                  className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-2 font-semibold text-slate-100"
-                >
-                  Mobile
-                </button>
-                <button
-                  type="button"
-                  onClick={() => window.open(`${window.location.pathname}?mode=display`, "_blank")}
-                  className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-2 font-semibold text-slate-100"
-                >
-                  Display
-                </button>
               </div>
             </div>
 
