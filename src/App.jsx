@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { eventDisplayPresets } from "./eventDisplayPresets";
 import { createClient } from "@supabase/supabase-js";
 
@@ -847,6 +847,30 @@ function getDisplaySectionMeta(title) {
 
 function ParticipantListDisplay({ entries = [] }) {
   const maxLineLength = 40;
+  const masonryGridRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const grid = masonryGridRef.current;
+    if (!grid) return;
+
+    const rowHeight = 4;
+    const gap = 10;
+    const updateCardSpan = (card) => {
+      const height = card.getBoundingClientRect().height;
+      card.style.gridRowEnd = `span ${Math.ceil((height + gap) / (rowHeight + gap))}`;
+    };
+    const cards = Array.from(grid.querySelectorAll("[data-participant-card]"));
+    const observer = new ResizeObserver((observedEntries) => {
+      observedEntries.forEach((observedEntry) => updateCardSpan(observedEntry.target));
+    });
+
+    cards.forEach((card) => {
+      updateCardSpan(card);
+      observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [entries]);
 
   const getPositionRank = (entry) => {
     if (entry.position === "Top") return 0;
@@ -992,15 +1016,17 @@ function ParticipantListDisplay({ entries = [] }) {
   return (
     <section className="w-full overflow-hidden">
       <div
+        ref={masonryGridRef}
         className="w-full"
         style={{
           height: "calc(100vh - 15.5rem)",
-          display: "flex",
-          flexFlow: "column wrap",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, 40ch)",
+          gridAutoRows: "4px",
+          gridAutoFlow: "dense",
           alignContent: "flex-start",
           alignItems: "flex-start",
-          rowGap: "0.625rem",
-          columnGap: "0.625rem",
+          gap: "0.625rem",
         }}
       >
         {sortedEntries.map((entry) => {
@@ -1070,6 +1096,7 @@ function ParticipantListDisplay({ entries = [] }) {
           return (
             <div
               key={entry.id}
+              data-participant-card
               className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
