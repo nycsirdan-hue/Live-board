@@ -655,6 +655,8 @@ function getDisplaySectionMeta(title) {
 }
 
 function ParticipantListDisplay({ entries = [] }) {
+  const maxLineLength = 60;
+
   const getPositionRank = (entry) => {
     if (entry.position === "Top") return 0;
     if (entry.position === "Bottom") return 1;
@@ -665,25 +667,113 @@ function ParticipantListDisplay({ entries = [] }) {
   const getPositionMeta = (position) => {
     if (position === "Top") {
       return {
-        label: "Top",
-        cardClass: "border-red-500/50 bg-red-950/35",
-        labelClass: "border-red-400/40 bg-red-500/15 text-red-100",
+        accentClass: "bg-red-500",
       };
     }
 
     if (position === "Bottom") {
       return {
-        label: "Bottom",
-        cardClass: "border-emerald-500/50 bg-emerald-950/35",
-        labelClass: "border-emerald-400/40 bg-emerald-500/15 text-emerald-100",
+        accentClass: "bg-emerald-500",
       };
     }
 
     return {
-      label: "Switch",
-      cardClass: "border-sky-500/50 bg-sky-950/35",
-      labelClass: "border-sky-400/40 bg-sky-500/15 text-sky-100",
+      accentClass: "bg-sky-500",
     };
+  };
+
+  const stripPrefix = (value, prefixes) => {
+    const textValue = String(value || "").trim();
+    const prefix = prefixes.find((item) =>
+      textValue.toLowerCase().startsWith(item.toLowerCase())
+    );
+
+    return prefix ? textValue.slice(prefix.length).trim() : "";
+  };
+
+  const getPrefixedValues = (items, prefixes) =>
+    items
+      .map((item) => stripPrefix(item, prefixes))
+      .filter(Boolean);
+
+  const getSimpleValues = (items, prefix) =>
+    items
+      .filter((item) => String(item || "").toLowerCase().startsWith(prefix.toLowerCase()))
+      .map((item) => String(item).slice(prefix.length).trim())
+      .filter(Boolean);
+
+  const splitLongWord = (word, maxLength) => {
+    const pieces = [];
+    let current = String(word || "");
+
+    while (current.length > maxLength) {
+      pieces.push(current.slice(0, maxLength));
+      current = current.slice(maxLength);
+    }
+
+    if (current) pieces.push(current);
+
+    return pieces;
+  };
+
+  const wrapText = (value, maxLength = maxLineLength) => {
+    const words = String(value || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .filter(Boolean);
+
+    if (words.length === 0) return [];
+
+    const lines = [];
+    let current = "";
+
+    words.forEach((word) => {
+      if (word.length > maxLength) {
+        if (current) {
+          lines.push(current);
+          current = "";
+        }
+
+        splitLongWord(word, maxLength).forEach((piece) => lines.push(piece));
+        return;
+      }
+
+      const next = current ? current + " " + word : word;
+
+      if (next.length > maxLength && current) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = next;
+      }
+    });
+
+    if (current) lines.push(current);
+
+    return lines;
+  };
+
+  const joinAndWrap = (values, maxLength = maxLineLength) =>
+    wrapText(values.join(", "), maxLength);
+
+  const renderDetail = (icon, values) => {
+    const lines = joinAndWrap(values);
+
+    if (lines.length === 0) return null;
+
+    return (
+      <div className="flex min-w-0 gap-2 text-[0.9rem] font-semibold leading-tight text-slate-100 md:text-[1rem]">
+        <div className="w-8 shrink-0 text-center leading-tight">{icon}</div>
+        <div className="min-w-0">
+          {lines.slice(0, 2).map((line, index) => (
+            <div key={icon + "-" + index} className="break-words">
+              {line}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   const sortedEntries = [...entries].sort((a, b) => {
@@ -695,7 +785,7 @@ function ParticipantListDisplay({ entries = [] }) {
   if (sortedEntries.length === 0) {
     return (
       <section className="w-full">
-        <div className="rounded-3xl border border-slate-800 bg-slate-950/70 px-6 py-8 text-center text-2xl font-semibold text-slate-400">
+        <div className="rounded-3xl border border-white/15 bg-black/25 px-6 py-8 text-center text-2xl font-semibold text-slate-300 backdrop-blur-md">
           No participant entries yet.
         </div>
       </section>
@@ -703,38 +793,124 @@ function ParticipantListDisplay({ entries = [] }) {
   }
 
   return (
-    <section className="w-full space-y-3">
-      {sortedEntries.map((entry) => {
-        const meta = getPositionMeta(entry.position);
-        const mergedItems = sortDisplayItemsByConfiguredOrder([
-          ...(entry.items || []),
-          ...(entry.custom_items || []),
-        ]);
+    <section className="w-full overflow-hidden">
+      <div
+        className="w-full"
+        style={{
+          height: "calc(100vh - 15.5rem)",
+          columnWidth: "26rem",
+          columnGap: "0.7rem",
+          columnFill: "auto",
+        }}
+      >
+        {sortedEntries.map((entry) => {
+          const meta = getPositionMeta(entry.position);
+          const mergedItems = sortDisplayItemsByConfiguredOrder([
+            ...(entry.items || []),
+            ...(entry.custom_items || []),
+          ]);
 
-        return (
-          <div
-            key={entry.id}
-            className={`w-full rounded-3xl border px-6 py-5 ${meta.cardClass}`}
-          >
-            <div className="mb-3">
-              <div className={`inline-flex rounded-full border px-4 py-1.5 text-sm font-black uppercase tracking-[0.18em] ${meta.labelClass}`}>
-                {meta.label}
+          const quickTags = getSimpleValues(mergedItems, "Quick Tag:");
+          const topGive = getPrefixedValues(mergedItems, [
+            "Top likes to give:",
+            "Top likes to use:",
+            "Top:",
+            "As a top I like to use:",
+          ]);
+          const bottomReceive = getPrefixedValues(mergedItems, [
+            "Bottom likes to receive:",
+            "Bottom:",
+            "As a bottom I like to receive:",
+          ]);
+          const limits = getPrefixedValues(mergedItems, ["Limits:", "Limit:"]);
+          const experience = getPrefixedValues(mergedItems, ["Experience:", "Experience Level:"]);
+          const interests = getPrefixedValues(mergedItems, ["Interests:", "Looking For:", "Looking for:"]);
+          const sexual = getPrefixedValues(mergedItems, [
+            "Sexual:",
+            "Sex:",
+            "Sexual Preference:",
+            "Sexual Preferences:",
+          ]);
+          const plainItems = mergedItems
+            .filter((item) => {
+              const lower = String(item || "").toLowerCase();
+
+              return ![
+                "quick tag:",
+                "top likes to give:",
+                "top likes to use:",
+                "top:",
+                "as a top i like to use:",
+                "bottom likes to receive:",
+                "bottom:",
+                "as a bottom i like to receive:",
+                "limits:",
+                "limit:",
+                "experience:",
+                "experience level:",
+                "interests:",
+                "looking for:",
+                "sexual:",
+                "sex:",
+                "sexual preference:",
+                "sexual preferences:",
+                "orientation:",
+              ].some((prefix) => lower.startsWith(prefix));
+            })
+            .map((item) => String(item).trim())
+            .filter(Boolean);
+
+          const titleLines = wrapText(
+            (entry.name || "Unnamed") + " | " + (entry.position || "Entry"),
+            maxLineLength
+          );
+
+          return (
+            <div
+              key={entry.id}
+              className="relative mb-2.5 w-full overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+              style={{
+                breakInside: "avoid",
+                WebkitColumnBreakInside: "avoid",
+                pageBreakInside: "avoid",
+              }}
+            >
+              <div className={"absolute left-0 top-0 h-full w-1.5 " + meta.accentClass} />
+
+              <div className="min-w-0 pl-2">
+                <div className="break-words text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
+                  {titleLines.slice(0, 2).map((line, index) => (
+                    <div key={"title-" + index}>{line}</div>
+                  ))}
+                </div>
+
+                {entry.social_handle ? (
+                  <div className="mt-1 break-words text-[0.85rem] font-black leading-tight tracking-[0.08em] text-slate-400 md:text-[0.95rem]">
+                    {(entry.social_platform ? entry.social_platform + ": " : "") + entry.social_handle}
+                  </div>
+                ) : null}
+
+                {quickTags.length ? (
+                  <div className="mt-1 break-words text-[0.9rem] font-black leading-tight text-amber-100 md:text-[1rem]">
+                    {joinAndWrap(quickTags, maxLineLength).slice(0, 2).map((line, index) => (
+                      <div key={"quick-" + index}>{line}</div>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="mt-2 min-w-0 space-y-1">
+                  {renderDetail("🔴", topGive)}
+                  {renderDetail("🟢", bottomReceive)}
+                  {renderDetail("⛔", limits)}
+                  {renderDetail("🟠", experience)}
+                  {renderDetail("👀", interests.length ? interests : plainItems)}
+                  {renderDetail("🍑🍆", sexual)}
+                </div>
               </div>
             </div>
-
-            <EntryLine
-              name={entry.name}
-              socialHandle={entry.social_handle || ""}
-              socialPlatform={entry.social_platform || ""}
-              whoAmI={entry.who_am_i_text || ""}
-              seeking={entry.seeking_text || ""}
-              items={mergedItems}
-              compact
-              itemLimit={6}
-            />
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </section>
   );
 }
