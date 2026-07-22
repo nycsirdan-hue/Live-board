@@ -991,6 +991,7 @@ function ParticipantListDisplay({ entries = [] }) {
           display: "flex",
           flexFlow: "column wrap",
           alignContent: "flex-start",
+          alignItems: "flex-start",
           rowGap: "0.625rem",
           columnGap: "0.625rem",
         }}
@@ -1059,7 +1060,7 @@ function ParticipantListDisplay({ entries = [] }) {
               className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
-                width: "calc(40ch + 2rem)",
+                width: "fit-content",
                 maxWidth: "calc(40ch + 2rem)",
                 flex: "0 0 auto",
                 breakInside: "avoid",
