@@ -6,6 +6,9 @@ import "./kiosk-success-return.css";
 export default function KioskEntryShell() {
   const params = new URLSearchParams(window.location.search);
   const mode = params.get("mode");
+  const [showKioskStart, setShowKioskStart] = useState(true);
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
+  const returnTimerRef = useRef(null);
 
   /*
     Kiosk start page is only for iPad kiosk mode.
@@ -13,13 +16,8 @@ export default function KioskEntryShell() {
   */
   const isPhoneEntryMode = mode === "entry" && params.get("kiosk") !== "1";
 
-  if (isPhoneEntryMode || mode === "display" || mode === "setup" || mode === "admin") {
-    return <App />;
-  }
-
-  const [showKioskStart, setShowKioskStart] = useState(true);
-  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
-  const returnTimerRef = useRef(null);
+  const bypassKioskStart =
+    isPhoneEntryMode || mode === "display" || mode === "setup" || mode === "admin";
 
   const startEntry = () => {
     const nextParams = new URLSearchParams(window.location.search);
@@ -42,7 +40,7 @@ export default function KioskEntryShell() {
   };
 
   useEffect(() => {
-    if (showKioskStart) return;
+    if (bypassKioskStart || showKioskStart) return;
 
     const detectSuccess = () => {
       const pageText = document.body.innerText || "";
@@ -82,7 +80,11 @@ export default function KioskEntryShell() {
         returnTimerRef.current = null;
       }
     };
-  }, [showKioskStart]);
+  }, [bypassKioskStart, showKioskStart]);
+
+  if (bypassKioskStart) {
+    return <App />;
+  }
 
   if (showKioskStart) {
     return <KioskStartPage onStart={startEntry} />;

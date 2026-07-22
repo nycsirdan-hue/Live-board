@@ -253,25 +253,11 @@ export default function KioskStartPage({ onStart }) {
 
   return (
     <main className={`kioskStartPage ${isDiaperMode ? "kioskStartPageDiaper" : isMenMode ? "kioskStartPageMenOnly" : "kioskStartPageStandard"}`}>
-      <section
-        className="kioskPreviewArea kioskPreviewAreaButton"
-        role="button"
-        tabIndex={0}
-        onClick={(event) => {
-          event.stopPropagation();
-          onStart();
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            onStart();
-          }
-        }}
-      >
+      <section className="kioskPreviewArea" aria-labelledby="kiosk-start-title">
         <div className="connectionPreview">
           <header className="previewHeader">
             <div className="displayStyleHeader">
-              <h1>{pageCopy.title}</h1>
+              <h1 id="kiosk-start-title">{pageCopy.title}</h1>
               <p>{pageCopy.subtitle}</p>
             </div>
           </header>
@@ -355,6 +341,7 @@ export default function KioskStartPage({ onStart }) {
 
         <button className="kioskStartButton" type="button" onClick={onStart}>
           <span>{pageCopy.button}</span>
+          <small>{pageCopy.buttonSmall}</small>
         </button>
       </section>
     </main>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { eventDisplayPresets } from "./eventDisplayPresets";
 import { createClient } from "@supabase/supabase-js";
 
@@ -11,7 +11,85 @@ const supabase =
     : null;
 
 const EVENT_DISPLAY_BUCKET = "event-display-slides";
+const PARTICIPANT_PHOTO_FOLDER = "participant-photos";
+const PARTICIPANT_PHOTO_MARKER = "__LIVEBOARD_PHOTO__:";
 const EVENT_SCHEDULE_PATTERN = /\n?\[\[LIVEBOARD_SCHEDULE:(\{[^\n]*\})\]\]\s*$/;
+
+function getParticipantPhoto(items = []) {
+  const marker = items.find(
+    (item) => typeof item === "string" && item.startsWith(PARTICIPANT_PHOTO_MARKER)
+  );
+
+  if (!marker) return null;
+
+  try {
+    const photo = JSON.parse(marker.slice(PARTICIPANT_PHOTO_MARKER.length));
+    return photo?.path && photo?.url ? photo : null;
+  } catch {
+    return null;
+  }
+}
+
+function getVisibleEntryItems(items = []) {
+  return items.filter(
+    (item) => !(typeof item === "string" && item.startsWith(PARTICIPANT_PHOTO_MARKER))
+  );
+}
+
+function createParticipantPhotoMarker(photo) {
+  return PARTICIPANT_PHOTO_MARKER + JSON.stringify(photo);
+}
+
+async function uploadParticipantPhoto(file) {
+  const extension = file.type === "image/png" ? "png" : "jpg";
+  const path = `${PARTICIPANT_PHOTO_FOLDER}/${crypto.randomUUID()}.${extension}`;
+  const { error } = await supabase.storage
+    .from(EVENT_DISPLAY_BUCKET)
+    .upload(path, file, { contentType: file.type || "image/jpeg", upsert: false });
+
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage.from(EVENT_DISPLAY_BUCKET).getPublicUrl(path);
+  return { path, url: data.publicUrl };
+}
+
+async function prepareParticipantPhoto(file) {
+  if (!file?.type?.startsWith("image/")) {
+    throw new Error("Please choose an image file.");
+  }
+
+  if (file.size > 15 * 1024 * 1024) {
+    throw new Error("Please choose a photo smaller than 15 MB.");
+  }
+
+  const sourceUrl = URL.createObjectURL(file);
+
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const loader = new Image();
+      loader.onload = () => resolve(loader);
+      loader.onerror = () => reject(new Error("This photo format could not be read."));
+      loader.src = sourceUrl;
+    });
+    const side = Math.min(image.naturalWidth, image.naturalHeight);
+    const sourceX = Math.max(0, (image.naturalWidth - side) / 2);
+    const sourceY = Math.max(0, (image.naturalHeight - side) / 2);
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 512;
+    canvas.getContext("2d").drawImage(image, sourceX, sourceY, side, side, 0, 0, 512, 512);
+
+    return await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => blob ? resolve(blob) : reject(new Error("The photo could not be prepared.")),
+        "image/jpeg",
+        0.78
+      );
+    });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
 
 function parseEventScheduleDescription(value) {
   const rawDescription = String(value || "");
@@ -252,10 +330,23 @@ const defaultInterestOptions = [
 ];
 
 const REMOVED_ENTRY_OPTION_PREFIX = "__liveboard_removed_option__:";
+const PARTICIPANT_PHOTO_SETTING_PREFIX = "__liveboard_setting__:participant_photos=";
 
 const getRemovedEntryOptionMarker = (option) => REMOVED_ENTRY_OPTION_PREFIX + option;
 const isRemovedEntryOptionMarker = (option) =>
   String(option || "").startsWith(REMOVED_ENTRY_OPTION_PREFIX);
+const isParticipantPhotoSettingMarker = (option) =>
+  String(option || "").startsWith(PARTICIPANT_PHOTO_SETTING_PREFIX);
+const getParticipantPhotoSetting = (options) => {
+  const marker = (options || []).find(isParticipantPhotoSettingMarker);
+  return marker ? marker === PARTICIPANT_PHOTO_SETTING_PREFIX + "on" : true;
+};
+const withParticipantPhotoSetting = (options, enabled) => [
+  ...(options || []).filter((option) => !isParticipantPhotoSettingMarker(option)),
+  PARTICIPANT_PHOTO_SETTING_PREFIX + (enabled ? "on" : "off"),
+];
+const withoutParticipantPhotoSetting = (options) =>
+  (options || []).filter((option) => !isParticipantPhotoSettingMarker(option));
 const quickTagOptions = ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"];
 
 const diaperDebaucheryVibeOptions = [
@@ -501,7 +592,7 @@ function EntryLine({
   isDM = false,
   isHost = false,
 }) {
-  const rawItems = items || [];
+  const rawItems = getVisibleEntryItems(items || []);
 
   const cleanDisplayItem = (item) =>
     typeof item === "string"
@@ -906,10 +997,11 @@ function ParticipantListDisplay({ entries = [] }) {
       >
         {sortedEntries.map((entry) => {
           const meta = getPositionMeta(entry.position);
-          const mergedItems = sortDisplayItemsByConfiguredOrder([
+          const mergedItems = sortDisplayItemsByConfiguredOrder(getVisibleEntryItems([
             ...(entry.items || []),
             ...(entry.custom_items || []),
-          ]);
+          ]));
+          const participantPhoto = getParticipantPhoto(entry.custom_items || []);
 
           const quickTags = getSimpleValues(mergedItems, "Quick Tag:");
           const topGive = getPrefixedValues(mergedItems, [
@@ -977,7 +1069,15 @@ function ParticipantListDisplay({ entries = [] }) {
             >
               <div className={"absolute left-0 top-0 h-full w-1.5 " + meta.accentClass} />
 
-              <div className="min-w-0 pl-2">
+              <div className="flex min-w-0 gap-3 pl-2">
+                {participantPhoto ? (
+                  <img
+                    src={participantPhoto.url}
+                    alt={`${entry.name || "Participant"}'s profile`}
+                    className="h-20 w-20 shrink-0 rounded-2xl border border-white/20 object-cover shadow-lg"
+                  />
+                ) : null}
+                <div className="min-w-0 flex-1">
                 <div className="participantListTitle flex min-w-0 items-center gap-2 text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
                   <span className="min-w-0 break-words">{entry.name || "Unnamed"}</span>
                   <span className="shrink-0 text-slate-400">|</span>
@@ -1011,6 +1111,7 @@ function ParticipantListDisplay({ entries = [] }) {
                   {renderDetail("🟠", experience)}
                   {renderDetail("👀", interests.length ? interests : plainItems)}
                   {renderDetail("🍑🍆", sexual)}
+                </div>
                 </div>
               </div>
             </div>
@@ -1615,6 +1716,11 @@ export default function App() {
   const [quickTags, setQuickTags] = useState([]);
   const [message, setMessage] = useState("");
   const [entrySuccess, setEntrySuccess] = useState(false);
+  const [participantPhotoFile, setParticipantPhotoFile] = useState(null);
+  const [participantPhotoPreview, setParticipantPhotoPreview] = useState("");
+  const [participantCameraOpen, setParticipantCameraOpen] = useState(false);
+  const participantCameraVideoRef = useRef(null);
+  const participantCameraStreamRef = useRef(null);
 
   const [hostName, setHostName] = useState("");
   const [hostCategory, setHostCategory] = useState("");
@@ -1662,6 +1768,13 @@ export default function App() {
   const [showSocialHandleField, setShowSocialHandleField] = useState(true);
   const [showSexualPreferenceSection, setShowSexualPreferenceSection] = useState(true);
   const [showInterestSection, setShowInterestSection] = useState(true);
+  const [allowParticipantPhotos, setAllowParticipantPhotos] = useState(() => {
+    try {
+      return window.localStorage.getItem("allowParticipantPhotos") !== "false";
+    } catch {
+      return true;
+    }
+  });
   const [allowFetLife, setAllowFetLife] = useState(true);
   const [allowWhappz, setAllowWhappz] = useState(true);
   const [allowTwitter, setAllowTwitter] = useState(true);
@@ -1939,6 +2052,14 @@ export default function App() {
     }
   }, [customInterestOptions]);
 
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("allowParticipantPhotos", String(allowParticipantPhotos));
+    } catch {
+      // Local storage may be unavailable in some browser privacy modes.
+    }
+  }, [allowParticipantPhotos]);
+
   // LIVE ENTRY FORM SETTINGS SYNC
   // Keeps kiosk/setup/display pages in the same browser updated after Entry Form settings change.
   useEffect(() => {
@@ -1957,6 +2078,8 @@ export default function App() {
         const storedCustomInterestOptions = JSON.parse(
           window.localStorage.getItem("customInterestOptions") || "[]"
         );
+        const storedAllowParticipantPhotos =
+          window.localStorage.getItem("allowParticipantPhotos") !== "false";
 
         if (storedPreset && storedPreset !== entryFormPreset) {
           setEntryFormPreset(storedPreset);
@@ -1982,6 +2105,10 @@ export default function App() {
         ) {
           setCustomInterestOptions(storedCustomInterestOptions);
         }
+
+        if (storedAllowParticipantPhotos !== allowParticipantPhotos) {
+          setAllowParticipantPhotos(storedAllowParticipantPhotos);
+        }
       } catch {
         // Ignore localStorage read errors.
       }
@@ -1999,6 +2126,7 @@ export default function App() {
     visibleSexualPreferenceOptions,
     visibleInterestOptions,
     customInterestOptions,
+    allowParticipantPhotos,
   ]);
 
   useEffect(() => {
@@ -2472,7 +2600,8 @@ export default function App() {
         }
 
         if (Array.isArray(data.custom_interest_options)) {
-          setCustomInterestOptions(data.custom_interest_options);
+          setAllowParticipantPhotos(getParticipantPhotoSetting(data.custom_interest_options));
+          setCustomInterestOptions(withoutParticipantPhotoSetting(data.custom_interest_options));
         }
       }
 
@@ -2914,7 +3043,7 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: customInterestOptions,
+      custom_interest_options: withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
       updated_at: new Date().toISOString(),
     };
 
@@ -3054,7 +3183,7 @@ export default function App() {
 
     const payload = {
       visible_interest_options: nextVisibleInterestOptions,
-      custom_interest_options: nextCustomInterestOptions,
+      custom_interest_options: withParticipantPhotoSetting(nextCustomInterestOptions, allowParticipantPhotos),
       updated_at: new Date().toISOString(),
     };
 
@@ -3272,6 +3401,8 @@ export default function App() {
     setSpankingExperienceLevel("");
     setMessage("");
     setEntrySuccess(false);
+    removeParticipantPhoto();
+    stopParticipantCamera();
   };
 
   const resetDmForm = () => {
@@ -3334,7 +3465,7 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: customInterestOptions,
+      custom_interest_options: withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
       active_event_display_preset_id: activeEventDisplayId || null,
       updated_at: new Date().toISOString(),
     };
@@ -3480,7 +3611,7 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: customInterestOptions,
+      custom_interest_options: withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
       active_event_display_preset_id: presetId || null,
       updated_at: new Date().toISOString(),
     };
@@ -3972,6 +4103,101 @@ export default function App() {
     setSocialHandleItems((current) => current.filter((item) => item !== line));
   };
 
+  const handleParticipantPhotoChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    try {
+      setMessage("Preparing photo...");
+      const preparedPhoto = await prepareParticipantPhoto(file);
+      if (participantPhotoPreview) URL.revokeObjectURL(participantPhotoPreview);
+      setParticipantPhotoFile(preparedPhoto);
+      setParticipantPhotoPreview(URL.createObjectURL(preparedPhoto));
+      setMessage("");
+    } catch (error) {
+      setParticipantPhotoFile(null);
+      setParticipantPhotoPreview("");
+      setMessage(error.message);
+    }
+  };
+
+  const removeParticipantPhoto = () => {
+    if (participantPhotoPreview) URL.revokeObjectURL(participantPhotoPreview);
+    setParticipantPhotoFile(null);
+    setParticipantPhotoPreview("");
+  };
+
+  const stopParticipantCamera = () => {
+    participantCameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    participantCameraStreamRef.current = null;
+    setParticipantCameraOpen(false);
+  };
+
+  const startParticipantCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setMessage("Camera access is not available in this browser.");
+      return;
+    }
+
+    try {
+      setMessage("Requesting camera access...");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 1280 } },
+        audio: false,
+      });
+      participantCameraStreamRef.current = stream;
+      setParticipantCameraOpen(true);
+      setMessage("");
+    } catch (error) {
+      setMessage(
+        error?.name === "NotAllowedError"
+          ? "Camera permission was not granted. You can continue without a photo."
+          : `Could not open the camera: ${error.message}`
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (!participantCameraOpen || !participantCameraVideoRef.current) return;
+    participantCameraVideoRef.current.srcObject = participantCameraStreamRef.current;
+  }, [participantCameraOpen]);
+
+  useEffect(() => () => {
+    participantCameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
+
+  const captureParticipantPhoto = async () => {
+    const video = participantCameraVideoRef.current;
+    if (!video?.videoWidth || !video?.videoHeight) {
+      setMessage("The camera is still starting. Please try again in a moment.");
+      return;
+    }
+
+    const side = Math.min(video.videoWidth, video.videoHeight);
+    const sourceX = Math.max(0, (video.videoWidth - side) / 2);
+    const sourceY = Math.max(0, (video.videoHeight - side) / 2);
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 512;
+    canvas.getContext("2d").drawImage(video, sourceX, sourceY, side, side, 0, 0, 512, 512);
+
+    const photo = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.78)
+    );
+
+    if (!photo) {
+      setMessage("The photo could not be captured. Please try again.");
+      return;
+    }
+
+    if (participantPhotoPreview) URL.revokeObjectURL(participantPhotoPreview);
+    setParticipantPhotoFile(photo);
+    setParticipantPhotoPreview(URL.createObjectURL(photo));
+    stopParticipantCamera();
+    setMessage("");
+  };
+
   const createEntry = async () => {
     if (!supabase) {
       setMessage("Supabase connection is missing.");
@@ -4107,9 +4333,24 @@ export default function App() {
     const quickTagItems = quickTags.map((tag) =>
       `Quick Tag: ${tag === "Learn New Skills" ? "Learning" : tag}`
     );
-    const finalCustomItems = [...customItems, ...orientationItem, ...quickTagItems];
-
     setSaving(true);
+    let uploadedParticipantPhoto = null;
+
+    if (participantPhotoFile) {
+      try {
+        setMessage("Uploading photo...");
+        uploadedParticipantPhoto = await uploadParticipantPhoto(participantPhotoFile);
+      } catch (error) {
+        setSaving(false);
+        setMessage(`Could not upload photo: ${error.message}`);
+        return;
+      }
+    }
+
+    const photoItem = uploadedParticipantPhoto
+      ? [createParticipantPhotoMarker(uploadedParticipantPhoto)]
+      : [];
+    const finalCustomItems = [...customItems, ...orientationItem, ...quickTagItems, ...photoItem];
 
     const draftSocialHandleLine = formatSocialHandleLine(
       socialHandleDraftPlatform,
@@ -4155,6 +4396,9 @@ export default function App() {
     setSaving(false);
 
     if (error) {
+      if (uploadedParticipantPhoto?.path) {
+        await supabase.storage.from(EVENT_DISPLAY_BUCKET).remove([uploadedParticipantPhoto.path]);
+      }
       setMessage(`Could not save entry: ${error.message}`);
       return;
     }
@@ -4393,6 +4637,34 @@ export default function App() {
     if (!supabase) return;
     if (!window.confirm("Permanently delete every entry from the board? This cannot be undone.")) return;
 
+    setMessage("Deleting participant photos and entries...");
+
+    const { data: storedEntries, error: photoLookupError } = await supabase
+      .from("board_entries")
+      .select("custom_items");
+
+    if (photoLookupError) {
+      setMessage(`Could not inspect stored photos: ${photoLookupError.message}`);
+      return;
+    }
+
+    const photoPaths = Array.from(new Set(
+      (storedEntries || [])
+        .map((entry) => getParticipantPhoto(entry.custom_items || [])?.path)
+        .filter(Boolean)
+    ));
+
+    if (photoPaths.length > 0) {
+      const { error: photoDeleteError } = await supabase.storage
+        .from(EVENT_DISPLAY_BUCKET)
+        .remove(photoPaths);
+
+      if (photoDeleteError) {
+        setMessage(`Could not delete participant photos: ${photoDeleteError.message}`);
+        return;
+      }
+    }
+
     const { error } = await supabase
       .from("board_entries")
       .delete()
@@ -4405,7 +4677,7 @@ export default function App() {
 
     setLastRemovedEntry(null);
     setEntries([]);
-    setMessage("Board cleared and all entries permanently deleted.");
+    setMessage(`Board cleared. ${photoPaths.length} participant photo${photoPaths.length === 1 ? "" : "s"} and all entries permanently deleted.`);
     setTimeout(() => setMessage(""), 2500);
   };
 
@@ -5082,7 +5354,28 @@ export default function App() {
                         Entry Form Section Visibility
                       </div>
 
-                      <div className="grid gap-3 md:grid-cols-2">
+                      <div className="grid gap-3 md:grid-cols-3">
+                        <label className="flex items-center gap-3 rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-3 text-sm font-semibold text-sky-100">
+                          <input
+                            type="checkbox"
+                            checked={allowParticipantPhotos}
+                            onChange={(event) => {
+                              setAllowParticipantPhotos(event.target.checked);
+                              if (!event.target.checked) {
+                                removeParticipantPhoto();
+                                stopParticipantCamera();
+                              }
+                            }}
+                            className="h-4 w-4"
+                          />
+                          <span>
+                            Allow participant photos
+                            <span className="mt-1 block text-xs font-normal leading-5 text-sky-100/60">
+                              Camera-only on kiosk; camera or library on personal phones.
+                            </span>
+                          </span>
+                        </label>
+
                         <label className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-sm font-semibold text-slate-100">
                           <input
                             type="checkbox"
@@ -5117,7 +5410,7 @@ export default function App() {
                       </div>
 
                       <p className="mt-3 text-xs leading-5 text-slate-500">
-                        For social hours, turn both off and keep social handles on. Click Save settings to update the kiosk.
+                        Click Save settings after changing these options. The kiosk never receives access to its files or photo library.
                       </p>
                     </div>
 
@@ -7024,6 +7317,88 @@ export default function App() {
                       className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
                     />
                   </div>
+
+                  {allowParticipantPhotos ? (
+                    <div className="xl:col-span-2">
+                      <label className="mb-2 block text-sm font-semibold">
+                        Profile photo <span className="font-normal text-slate-400">(optional)</span>
+                      </label>
+                      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-4">
+                        {participantPhotoPreview ? (
+                          <img
+                            src={participantPhotoPreview}
+                            alt="Your square profile preview"
+                            className="h-24 w-24 rounded-2xl border border-sky-400/40 object-cover"
+                          />
+                        ) : (
+                          <div className="grid h-24 w-24 place-items-center rounded-2xl border border-dashed border-slate-600 text-center text-xs text-slate-500">
+                            No photo
+                          </div>
+                        )}
+
+                        <div className="min-w-[220px] flex-1">
+                          {isKioskEntryMode ? (
+                            <button
+                              type="button"
+                              onClick={startParticipantCamera}
+                              className="rounded-xl bg-sky-400 px-4 py-3 text-sm font-bold text-slate-950"
+                            >
+                              {participantPhotoPreview ? "Retake photo" : "Take photo"}
+                            </button>
+                          ) : (
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleParticipantPhotoChange}
+                              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-400 file:px-3 file:py-2 file:font-semibold file:text-slate-950"
+                            />
+                          )}
+                          <p className="mt-2 text-xs leading-5 text-slate-500">
+                            {isKioskEntryMode
+                              ? "Camera only. The kiosk cannot browse its files or photo library, and the picture is never saved to its internal drive."
+                              : "Take a photo or choose one from this phone. It is cropped to a small square for the board."}
+                          </p>
+                          {participantPhotoPreview ? (
+                            <button
+                              type="button"
+                              onClick={removeParticipantPhoto}
+                              className="mt-2 rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-100"
+                            >
+                              Remove photo
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      {isKioskEntryMode && participantCameraOpen ? (
+                        <div className="mt-4 rounded-2xl border border-sky-500/30 bg-black p-4">
+                          <video
+                            ref={participantCameraVideoRef}
+                            autoPlay
+                            muted
+                            playsInline
+                            className="mx-auto aspect-square w-full max-w-md rounded-2xl object-cover"
+                          />
+                          <div className="mt-4 flex flex-wrap justify-center gap-3">
+                            <button
+                              type="button"
+                              onClick={captureParticipantPhoto}
+                              className="rounded-xl bg-sky-400 px-5 py-3 font-bold text-slate-950"
+                            >
+                              Use this photo
+                            </button>
+                            <button
+                              type="button"
+                              onClick={stopParticipantCamera}
+                              className="rounded-xl border border-slate-600 bg-slate-900 px-5 py-3 font-semibold text-slate-100"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
 
                   {showSocialHandleField ? (
                     <div>
