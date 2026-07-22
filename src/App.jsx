@@ -2274,69 +2274,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const mode = searchParams.get("mode");
-    const isDisplayRoute =
-      mode === "display" || window.location.pathname.toLowerCase().includes("display");
-
-    const existingClock = document.getElementById("liveboard-eastern-clock");
-
-    if (!isDisplayRoute) {
-      if (existingClock) existingClock.remove();
-      return;
-    }
-
-    const clock = existingClock || document.createElement("div");
-    clock.id = "liveboard-eastern-clock";
-    clock.setAttribute("aria-hidden", "true");
-
-    Object.assign(clock.style, {
-      position: "fixed",
-      right: "24px",
-      bottom: "24px",
-      zIndex: "2147483647",
-      pointerEvents: "none",
-      padding: "10px 22px",
-      borderRadius: "18px",
-      border: "1px solid rgba(255,255,255,0.35)",
-      background: "rgba(0,0,0,0.82)",
-      color: "#ffffff",
-      fontSize: "44px",
-      fontWeight: "900",
-      lineHeight: "1",
-      letterSpacing: "0.08em",
-      fontFamily: "Arial, Helvetica, sans-serif",
-      boxShadow: "0 0 42px rgba(255,255,255,0.28)",
-      backdropFilter: "blur(10px)",
-    });
-
-    const updateClock = () => {
-      clock.textContent = new Intl.DateTimeFormat("en-US", {
-        timeZone: "America/New_York",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-        .format(new Date())
-        .replace(/\s?[AP]M$/i, "");
-    };
-
-    updateClock();
-
-    if (!existingClock) {
-      document.body.appendChild(clock);
-    }
-
-    const easternClockInterval = window.setInterval(updateClock, 1000);
-
-    return () => {
-      window.clearInterval(easternClockInterval);
-      const activeClock = document.getElementById("liveboard-eastern-clock");
-      if (activeClock) activeClock.remove();
-    };
-  }, []);
-
-  useEffect(() => {
     if (!supabase) {
       setLoading(false);
       setSettingsLoading(false);
@@ -7754,15 +7691,24 @@ export default function App() {
                 </h1>
               </div>
 
-              <div className="flex shrink-0 items-center gap-3 rounded-2xl border border-white/20 bg-black/30 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
-                <p className="m-0 max-w-[13rem] text-right text-lg font-bold leading-tight text-white md:text-xl">
-                  Scan with your phone to add yourself to the Board
-                </p>
-                <img
-                  src="/liveboard-entry-qr.png"
-                  alt="QR code to join the LiveBoard"
-                  className="h-24 w-24 shrink-0 rounded-lg bg-white p-1"
-                />
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/20 bg-black/30 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+                  <p className="m-0 max-w-[13rem] text-right text-lg font-bold leading-tight text-white md:text-xl">
+                    Scan with your phone to add yourself to the Board
+                  </p>
+                  <img
+                    src="/liveboard-entry-qr.png"
+                    alt="QR code to join the LiveBoard"
+                    className="h-24 w-24 shrink-0 rounded-lg bg-white p-1"
+                  />
+                </div>
+
+                <div
+                  className="min-w-32 rounded-2xl border border-white/20 bg-black/30 px-5 py-2 text-center text-3xl font-black leading-none tracking-[0.08em] text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+                  aria-label={"Current Eastern time: " + displayEasternTime}
+                >
+                  {displayEasternTime}
+                </div>
               </div>
             </div>
 
