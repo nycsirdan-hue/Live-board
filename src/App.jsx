@@ -2017,7 +2017,7 @@ export default function App() {
         }
       : {
           type: "default",
-          usesMultipleSocialHandles: false,
+          usesMultipleSocialHandles: true,
         };
 
   const displayBoardSettings = isDiaperDebaucheryEntryForm
@@ -7685,7 +7685,7 @@ export default function App() {
                                 Platform
                               </div>
                               <div className="flex flex-wrap gap-1.5">
-                                {["FetLife", "Bluesky", "X", "Instagram / IG"].map((platform) => (
+                                {availableHandlePlatforms.map((platform) => (
                                   <button
                                     key={platform}
                                     type="button"
