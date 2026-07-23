@@ -5497,7 +5497,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-sky-500/25 bg-slate-900/80 p-5">
+                  <div className="hidden rounded-2xl border border-sky-500/25 bg-slate-900/80 p-5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h3 className="text-xl font-semibold text-white">Form Builder</h3>
@@ -6041,7 +6041,89 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                  <div className="rounded-2xl border border-sky-500/25 bg-slate-900/80 p-5">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-xl font-semibold text-white">Form Builder</h3>
+                        <p className="mt-1 text-sm leading-6 text-slate-400">
+                          These settings are saved separately for this preset and control both kiosk and mobile entry.
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={resetActiveFormBuilderPreset} className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-200">
+                          Restore defaults
+                        </button>
+                        <button type="button" onClick={() => saveFormBuilderConfigs()} disabled={settingsSaving} className="rounded-xl bg-sky-400 px-4 py-2 text-sm font-black text-slate-950 disabled:opacity-60">
+                          {settingsSaving ? "Saving…" : "Save form builder"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 space-y-4">
+                      {Object.entries(activeFormBuilderConfig || {}).map(([sectionKey, section]) => {
+                        const inputKey = `${entryFormPreset}:${sectionKey}`;
+                        const supportsButtons = sectionKey !== "photo";
+                        const supportsCustomText = ["identity", "seeking", "orientation", "sexual", "interests", "topImplements", "bottomImplements", "limits"].includes(sectionKey);
+                        return (
+                          <div key={sectionKey} className="rounded-2xl border border-slate-700 bg-slate-950/75 p-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div className="text-xs font-black uppercase tracking-[0.16em] text-sky-200">{sectionKey.replace(/([A-Z])/g, " $1")}</div>
+                              <label className="flex items-center gap-2 text-sm font-semibold text-white">
+                                <input type="checkbox" checked={section.enabled !== false} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, enabled: event.target.checked })} className="h-4 w-4" />
+                                Enable section
+                              </label>
+                            </div>
+
+                            <div className="mt-3 grid gap-3 md:grid-cols-2">
+                              <label className="text-xs font-semibold text-slate-300">Section title
+                                <input value={section.label || ""} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, label: event.target.value })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+                              </label>
+                              <label className="text-xs font-semibold text-slate-300">Instruction line
+                                <input value={section.prompt || ""} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, prompt: event.target.value })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+                              </label>
+                            </div>
+
+                            {section.options?.length ? (
+                              <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                                {section.options.map((option, optionIndex) => (
+                                  <div key={`${option.label}-${optionIndex}`} className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-2">
+                                    <input type="checkbox" checked={option.enabled !== false} onChange={() => toggleFormBuilderOption(sectionKey, optionIndex)} className="h-4 w-4" />
+                                    <input value={option.label} onChange={(event) => updateFormBuilderSection(sectionKey, (currentSection) => ({ ...currentSection, options: currentSection.options.map((item, index) => index === optionIndex ? { ...item, label: event.target.value } : item) }))} className="min-w-0 flex-1 bg-transparent text-sm text-slate-100 outline-none" />
+                                    <button type="button" onClick={() => removeFormBuilderOption(sectionKey, optionIndex)} className="text-xs font-bold text-rose-300">Remove</button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {supportsButtons ? <div className="mt-3 flex gap-2">
+                              <input value={formBuilderNewOptions[inputKey] || ""} onChange={(event) => setFormBuilderNewOptions((current) => ({ ...current, [inputKey]: event.target.value }))} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addFormBuilderOption(sectionKey); } }} placeholder="Add a custom button" className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500" />
+                              <button type="button" onClick={() => addFormBuilderOption(sectionKey)} className="rounded-xl border border-sky-400/50 bg-sky-400/10 px-4 py-2 text-sm font-bold text-sky-100">Add button</button>
+                            </div> : null}
+
+                            {supportsCustomText ? <div className="mt-4 rounded-xl border border-amber-700/30 bg-amber-950/10 p-3">
+                              <label className="flex items-center gap-2 text-sm font-semibold text-amber-100">
+                                <input type="checkbox" checked={section.customField?.enabled === true} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, enabled: event.target.checked } })} className="h-4 w-4" />
+                                Enable custom text field
+                              </label>
+                              {section.customField?.enabled ? (
+                                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                                  <label className="text-xs text-slate-300">Field prompt<input value={section.customField.label || ""} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, label: event.target.value } })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" /></label>
+                                  <label className="text-xs text-slate-300">Placeholder<input value={section.customField.placeholder || ""} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, placeholder: event.target.value } })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" /></label>
+                                  <label className="text-xs text-slate-300">Character limit<input type="number" min="1" max="1000" value={section.customField.maxLength || 160} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, maxLength: Math.max(1, Math.min(1000, Number(event.target.value) || 160)) } })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" /></label>
+                                  <div className="flex flex-wrap items-end gap-4 pb-2 text-sm text-slate-200">
+                                    <label className="flex items-center gap-2"><input type="checkbox" checked={section.customField.required === true} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, required: event.target.checked } })} /> Required</label>
+                                    <label className="flex items-center gap-2"><input type="checkbox" checked={section.customField.multiline !== false} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, multiline: event.target.checked } })} /> Multi-line</label>
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div> : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="hidden rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <div className="mb-4">
                       <div className="text-sm font-semibold text-slate-100">Entry Button Options</div>
                       <p className="mt-1 text-xs leading-5 text-slate-500">
