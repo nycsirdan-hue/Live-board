@@ -431,6 +431,103 @@ const spankingLimitOptions = ["No wood", "No leather", "Domestic implements only
 const spankingIntentionOptions = ["Open to try", "Discuss Limits", "Open to Play", "Watching"];
 const spankingExperienceOptions = ["New - No Experience", "Beginner", "Intermediate", "Experienced"];
 
+const FORM_BUILDER_SETTING_PREFIX = "__liveboard_setting__:form_builder=";
+const formBuilderOption = (label) => ({ label, enabled: true });
+const formBuilderSection = (label, prompt, options = [], extra = {}) => ({
+  enabled: true,
+  label,
+  prompt,
+  options: options.map(formBuilderOption),
+  customField: {
+    enabled: false,
+    label: "Type anything else",
+    placeholder: "",
+    required: false,
+    multiline: true,
+    maxLength: 160,
+  },
+  ...extra,
+});
+
+const createDefaultFormBuilderConfigs = () => ({
+  standard: {
+    photo: formBuilderSection("Profile photo", "Add an optional profile photo."),
+    social: formBuilderSection("Social Handles", "Add one or more handles.", handlePlatformOptions),
+    position: formBuilderSection("Position", "Choose how you want to be listed.", positionOptions),
+    identity: formBuilderSection("I identify as", "Choose one, or use Other.", identityOptions, { customField: { enabled: true, label: "Type identity", placeholder: "Type identity", required: false, multiline: false, maxLength: 80 } }),
+    seeking: formBuilderSection("Seeking", "Choose who you are seeking tonight.", seekingOptions, { customField: { enabled: true, label: "Type who you are seeking", placeholder: "Type who you are seeking", required: false, multiline: false, maxLength: 80 } }),
+    orientation: formBuilderSection("Orientation", "Choose one, or use Other.", orientationOptions, { customField: { enabled: true, label: "Type orientation / connection style", placeholder: "Type orientation / connection style", required: false, multiline: false, maxLength: 80 } }),
+    intention: formBuilderSection("Intention", "Choose all that apply.", quickTagOptions),
+    sexual: formBuilderSection("Sexual Preferences", "Selections are conversation starters, not consent.", defaultSexualPreferenceOptions, {
+      customField: { enabled: true, label: "Type anything else about sexual preferences or safer sex.", placeholder: "Ask me first, condoms only, oral only, safer sex notes", required: false, multiline: true, maxLength: 160 },
+    }),
+    interests: formBuilderSection("Interests", "Choose any that apply.", defaultInterestOptions, {
+      customField: { enabled: true, label: "Type anything else about your interests, kinks, or scene preferences.", placeholder: "Rope, impact, watching, service, specific interests", required: false, multiline: true, maxLength: 160 },
+    }),
+  },
+  men_only: {
+    photo: formBuilderSection("Profile photo", "Add an optional profile photo."),
+    social: formBuilderSection("Social Handles", "Add one or more handles.", handlePlatformOptions),
+    position: formBuilderSection("Position", "Choose how you want to be listed.", positionOptions),
+    intention: formBuilderSection("Intention", "Choose all that apply.", quickTagOptions),
+    sexual: formBuilderSection("Sexual Preferences", "Selections are conversation starters, not consent.", defaultSexualPreferenceOptions, {
+      customField: { enabled: true, label: "Type anything else about sexual preferences or safer sex.", placeholder: "Ask me first, condoms only, safer sex notes", required: false, multiline: true, maxLength: 160 },
+    }),
+    interests: formBuilderSection("Interests", "Choose any that apply.", defaultInterestOptions, {
+      customField: { enabled: true, label: "Type anything else about your interests or kinks.", placeholder: "Rope, impact, watching, service, limits", required: false, multiline: true, maxLength: 160 },
+    }),
+  },
+  mens_spanking: {
+    photo: formBuilderSection("Profile photo", "Add an optional profile photo."),
+    social: formBuilderSection("Social Handles", "Add one or more handles.", handlePlatformOptions),
+    position: formBuilderSection("Position", "Choose how you want to be listed.", positionOptions),
+    intention: formBuilderSection("Intention", "Choose all that apply.", spankingIntentionOptions),
+    topImplements: formBuilderSection("As a top I like to use", "Choose all that apply.", spankingImplementOptions, { customField: { enabled: true, label: "Other / type your own", placeholder: "Other implements you like to use", required: false, multiline: true, maxLength: 160 } }),
+    bottomImplements: formBuilderSection("As a bottom I like to receive", "Choose all that apply.", spankingImplementOptions, { customField: { enabled: true, label: "Other / type your own", placeholder: "Other implements you like to receive", required: false, multiline: true, maxLength: 160 } }),
+    limits: formBuilderSection("Limits", "Choose all that apply.", spankingLimitOptions, { customField: { enabled: true, label: "Other limits", placeholder: "Type any other limits", required: false, multiline: true, maxLength: 160 } }),
+    experience: formBuilderSection("Experience", "Choose one.", spankingExperienceOptions),
+    sexual: formBuilderSection("Sexual Preferences", "Selections are conversation starters, not consent.", defaultSexualPreferenceOptions, { customField: { enabled: true, label: "Type anything else about sexual preferences or safer sex.", placeholder: "Safer sex notes or specific limits", required: false, multiline: true, maxLength: 160 } }),
+    interests: formBuilderSection("Interests", "Choose any that apply.", defaultInterestOptions, { customField: { enabled: true, label: "Type anything else about your interests or kinks.", placeholder: "Impact, service, scene interests", required: false, multiline: true, maxLength: 160 } }),
+  },
+  diaper_debauchery_glow: {
+    photo: formBuilderSection("Profile photo", "Add an optional profile photo."),
+    social: formBuilderSection("Social Handles", "Add one or more handles.", handlePlatformOptions),
+    vibe: formBuilderSection("Vibe Tonight", "Choose the vibe you want people to see on the board.", diaperDebaucheryVibeOptions),
+    lookingFor: formBuilderSection("Looking For", "Choose what kind of connection you are open to tonight.", diaperDebaucheryLookingForOptions),
+    sexual: formBuilderSection("Sexual Preferences", "Selections are conversation starters, not consent.", diaperDebaucherySexualPreferenceOptions, { customField: { enabled: true, label: "Type anything else about sexual preferences or safer sex.", placeholder: "Ask me first, safer sex notes, specific limits", required: false, multiline: true, maxLength: 160 } }),
+    interests: formBuilderSection("Kinks | Fetishes | Responsibilities", "Choose any that apply, then type anything else you want people to know.", defaultInterestOptions, { customField: { enabled: true, label: "Type kinks, fetishes, responsibilities, or scene interests.", placeholder: "Diaper play, impact, service, rope, caregiver energy", required: false, multiline: true, maxLength: 160 } }),
+  },
+});
+
+const normalizeFormBuilderConfigs = (saved) => {
+  const defaults = createDefaultFormBuilderConfigs();
+  Object.keys(defaults).forEach((preset) => {
+    Object.keys(defaults[preset]).forEach((key) => {
+      const section = saved?.[preset]?.[key];
+      if (!section) return;
+      defaults[preset][key] = {
+        ...defaults[preset][key],
+        ...section,
+        options: Array.isArray(section.options) ? section.options : defaults[preset][key].options,
+        customField: { ...defaults[preset][key].customField, ...(section.customField || {}) },
+      };
+    });
+  });
+  return defaults;
+};
+const isFormBuilderSettingMarker = (option) => String(option || "").startsWith(FORM_BUILDER_SETTING_PREFIX);
+const getFormBuilderSetting = (options) => {
+  const marker = (options || []).find(isFormBuilderSettingMarker);
+  if (!marker) return createDefaultFormBuilderConfigs();
+  try { return normalizeFormBuilderConfigs(JSON.parse(marker.slice(FORM_BUILDER_SETTING_PREFIX.length))); }
+  catch { return createDefaultFormBuilderConfigs(); }
+};
+const withFormBuilderSetting = (options, configs) => [
+  ...(options || []).filter((option) => !isFormBuilderSettingMarker(option)),
+  FORM_BUILDER_SETTING_PREFIX + JSON.stringify(configs),
+];
+const withoutFormBuilderSetting = (options) => (options || []).filter((option) => !isFormBuilderSettingMarker(option));
+
 const searchAliases = {
   rope: ["Rope Bondage", "Shibari", "Suspension", "Partial Suspension"],
   flog: ["Flogging"],
@@ -720,6 +817,21 @@ function SocialHandleDisplay({ platform, handle }) {
       ))}
     </span>
   );
+}
+
+function FormBuilderCustomInput({ config, id, value, onChange, className = "", rows = 2 }) {
+  const sharedProps = {
+    id,
+    value,
+    onChange,
+    placeholder: config?.placeholder || "",
+    maxLength: config?.maxLength || 160,
+    className,
+  };
+
+  return config?.multiline === false
+    ? <input {...sharedProps} />
+    : <textarea {...sharedProps} rows={rows} />;
 }
 
 function EntryLine({
@@ -1675,7 +1787,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
                     itemLimit={compact ? 8 : 10}
                     isDM={false}
                     isHost={false}
-                    preserveTaggedCategories={connectionBoard}
+                    preserveTaggedCategories
                   />
                 </div>
               );
@@ -1960,6 +2072,8 @@ export default function App() {
   const [setupVenueName, setSetupVenueName] = useState("");
   const [layoutSettings, setLayoutSettings] = useState(defaultDisplayLayout);
   const [participantDisplayColumns, setParticipantDisplayColumns] = useState(4);
+  const [formBuilderConfigs, setFormBuilderConfigs] = useState(createDefaultFormBuilderConfigs);
+  const [formBuilderNewOptions, setFormBuilderNewOptions] = useState({});
   const [activeEventDisplayId, setActiveEventDisplayId] = useState(() => {
     return window.localStorage.getItem("activeEventDisplayId") || eventDisplayPresets[0]?.id || "";
   });
@@ -2122,6 +2236,28 @@ export default function App() {
   const usesMultipleSocialHandles = true;
   const usesSingleConnectionBoard = displayBoardSettings.layout === "singleConnectionBoard";
   const isConnectionEntryForm = entryMenuSettings.type === "abdl";
+  const activeFormBuilderConfig = formBuilderConfigs[entryFormPreset] || createDefaultFormBuilderConfigs()[entryFormPreset];
+  const getFormBuilderSection = (key) => activeFormBuilderConfig?.[key] || null;
+  const getEnabledFormOptions = (key, fallback = []) => {
+    const section = getFormBuilderSection(key);
+    return section
+      ? (section.options || []).filter((option) => option.enabled !== false).map((option) => option.label)
+      : fallback;
+  };
+  const buildSettingsCustomInterestOptions = (
+    baseOptions = customInterestOptions,
+    configs = formBuilderConfigs,
+    columns = participantDisplayColumns
+  ) => withFormBuilderSetting(
+    withParticipantColumnsSetting(
+      withTelegramSetting(
+        withParticipantPhotoSetting(baseOptions, allowParticipantPhotos),
+        allowTelegram
+      ),
+      columns
+    ),
+    configs
+  );
 
   const allSexualPreferenceOptions = useMemo(() => {
     const removedOptions = new Set(
@@ -2628,20 +2764,13 @@ export default function App() {
     displayNow
   );
 
-  const availableHandlePlatforms = [
-    allowFetLife ? "FetLife" : null,
-    allowWhappz ? "Whappz" : null,
-    allowTwitter ? "Twitter" : null,
-    allowBluesky ? "Bluesky" : null,
-    allowTelegram ? "Telegram" : null,
-    allowOtherPlatform ? "Instagram / IG" : null,
-  ].filter(Boolean);
+  const availableHandlePlatforms = getEnabledFormOptions("social", handlePlatformOptions);
 
   useEffect(() => {
     if (!availableHandlePlatforms.includes(socialPlatform)) {
       setSocialPlatform(availableHandlePlatforms[0] || "FetLife");
     }
-  }, [allowFetLife, allowWhappz, allowTwitter, allowBluesky, allowTelegram, allowOtherPlatform]); // eslint-disable-line
+  }, [entryFormPreset, formBuilderConfigs]); // eslint-disable-line
 
   useEffect(() => {
     if (!isKioskEntryMode || !entrySuccess) return;
@@ -2749,7 +2878,7 @@ export default function App() {
     [participantEntries]
   );
   const switchEntries = useMemo(
-    () => participantEntries.filter((entry) => entry.position === "Switch"),
+    () => participantEntries.filter((entry) => entry.position !== "Top" && entry.position !== "Bottom"),
     [participantEntries]
   );
 
@@ -2848,9 +2977,12 @@ export default function App() {
           setAllowParticipantPhotos(getParticipantPhotoSetting(data.custom_interest_options));
           setAllowTelegram(getTelegramSetting(data.custom_interest_options));
           setParticipantDisplayColumns(getParticipantColumnsSetting(data.custom_interest_options));
+          setFormBuilderConfigs(getFormBuilderSetting(data.custom_interest_options));
           setCustomInterestOptions(
-            withoutParticipantColumnsSetting(
-              withoutTelegramSetting(withoutParticipantPhotoSetting(data.custom_interest_options))
+            withoutFormBuilderSetting(
+              withoutParticipantColumnsSetting(
+                withoutTelegramSetting(withoutParticipantPhotoSetting(data.custom_interest_options))
+              )
             )
           );
         }
@@ -3053,13 +3185,7 @@ export default function App() {
     }
 
     const payload = {
-      custom_interest_options: withParticipantColumnsSetting(
-        withTelegramSetting(
-          withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
-          allowTelegram
-        ),
-        columns
-      ),
+      custom_interest_options: buildSettingsCustomInterestOptions(customInterestOptions, formBuilderConfigs, columns),
       updated_at: new Date().toISOString(),
     };
 
@@ -3313,6 +3439,71 @@ export default function App() {
     );
   };
 
+  const updateFormBuilderSection = (sectionKey, updater) => {
+    setFormBuilderConfigs((current) => {
+      const presetConfig = current[entryFormPreset] || {};
+      const section = presetConfig[sectionKey];
+      if (!section) return current;
+      const nextSection = typeof updater === "function" ? updater(section) : { ...section, ...updater };
+      return { ...current, [entryFormPreset]: { ...presetConfig, [sectionKey]: nextSection } };
+    });
+  };
+
+  const toggleFormBuilderOption = (sectionKey, optionIndex) => {
+    updateFormBuilderSection(sectionKey, (section) => ({
+      ...section,
+      options: section.options.map((option, index) => index === optionIndex ? { ...option, enabled: option.enabled === false } : option),
+    }));
+  };
+
+  const removeFormBuilderOption = (sectionKey, optionIndex) => {
+    updateFormBuilderSection(sectionKey, (section) => ({
+      ...section,
+      options: section.options.filter((_, index) => index !== optionIndex),
+    }));
+  };
+
+  const addFormBuilderOption = (sectionKey) => {
+    const inputKey = `${entryFormPreset}:${sectionKey}`;
+    const value = String(formBuilderNewOptions[inputKey] || "").trim();
+    if (!value) return;
+    updateFormBuilderSection(sectionKey, (section) => {
+      if (section.options.some((option) => option.label.toLowerCase() === value.toLowerCase())) return section;
+      return { ...section, options: [...section.options, formBuilderOption(value)] };
+    });
+    setFormBuilderNewOptions((current) => ({ ...current, [inputKey]: "" }));
+  };
+
+  const saveFormBuilderConfigs = async (configs = formBuilderConfigs, confirmation = "Entry form builder saved.") => {
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      return;
+    }
+    setSettingsSaving(true);
+    const payload = {
+      custom_interest_options: buildSettingsCustomInterestOptions(customInterestOptions, configs),
+      updated_at: new Date().toISOString(),
+    };
+    const query = settings?.id
+      ? supabase.from("board_settings").update(payload).eq("id", settings.id)
+      : supabase.from("board_settings").insert({ event_name: setupEventName || defaultConfig.eventName, venue_name: setupVenueName || defaultConfig.venueName, ...payload });
+    const { data, error } = await query.select("*").single();
+    setSettingsSaving(false);
+    if (error) {
+      setMessage("Could not save form builder: " + error.message);
+      return;
+    }
+    setSettings(data);
+    setMessage(confirmation);
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const resetActiveFormBuilderPreset = () => {
+    const defaults = createDefaultFormBuilderConfigs();
+    setFormBuilderConfigs((current) => ({ ...current, [entryFormPreset]: defaults[entryFormPreset] }));
+    setMessage("Defaults restored. Click Save form builder to publish them.");
+  };
+
   const updateEntryFormPreset = async (nextPreset) => {
     const allowedPresets = ["standard", "men_only", "mens_spanking", "diaper_debauchery_glow"];
 
@@ -3337,13 +3528,7 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: withParticipantColumnsSetting(
-        withTelegramSetting(
-          withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
-          allowTelegram
-        ),
-        participantDisplayColumns
-      ),
+      custom_interest_options: buildSettingsCustomInterestOptions(),
       updated_at: new Date().toISOString(),
     };
 
@@ -3483,7 +3668,7 @@ export default function App() {
 
     const payload = {
       visible_interest_options: nextVisibleInterestOptions,
-      custom_interest_options: withParticipantPhotoSetting(nextCustomInterestOptions, allowParticipantPhotos),
+      custom_interest_options: buildSettingsCustomInterestOptions(nextCustomInterestOptions),
       updated_at: new Date().toISOString(),
     };
 
@@ -3765,13 +3950,7 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: withParticipantColumnsSetting(
-        withTelegramSetting(
-          withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
-          allowTelegram
-        ),
-        participantDisplayColumns
-      ),
+      custom_interest_options: buildSettingsCustomInterestOptions(),
       active_event_display_preset_id: activeEventDisplayId || null,
       updated_at: new Date().toISOString(),
     };
@@ -3917,13 +4096,7 @@ export default function App() {
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: withParticipantColumnsSetting(
-        withTelegramSetting(
-          withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
-          allowTelegram
-        ),
-        participantDisplayColumns
-      ),
+      custom_interest_options: buildSettingsCustomInterestOptions(),
       active_event_display_preset_id: presetId || null,
       updated_at: new Date().toISOString(),
     };
@@ -4583,59 +4756,63 @@ export default function App() {
       return;
     }
 
-    if (!isConnectionEntryForm && !position) {
+    if (!isConnectionEntryForm && getFormBuilderSection("position")?.enabled !== false && !position) {
       setMessage("Please choose Top, Bottom, or Switch.");
       return;
     }
 
     const finalWhoAmI = isDiaperDebaucheryEntryForm
-      ? quickTags.join(" • ")
+      ? getFormBuilderSection("vibe")?.enabled === false ? "" : quickTags.join(" • ")
       : isMenOnlyEntryForm
         ? ""
+        : getFormBuilderSection("identity")?.enabled === false
+          ? ""
         : identityChoice === "Other"
           ? identityOther.trim()
           : identityChoice;
 
     const finalSeeking = isDiaperDebaucheryEntryForm
-      ? lookingForItems.join(", ")
+      ? getFormBuilderSection("lookingFor")?.enabled === false ? "" : lookingForItems.join(", ")
       : isMenOnlyEntryForm
         ? ""
+        : getFormBuilderSection("seeking")?.enabled === false
+          ? ""
         : seekingChoice === "Other"
           ? seekingOther.trim()
           : seekingChoice;
 
-    const finalOrientation = isMenOnlyEntryForm || isConnectionEntryForm
+    const finalOrientation = isMenOnlyEntryForm || isConnectionEntryForm || getFormBuilderSection("orientation")?.enabled === false
       ? ""
       : orientationChoice === "Other"
         ? orientationOther.trim()
         : orientationChoice;
 
-    if (!isMenOnlyEntryForm && !isConnectionEntryForm && !finalWhoAmI) {
+    if (!isMenOnlyEntryForm && !isConnectionEntryForm && getFormBuilderSection("identity")?.enabled !== false && !finalWhoAmI) {
       setMessage("Please choose how you identify.");
       return;
     }
 
-    if (!isMenOnlyEntryForm && !isConnectionEntryForm && !finalSeeking) {
+    if (!isMenOnlyEntryForm && !isConnectionEntryForm && getFormBuilderSection("seeking")?.enabled !== false && !finalSeeking) {
       setMessage("Please choose who you are seeking.");
       return;
     }
 
-    const parsedSexualPreferenceItems = sexualPreferenceInput
+    const parsedSexualPreferenceItems = (getFormBuilderSection("sexual")?.customField?.enabled ? sexualPreferenceInput : "")
       .split(/[\n,;]+/)
       .map((item) => item.trim())
       .filter(Boolean);
 
-    const parsedInterestItems = interestInput
+    const parsedInterestItems = (getFormBuilderSection("interests")?.customField?.enabled ? interestInput : "")
       .split(/[\n,;]+/)
       .map((item) => item.trim())
       .filter(Boolean);
 
-    const finalSexualPreferenceItems = Array.from(new Set([
+    const finalSexualPreferenceItems = getFormBuilderSection("sexual")?.enabled === false ? [] : Array.from(new Set([
       ...sexualPreferenceItems.filter((item) => item !== "Other"),
       ...parsedSexualPreferenceItems,
     ]));
 
-    const finalInterestItems = Array.from(new Set([
+    const finalInterestItems = getFormBuilderSection("interests")?.enabled === false ? [] : Array.from(new Set([
       ...interestItems.filter((item) => item !== "Other"),
       ...parsedInterestItems,
     ]));
@@ -4647,10 +4824,10 @@ export default function App() {
         .filter(Boolean);
 
     const showSpankingTopSection =
-      isMensSpankingEntryForm && (position === "Top" || position === "Switch");
+      isMensSpankingEntryForm && getFormBuilderSection("topImplements")?.enabled !== false && (position === "Top" || position === "Switch");
     const showSpankingBottomSection =
-      isMensSpankingEntryForm && (position === "Bottom" || position === "Switch");
-    const showSpankingLimitsSection = isMensSpankingEntryForm && Boolean(position);
+      isMensSpankingEntryForm && getFormBuilderSection("bottomImplements")?.enabled !== false && (position === "Bottom" || position === "Switch");
+    const showSpankingLimitsSection = isMensSpankingEntryForm && getFormBuilderSection("limits")?.enabled !== false && Boolean(position);
 
     const finalSpankingTopItems = showSpankingTopSection
       ? Array.from(new Set([...spankingTopImplements, ...parseSpankingTextItems(spankingTopOther)]))
@@ -4665,7 +4842,24 @@ export default function App() {
       : [];
 
     const finalSpankingExperienceItems =
-      isMensSpankingEntryForm && spankingExperienceLevel ? [spankingExperienceLevel] : [];
+      isMensSpankingEntryForm && getFormBuilderSection("experience")?.enabled !== false && spankingExperienceLevel ? [spankingExperienceLevel] : [];
+
+    if (getFormBuilderSection("sexual")?.enabled !== false && getFormBuilderSection("sexual")?.customField?.enabled && getFormBuilderSection("sexual")?.customField?.required && !sexualPreferenceInput.trim()) {
+      setMessage(`Please complete: ${getFormBuilderSection("sexual")?.customField?.label || "Sexual Preferences"}.`);
+      return;
+    }
+    if (getFormBuilderSection("interests")?.enabled !== false && getFormBuilderSection("interests")?.customField?.enabled && getFormBuilderSection("interests")?.customField?.required && !interestInput.trim()) {
+      setMessage(`Please complete: ${getFormBuilderSection("interests")?.customField?.label || "Interests"}.`);
+      return;
+    }
+    for (const [key, value] of [["topImplements", spankingTopOther], ["bottomImplements", spankingBottomOther], ["limits", spankingLimitsOther]]) {
+      const section = getFormBuilderSection(key);
+      const sectionApplies = key === "topImplements" ? showSpankingTopSection : key === "bottomImplements" ? showSpankingBottomSection : showSpankingLimitsSection;
+      if (sectionApplies && section?.customField?.enabled && section.customField.required && !String(value || "").trim()) {
+        setMessage(`Please complete: ${section.customField.label || section.label}.`);
+        return;
+      }
+    }
 
     const finalSpankingEntryItems = [
       ...finalSpankingTopItems,
@@ -4674,7 +4868,10 @@ export default function App() {
       ...finalSpankingExperienceItems,
     ];
 
+    const requiresAtLeastOneDetail = ["sexual", "interests", "intention", "topImplements", "bottomImplements", "limits", "experience"]
+      .some((key) => getFormBuilderSection(key)?.enabled !== false && getFormBuilderSection(key));
     if (
+      requiresAtLeastOneDetail &&
       finalSexualPreferenceItems.length < 1 &&
       finalInterestItems.length < 1 &&
       finalSpankingEntryItems.length < 1 &&
@@ -4704,13 +4901,14 @@ export default function App() {
     const standardItems = [];
     const customItems = finalOpenToItems;
     const orientationItem = finalOrientation ? [`Orientation: ${finalOrientation}`] : [];
-    const quickTagItems = quickTags.map((tag) =>
+    const quickTagSectionEnabled = getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.enabled !== false;
+    const quickTagItems = (quickTagSectionEnabled ? quickTags : []).map((tag) =>
       `Quick Tag: ${tag === "Learn New Skills" ? "Learning" : tag}`
     );
     setSaving(true);
     let uploadedParticipantPhoto = null;
 
-    if (participantPhotoFile) {
+    if (participantPhotoFile && getFormBuilderSection("photo")?.enabled !== false) {
       try {
         setMessage("Uploading photo...");
         uploadedParticipantPhoto = await uploadParticipantPhoto(participantPhotoFile);
@@ -4741,7 +4939,7 @@ export default function App() {
       )
     );
 
-    const handleValue = showSocialHandleField
+    const handleValue = getFormBuilderSection("social")?.enabled !== false
       ? usesMultipleSocialHandles
         ? finalDiaperSocialHandles.join("\n")
         : socialHandle.trim()
@@ -4750,7 +4948,7 @@ export default function App() {
     const platformValue =
       usesMultipleSocialHandles
         ? null
-        : showSocialHandleField && handleValue && availableHandlePlatforms.includes(socialPlatform)
+        : getFormBuilderSection("social")?.enabled !== false && handleValue && availableHandlePlatforms.includes(socialPlatform)
           ? socialPlatform
           : null;
 
@@ -4758,7 +4956,7 @@ export default function App() {
       name: name.trim(),
       social_handle: handleValue || null,
       social_platform: platformValue || null,
-      position: isConnectionEntryForm ? "Switch" : position,
+      position: isConnectionEntryForm || getFormBuilderSection("position")?.enabled === false ? "Switch" : position,
       who_am_i_text: finalWhoAmI || null,
       seeking_text: finalSeeking || null,
       items: standardItems.sort((a, b) => a.localeCompare(b)),
@@ -5299,7 +5497,89 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                  <div className="rounded-2xl border border-sky-500/25 bg-slate-900/80 p-5">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-xl font-semibold text-white">Form Builder</h3>
+                        <p className="mt-1 text-sm leading-6 text-slate-400">
+                          These settings are saved separately for this preset and control both kiosk and mobile entry.
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={resetActiveFormBuilderPreset} className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-200">
+                          Restore defaults
+                        </button>
+                        <button type="button" onClick={() => saveFormBuilderConfigs()} disabled={settingsSaving} className="rounded-xl bg-sky-400 px-4 py-2 text-sm font-black text-slate-950 disabled:opacity-60">
+                          {settingsSaving ? "Saving…" : "Save form builder"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 space-y-4">
+                      {Object.entries(activeFormBuilderConfig || {}).map(([sectionKey, section]) => {
+                        const inputKey = `${entryFormPreset}:${sectionKey}`;
+                        const supportsButtons = sectionKey !== "photo";
+                        const supportsCustomText = ["identity", "seeking", "orientation", "sexual", "interests", "topImplements", "bottomImplements", "limits"].includes(sectionKey);
+                        return (
+                          <div key={sectionKey} className="rounded-2xl border border-slate-700 bg-slate-950/75 p-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div className="text-xs font-black uppercase tracking-[0.16em] text-sky-200">{sectionKey.replace(/([A-Z])/g, " $1")}</div>
+                              <label className="flex items-center gap-2 text-sm font-semibold text-white">
+                                <input type="checkbox" checked={section.enabled !== false} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, enabled: event.target.checked })} className="h-4 w-4" />
+                                Enable section
+                              </label>
+                            </div>
+
+                            <div className="mt-3 grid gap-3 md:grid-cols-2">
+                              <label className="text-xs font-semibold text-slate-300">Section title
+                                <input value={section.label || ""} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, label: event.target.value })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+                              </label>
+                              <label className="text-xs font-semibold text-slate-300">Instruction line
+                                <input value={section.prompt || ""} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, prompt: event.target.value })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+                              </label>
+                            </div>
+
+                            {section.options?.length ? (
+                              <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                                {section.options.map((option, optionIndex) => (
+                                  <div key={`${option.label}-${optionIndex}`} className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-2">
+                                    <input type="checkbox" checked={option.enabled !== false} onChange={() => toggleFormBuilderOption(sectionKey, optionIndex)} className="h-4 w-4" />
+                                    <input value={option.label} onChange={(event) => updateFormBuilderSection(sectionKey, (currentSection) => ({ ...currentSection, options: currentSection.options.map((item, index) => index === optionIndex ? { ...item, label: event.target.value } : item) }))} className="min-w-0 flex-1 bg-transparent text-sm text-slate-100 outline-none" />
+                                    <button type="button" onClick={() => removeFormBuilderOption(sectionKey, optionIndex)} className="text-xs font-bold text-rose-300">Remove</button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            {supportsButtons ? <div className="mt-3 flex gap-2">
+                              <input value={formBuilderNewOptions[inputKey] || ""} onChange={(event) => setFormBuilderNewOptions((current) => ({ ...current, [inputKey]: event.target.value }))} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addFormBuilderOption(sectionKey); } }} placeholder="Add a custom button" className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500" />
+                              <button type="button" onClick={() => addFormBuilderOption(sectionKey)} className="rounded-xl border border-sky-400/50 bg-sky-400/10 px-4 py-2 text-sm font-bold text-sky-100">Add button</button>
+                            </div> : null}
+
+                            {supportsCustomText ? <div className="mt-4 rounded-xl border border-amber-700/30 bg-amber-950/10 p-3">
+                              <label className="flex items-center gap-2 text-sm font-semibold text-amber-100">
+                                <input type="checkbox" checked={section.customField?.enabled === true} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, enabled: event.target.checked } })} className="h-4 w-4" />
+                                Enable custom text field
+                              </label>
+                              {section.customField?.enabled ? (
+                                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                                  <label className="text-xs text-slate-300">Field prompt<input value={section.customField.label || ""} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, label: event.target.value } })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" /></label>
+                                  <label className="text-xs text-slate-300">Placeholder<input value={section.customField.placeholder || ""} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, placeholder: event.target.value } })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" /></label>
+                                  <label className="text-xs text-slate-300">Character limit<input type="number" min="1" max="1000" value={section.customField.maxLength || 160} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, maxLength: Math.max(1, Math.min(1000, Number(event.target.value) || 160)) } })} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" /></label>
+                                  <div className="flex flex-wrap items-end gap-4 pb-2 text-sm text-slate-200">
+                                    <label className="flex items-center gap-2"><input type="checkbox" checked={section.customField.required === true} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, required: event.target.checked } })} /> Required</label>
+                                    <label className="flex items-center gap-2"><input type="checkbox" checked={section.customField.multiline !== false} onChange={(event) => updateFormBuilderSection(sectionKey, { ...section, customField: { ...section.customField, multiline: event.target.checked } })} /> Multi-line</label>
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div> : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="hidden rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <h3 className="text-lg font-semibold text-white">
                       {editingEventDisplayId ? "Edit Event Display" : "Create Event Display"}
                     </h3>
@@ -7746,10 +8026,10 @@ export default function App() {
                     />
                   </div>
 
-                  {allowParticipantPhotos ? (
+                  {getFormBuilderSection("photo")?.enabled !== false ? (
                     <div className="xl:col-span-2">
                       <label className="mb-2 block text-sm font-semibold">
-                        Profile photo <span className="font-normal text-slate-400">(optional)</span>
+                        {getFormBuilderSection("photo")?.label || "Profile photo"} <span className="font-normal text-slate-400">(optional)</span>
                       </label>
                       <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-4">
                         {participantPhotoPreview ? (
@@ -7782,9 +8062,9 @@ export default function App() {
                             />
                           )}
                           <p className="mt-2 text-xs leading-5 text-slate-500">
-                            {isKioskEntryMode
+                            {getFormBuilderSection("photo")?.prompt || (isKioskEntryMode
                               ? "Camera only. The kiosk cannot browse its files or photo library, and the picture is never saved to its internal drive."
-                              : "Take a photo or choose one from this phone. It is cropped to a small square for the board."}
+                              : "Take a photo or choose one from this phone. It is cropped to a small square for the board.")}
                           </p>
                           {participantPhotoPreview ? (
                             <button
@@ -7901,14 +8181,15 @@ export default function App() {
                     </div>
                   ) : null}
 
-                  {showSocialHandleField ? (
+                  {getFormBuilderSection("social")?.enabled !== false ? (
                     <div>
                       <label className="mb-2 block text-sm font-semibold">
-                        {usesMultipleSocialHandles ? "Social Handles (optional)" : "Social handle (optional)"}
+                        {getFormBuilderSection("social")?.label || (usesMultipleSocialHandles ? "Social Handles" : "Social handle")} <span className="font-normal text-slate-400">(optional)</span>
                       </label>
 
                       {usesMultipleSocialHandles ? (
                         <div className="krinklesSocialSection rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/10 p-3">
+                          <p className="mb-3 text-xs leading-5 text-slate-400">{getFormBuilderSection("social")?.prompt}</p>
                           <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
                             <div>
                               <div className="krinklesSocialLabel mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
@@ -8021,7 +8302,7 @@ export default function App() {
 
                 {!isDiaperDebaucheryEntryForm ? (
                 <div className={`mt-5 grid gap-4 ${isMenOnlyEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
-                  <div className={`rounded-2xl border p-4 ${
+                  <div className={`${getFormBuilderSection("position")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMenOnlyEntryForm
                       ? "border-zinc-500/60 bg-zinc-950/70 shadow-[0_0_24px_rgba(113,113,122,0.14)]"
                       : "border-slate-700/70 bg-slate-950/60"
@@ -8031,14 +8312,14 @@ export default function App() {
                     }`}>
                       <label className={`block text-sm font-semibold ${
                         isMenOnlyEntryForm ? "text-zinc-100" : "text-slate-100"
-                      }`}>Position</label>
+                      }`}>{getFormBuilderSection("position")?.label || "Position"}</label>
                       <p className={`mt-1 text-xs leading-5 ${
                         isMenOnlyEntryForm ? "text-zinc-400" : "text-slate-500"
-                      }`}>Choose how you want to be listed.</p>
+                      }`}>{getFormBuilderSection("position")?.prompt || "Choose how you want to be listed."}</p>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
-                      {positionOptions.map((option) => (
+                      {getEnabledFormOptions("position", positionOptions).map((option) => (
                         <button
                           key={option}
                           type="button"
@@ -8061,19 +8342,19 @@ export default function App() {
 
                   {isMensSpankingEntryForm && position ? (
                     <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                      {(position === "Top" || position === "Switch") ? (
+                      {getFormBuilderSection("topImplements")?.enabled !== false && (position === "Top" || position === "Switch") ? (
                         <div className="rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 shadow-[0_0_24px_rgba(225,29,72,0.12)]">
                           <div className="mb-3 border-b border-rose-900/40 pb-2">
                             <label className="block text-sm font-semibold text-rose-100">
-                              As a top I like to use
+                              {getFormBuilderSection("topImplements")?.label || "As a top I like to use"}
                             </label>
                             <p className="mt-1 text-xs leading-5 text-rose-100/60">
-                              Choose all that apply. These are conversation starters, not consent.
+                              {getFormBuilderSection("topImplements")?.prompt || "Choose all that apply."}
                             </p>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                            {spankingImplementOptions.map((item) => {
+                            {getEnabledFormOptions("topImplements", spankingImplementOptions).map((item) => {
                               const active = spankingTopImplements.includes(item);
 
                               return (
@@ -8093,32 +8374,30 @@ export default function App() {
                             })}
                           </div>
 
-                          <label className="mt-4 block text-sm font-bold text-rose-50">
-                            Other / type your own
-                          </label>
-                          <textarea
+                          {getFormBuilderSection("topImplements")?.customField?.enabled ? <><label className="mt-4 block text-sm font-bold text-rose-50">{getFormBuilderSection("topImplements")?.customField?.label}</label>
+                          <FormBuilderCustomInput
+                            config={getFormBuilderSection("topImplements")?.customField}
                             value={spankingTopOther}
                             onChange={(e) => setSpankingTopOther(e.target.value)}
-                            placeholder="Type any other implements you like to use"
                             rows={2}
                             className="mt-2 w-full rounded-2xl border border-rose-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-rose-300"
-                          />
+                          /></> : null}
                         </div>
                       ) : null}
 
-                      {(position === "Bottom" || position === "Switch") ? (
+                      {getFormBuilderSection("bottomImplements")?.enabled !== false && (position === "Bottom" || position === "Switch") ? (
                         <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-4 shadow-[0_0_24px_rgba(16,185,129,0.12)]">
                           <div className="mb-3 border-b border-emerald-900/40 pb-2">
                             <label className="block text-sm font-semibold text-emerald-100">
-                              As a bottom I like to receive
+                              {getFormBuilderSection("bottomImplements")?.label || "As a bottom I like to receive"}
                             </label>
                             <p className="mt-1 text-xs leading-5 text-emerald-100/60">
-                              Choose all that apply. These are conversation starters, not consent.
+                              {getFormBuilderSection("bottomImplements")?.prompt || "Choose all that apply."}
                             </p>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                            {spankingImplementOptions.map((item) => {
+                            {getEnabledFormOptions("bottomImplements", spankingImplementOptions).map((item) => {
                               const active = spankingBottomImplements.includes(item);
 
                               return (
@@ -8138,31 +8417,29 @@ export default function App() {
                             })}
                           </div>
 
-                          <label className="mt-4 block text-sm font-bold text-emerald-50">
-                            Other / type your own
-                          </label>
-                          <textarea
+                          {getFormBuilderSection("bottomImplements")?.customField?.enabled ? <><label className="mt-4 block text-sm font-bold text-emerald-50">{getFormBuilderSection("bottomImplements")?.customField?.label}</label>
+                          <FormBuilderCustomInput
+                            config={getFormBuilderSection("bottomImplements")?.customField}
                             value={spankingBottomOther}
                             onChange={(e) => setSpankingBottomOther(e.target.value)}
-                            placeholder="Type any other implements you like to receive"
                             rows={2}
                             className="mt-2 w-full rounded-2xl border border-emerald-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-emerald-300"
-                          />
+                          /></> : null}
                         </div>
                       ) : null}
 
-                      <div className="rounded-2xl border border-amber-700/50 bg-amber-950/10 p-4 xl:col-span-2">
+                      <div className={`${getFormBuilderSection("limits")?.enabled === false ? "hidden " : ""}rounded-2xl border border-amber-700/50 bg-amber-950/10 p-4 xl:col-span-2`}>
                         <div className="mb-3 border-b border-amber-800/30 pb-2">
                           <label className="block text-sm font-semibold text-amber-100">
-                            My limits
+                            {getFormBuilderSection("limits")?.label || "My limits"}
                           </label>
                           <p className="mt-1 text-xs leading-5 text-amber-100/60">
-                            Choose any limits you want visible and add anything else people should know.
+                            {getFormBuilderSection("limits")?.prompt || "Choose any limits you want visible."}
                           </p>
                         </div>
 
                         <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-                          {spankingLimitOptions.map((item) => {
+                          {getEnabledFormOptions("limits", spankingLimitOptions).map((item) => {
                             const active = spankingLimitItems.includes(item);
 
                             return (
@@ -8182,30 +8459,28 @@ export default function App() {
                           })}
                         </div>
 
-                        <label className="mt-4 block text-sm font-bold text-amber-50">
-                          Other / type your own
-                        </label>
-                        <textarea
+                        {getFormBuilderSection("limits")?.customField?.enabled ? <><label className="mt-4 block text-sm font-bold text-amber-50">{getFormBuilderSection("limits")?.customField?.label}</label>
+                        <FormBuilderCustomInput
+                          config={getFormBuilderSection("limits")?.customField}
                           value={spankingLimitsOther}
                           onChange={(e) => setSpankingLimitsOther(e.target.value)}
-                          placeholder="Example: no wood, no leather, light warm-up first, avoid thighs, ask before canes"
                           rows={2}
                           className="mt-2 w-full rounded-2xl border border-amber-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-300"
-                        />
+                        /></> : null}
                       </div>
 
-                      <div className="rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2">
+                      <div className={`${getFormBuilderSection("experience")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2`}>
                         <div className="mb-3 border-b border-zinc-700/70 pb-2">
                           <label className="block text-sm font-semibold text-zinc-100">
-                            Experience Level
+                            {getFormBuilderSection("experience")?.label || "Experience Level"}
                           </label>
                           <p className="mt-1 text-xs leading-5 text-zinc-400">
-                            Choose the level that feels most accurate tonight.
+                            {getFormBuilderSection("experience")?.prompt || "Choose the level that feels most accurate tonight."}
                           </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                          {spankingExperienceOptions.map((item) => (
+                          {getEnabledFormOptions("experience", spankingExperienceOptions).map((item) => (
                             <button
                               key={item}
                               type="button"
@@ -8226,14 +8501,14 @@ export default function App() {
 
                   {!isMenOnlyEntryForm ? (
                     <>
-                  <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
+                  <div className={`${getFormBuilderSection("identity")?.enabled === false ? "hidden " : ""}rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4`}>
                     <div className="mb-3 border-b border-slate-800 pb-2">
-                      <label className="block text-sm font-semibold text-slate-100">I identify as</label>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">Choose one, or use Other.</p>
+                      <label className="block text-sm font-semibold text-slate-100">{getFormBuilderSection("identity")?.label || "I identify as"}</label>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">{getFormBuilderSection("identity")?.prompt || "Choose one, or use Other."}</p>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
-                      {identityOptions.map((option) => (
+                      {getEnabledFormOptions("identity", identityOptions).map((option) => (
                         <button
                           key={option}
                           type="button"
@@ -8249,24 +8524,24 @@ export default function App() {
                       ))}
                     </div>
 
-                    {identityChoice === "Other" ? (
-                      <input
+                    {identityChoice === "Other" && getFormBuilderSection("identity")?.customField?.enabled ? (
+                      <FormBuilderCustomInput
+                        config={getFormBuilderSection("identity")?.customField}
                         value={identityOther}
                         onChange={(e) => setIdentityOther(e.target.value)}
-                        placeholder="Type identity"
                         className="mt-3 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
                       />
                     ) : null}
                   </div>
 
-                  <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
+                  <div className={`${getFormBuilderSection("seeking")?.enabled === false ? "hidden " : ""}rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4`}>
                     <div className="mb-3 border-b border-slate-800 pb-2">
-                      <label className="block text-sm font-semibold text-slate-100">Seeking</label>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">Choose who you are seeking tonight.</p>
+                      <label className="block text-sm font-semibold text-slate-100">{getFormBuilderSection("seeking")?.label || "Seeking"}</label>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">{getFormBuilderSection("seeking")?.prompt || "Choose who you are seeking tonight."}</p>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
-                      {seekingOptions.map((option) => (
+                      {getEnabledFormOptions("seeking", seekingOptions).map((option) => (
                         <button
                           key={option}
                           type="button"
@@ -8282,11 +8557,11 @@ export default function App() {
                       ))}
                     </div>
 
-                    {seekingChoice === "Other" ? (
-                      <input
+                    {seekingChoice === "Other" && getFormBuilderSection("seeking")?.customField?.enabled ? (
+                      <FormBuilderCustomInput
+                        config={getFormBuilderSection("seeking")?.customField}
                         value={seekingOther}
                         onChange={(e) => setSeekingOther(e.target.value)}
-                        placeholder="Type who you are seeking"
                         className="mt-3 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
                       />
                     ) : null}
@@ -8297,19 +8572,19 @@ export default function App() {
                 ) : null}
 
                 <div className={`mt-4 grid gap-4 ${isMenOnlyEntryForm || isDiaperDebaucheryEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-[1fr_0.85fr]"}`}>
-                  {!isMenOnlyEntryForm && !isDiaperDebaucheryEntryForm ? (
+                  {!isMenOnlyEntryForm && !isDiaperDebaucheryEntryForm && getFormBuilderSection("orientation")?.enabled !== false ? (
                   <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold">
-  <span className="text-slate-100">Orientation</span>
+  <span className="text-slate-100">{getFormBuilderSection("orientation")?.label || "Orientation"}</span>
   <span className="mx-1 text-slate-500">|</span>
   <span className="font-normal text-slate-500">Optional</span>
 </label>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">Choose one, or use Other.</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">{getFormBuilderSection("orientation")?.prompt || "Choose one, or use Other."}</p>
                     </div>
 
                     <div className="grid grid-cols-5 gap-2">
-                      {orientationOptions
+                      {getEnabledFormOptions("orientation", orientationOptions)
                         .filter((option) => option !== "Other")
                         .map((option) => (
                           <button
@@ -8327,7 +8602,7 @@ export default function App() {
                         ))}
                     </div>
 
-                    <div className="mt-2 grid gap-2 md:grid-cols-[140px_1fr]">
+                    {getEnabledFormOptions("orientation", orientationOptions).includes("Other") ? <div className="mt-2 grid gap-2 md:grid-cols-[140px_1fr]">
                       <button
                         type="button"
                         onClick={() => setOrientationChoice("Other")}
@@ -8340,11 +8615,11 @@ export default function App() {
                         Other
                       </button>
 
-                      {orientationChoice === "Other" ? (
-                        <input
+                      {orientationChoice === "Other" && getFormBuilderSection("orientation")?.customField?.enabled ? (
+                        <FormBuilderCustomInput
+                          config={getFormBuilderSection("orientation")?.customField}
                           value={orientationOther}
                           onChange={(e) => setOrientationOther(e.target.value)}
-                          placeholder="Type orientation / connection style"
                           className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
                         />
                       ) : (
@@ -8352,11 +8627,11 @@ export default function App() {
                           Use Other if you want to type your own.
                         </div>
                       )}
-                    </div>
+                    </div> : null}
                   </div>
                   ) : null}
 
-                  <div className={`rounded-2xl border p-4 ${
+                  <div className={`${getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMenOnlyEntryForm
                       ? "border-red-900/60 bg-red-950/20 shadow-[0_0_28px_rgba(220,38,38,0.14)]"
                       : "border-slate-700/70 bg-slate-950/60"
@@ -8365,23 +8640,21 @@ export default function App() {
                       isMenOnlyEntryForm ? "border-red-900/40" : "border-slate-800"
                     }`}>
                       <label className="block text-sm font-semibold">
-  <span className={isMenOnlyEntryForm ? "text-red-100" : "text-slate-100"}>{isDiaperDebaucheryEntryForm ? "Vibe Tonight" : "Intention"}</span>
+  <span className={isMenOnlyEntryForm ? "text-red-100" : "text-slate-100"}>{getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.label || (isDiaperDebaucheryEntryForm ? "Vibe Tonight" : "Intention")}</span>
   <span className="mx-1 text-slate-500">|</span>
   <span className="font-normal text-slate-500">Optional</span>
 </label>
                       <p className={`mt-1 text-xs leading-5 ${
                         isMenOnlyEntryForm ? "text-red-100/60" : "text-slate-500"
                       }`}>
-                        {isDiaperDebaucheryEntryForm ? "Choose the vibe you want people to see on the board." : "Choose all that apply."}
+                        {getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.prompt || (isDiaperDebaucheryEntryForm ? "Choose the vibe you want people to see on the board." : "Choose all that apply.")}
                       </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 xl:grid-cols-3">
-                      {(isDiaperDebaucheryEntryForm
-                        ? diaperDebaucheryVibeOptions
-                        : isMensSpankingEntryForm
-                          ? spankingIntentionOptions
-                          : quickTagOptions
+                      {getEnabledFormOptions(
+                        isDiaperDebaucheryEntryForm ? "vibe" : "intention",
+                        isDiaperDebaucheryEntryForm ? diaperDebaucheryVibeOptions : isMensSpankingEntryForm ? spankingIntentionOptions : quickTagOptions
                       ).map((tag) => {
                         const active = quickTags.includes(tag);
 
@@ -8409,17 +8682,17 @@ export default function App() {
                 </div>
 
 
-                {isDiaperDebaucheryEntryForm ? (
+                {isDiaperDebaucheryEntryForm && getFormBuilderSection("lookingFor")?.enabled !== false ? (
                   <div className="krinklesLookingForSection mt-4 rounded-2xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
                     <div className="krinklesLookingForHeader mb-3 border-b border-fuchsia-500/30 pb-2">
-                      <label className="block text-sm font-semibold text-fuchsia-100">Looking For</label>
+                      <label className="block text-sm font-semibold text-fuchsia-100">{getFormBuilderSection("lookingFor")?.label || "Looking For"}</label>
                       <p className="mt-1 text-xs leading-5 text-fuchsia-100/60">
-                        Choose what kind of connection you are open to tonight. This is not consent.
+                        {getFormBuilderSection("lookingFor")?.prompt || "Choose what kind of connection you are open to tonight. This is not consent."}
                       </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-                      {diaperDebaucheryLookingForOptions.map((item) => {
+                      {getEnabledFormOptions("lookingFor", diaperDebaucheryLookingForOptions).map((item) => {
                         const active = lookingForItems.includes(item);
 
                         return (
@@ -8457,17 +8730,16 @@ export default function App() {
                 ) : null}
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                  <div className={`${showSexualPreferenceSection ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
+                  <div className={`${getFormBuilderSection("sexual")?.enabled !== false ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
                     <div className="mb-3 border-b border-red-900/30 pb-2">
-                      <label className="block text-sm font-semibold text-red-100">Sexual Preferences</label>
+                      <label className="block text-sm font-semibold text-red-100">{getFormBuilderSection("sexual")?.label || "Sexual Preferences"}</label>
                       <p className="mt-1 text-xs leading-5 text-red-100/60">
-                        Choose any that apply. Selections are conversation starters, not consent.
+                        {getFormBuilderSection("sexual")?.prompt || "Choose any that apply. Selections are conversation starters, not consent."}
                       </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                      {allSexualPreferenceOptions
-                    .filter((option) => visibleSexualPreferenceOptions.includes(option))
+                      {getEnabledFormOptions("sexual", allSexualPreferenceOptions)
                     .map((option) => {
                           const active = sexualPreferenceItems.includes(option);
                           const isOther = option === "Other";
@@ -8516,20 +8788,21 @@ export default function App() {
                       </div>
                     ) : null}
 
-                    <label className="mt-4 block text-sm font-bold text-red-50">
-                      Type anything else about sexual preferences or safer sex.
+                    {getFormBuilderSection("sexual")?.customField?.enabled ? <><label className="mt-4 block text-sm font-bold text-red-50">
+                      {getFormBuilderSection("sexual")?.customField?.label}
                     </label>
-                    <textarea
+                    {getFormBuilderSection("sexual")?.customField?.multiline !== false ? <textarea
                       id="sexual-preference-input"
                       value={sexualPreferenceInput}
                       onChange={(e) => setSexualPreferenceInput(e.target.value)}
-                      placeholder="Examples: ask me first, condoms only, oral only, safer sex notes, specific limits"
+                      placeholder={getFormBuilderSection("sexual")?.customField?.placeholder || ""}
+                      maxLength={getFormBuilderSection("sexual")?.customField?.maxLength || 160}
                       rows={2}
                       className="mt-2 w-full rounded-2xl border border-red-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-red-300"
-                    />
+                    /> : <input id="sexual-preference-input" value={sexualPreferenceInput} onChange={(e) => setSexualPreferenceInput(e.target.value)} placeholder={getFormBuilderSection("sexual")?.customField?.placeholder || ""} maxLength={getFormBuilderSection("sexual")?.customField?.maxLength || 160} className="mt-2 w-full rounded-2xl border border-red-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-red-300" />}</> : null}
                   </div>
 
-                  <div className={`${showInterestSection ? "" : "hidden"} rounded-2xl border p-4 ${
+                  <div className={`${getFormBuilderSection("interests")?.enabled !== false ? "" : "hidden"} rounded-2xl border p-4 ${
                     isMenOnlyEntryForm
                       ? "border-violet-800/60 bg-violet-950/20 shadow-[0_0_28px_rgba(124,58,237,0.14)]"
                       : "border-amber-700/50 bg-amber-950/10"
@@ -8539,19 +8812,18 @@ export default function App() {
                     }`}>
                       <label className={`block text-sm font-semibold ${
                         isMenOnlyEntryForm ? "text-violet-100" : "text-amber-100"
-                      }`}>{isDiaperDebaucheryEntryForm ? "Kinks | Fetishes | Responsibilities" : "Interests"}</label>
+                      }`}>{getFormBuilderSection("interests")?.label || (isDiaperDebaucheryEntryForm ? "Kinks | Fetishes | Responsibilities" : "Interests")}</label>
                       <p className={`mt-1 text-xs leading-5 ${
                         isMenOnlyEntryForm ? "text-violet-100/60" : "text-amber-100/60"
                       }`}>
-                        {isDiaperDebaucheryEntryForm
+                        {getFormBuilderSection("interests")?.prompt || (isDiaperDebaucheryEntryForm
                           ? "Choose any that apply, then type anything else you want people to know."
-                          : "Choose any that apply. These are conversation starters, not consent."}
+                          : "Choose any that apply. These are conversation starters, not consent.")}
                       </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                        {allInterestOptions
-                          .filter((option) => visibleInterestOptions.includes(option))
+                        {getEnabledFormOptions("interests", allInterestOptions)
                           .map((option) => {
                             const active = interestItems.includes(option);
                             const isOther = option === "Other";
@@ -8610,23 +8882,24 @@ export default function App() {
                       </div>
                     ) : null}
 
-                    <label className={`mt-4 block text-sm font-bold ${
+                    {getFormBuilderSection("interests")?.customField?.enabled ? <><label className={`mt-4 block text-sm font-bold ${
                       isMenOnlyEntryForm ? "text-violet-50" : "text-amber-50"
                     }`}>
-                      {isDiaperDebaucheryEntryForm ? "Type kinks, fetishes, responsibilities, or scene interests." : "Type anything else about your interests, kinks, or scene preferences."}
+                      {getFormBuilderSection("interests")?.customField?.label}
                     </label>
-                    <textarea
+                    {getFormBuilderSection("interests")?.customField?.multiline !== false ? <textarea
                       id="interest-input"
                       value={interestInput}
                       onChange={(e) => setInterestInput(e.target.value)}
-                      placeholder={isDiaperDebaucheryEntryForm ? "Examples: diaper play, impact, service, rope, roleplay, caregiver energy" : "Examples: rope, impact, watching, service, limits, specific interests"}
+                      placeholder={getFormBuilderSection("interests")?.customField?.placeholder || ""}
+                      maxLength={getFormBuilderSection("interests")?.customField?.maxLength || 160}
                       rows={2}
                       className={`mt-2 w-full rounded-2xl border bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 ${
                         isMenOnlyEntryForm
                           ? "border-violet-500/40 focus:border-violet-300"
                           : "border-amber-500/40 focus:border-amber-300"
                       }`}
-                    />
+                    /> : <input id="interest-input" value={interestInput} onChange={(e) => setInterestInput(e.target.value)} placeholder={getFormBuilderSection("interests")?.customField?.placeholder || ""} maxLength={getFormBuilderSection("interests")?.customField?.maxLength || 160} className={`mt-2 w-full rounded-2xl border bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 ${isMenOnlyEntryForm ? "border-violet-500/40 focus:border-violet-300" : "border-amber-500/40 focus:border-amber-300"}`} />}</> : null}
                   </div>
                 </div>
 
