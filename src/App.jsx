@@ -5497,6 +5497,16 @@ export default function App() {
                     </div>
                   </div>
 
+                  <div className="rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Active event TV output</h3>
+                      <p className="mt-1 text-sm leading-6 text-slate-400">Shows the currently activated event exactly as the 1920×1080 display sees it, including slide rotation.</p>
+                    </div>
+                    <div className="mt-4 overflow-hidden rounded-xl border border-slate-700 bg-black" style={{ aspectRatio: "16 / 9", containerType: "inline-size" }}>
+                      <iframe title="Active event television preview" src="?mode=display&backendPreview=events" className="block border-0" style={{ width: "1920px", height: "1080px", transform: "scale(calc(100cqw / 1920))", transformOrigin: "top left", pointerEvents: "none" }} />
+                    </div>
+                  </div>
+
                   <div className="hidden rounded-2xl border border-sky-500/25 bg-slate-900/80 p-5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
@@ -5819,6 +5829,39 @@ export default function App() {
                     </p>
                   </div>
 
+                  <div className="rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">1920 × 1080 TV preview</h3>
+                        <p className="mt-1 text-sm leading-6 text-slate-400">
+                          A scaled copy of the live display. Use it to judge card density, wrapping, columns, and overall fit.
+                        </p>
+                      </div>
+                      <div className="text-xs font-semibold text-violet-200">
+                        {participantDisplayColumns} columns · entry size {boardEntryTextSize > 0 ? `+${boardEntryTextSize}` : boardEntryTextSize} · staff size {staffTextSize > 0 ? `+${staffTextSize}` : staffTextSize}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 overflow-hidden rounded-xl border border-slate-700 bg-black shadow-2xl" style={{ aspectRatio: "16 / 9", containerType: "inline-size" }}>
+                      <iframe
+                        key={`${participantDisplayLayout}-${participantDisplayColumns}-${boardEntryTextSize}-${staffTextSize}-${entryFormPreset}`}
+                        title="Scaled 1920 by 1080 LiveBoard preview"
+                        src="?mode=display&backendPreview=1"
+                        className="block border-0"
+                        style={{
+                          width: "1920px",
+                          height: "1080px",
+                          transform: "scale(calc(100cqw / 1920))",
+                          transformOrigin: "top left",
+                          pointerEvents: "none",
+                        }}
+                      />
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                      Text looks smaller here because the complete TV screen is being reduced to fit your laptop. Its proportions match a 1080p display.
+                    </p>
+                  </div>
+
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <h3 className="text-lg font-semibold text-white">
                       Display Layout
@@ -5968,6 +6011,8 @@ export default function App() {
                 </div>
               ) : activeSetupTab === "Entry Form" ? (
                 <div className="mt-5 space-y-5">
+                  <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.75fr)]">
+                    <div className="space-y-5">
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <div className="mb-3">
                       <div className="text-sm font-semibold text-slate-100">Entry Form Preset</div>
@@ -6121,6 +6166,73 @@ export default function App() {
                         );
                       })}
                     </div>
+                  </div>
+
+                    </div>
+
+                    <aside className="xl:sticky xl:top-5">
+                      <div className="overflow-hidden rounded-2xl border border-violet-400/30 bg-slate-950 shadow-2xl">
+                        <div className="flex items-center justify-between gap-3 border-b border-slate-800 bg-slate-900/90 px-4 py-3">
+                          <div>
+                            <div className="text-sm font-black text-white">Live entry-form preview</div>
+                            <div className="mt-0.5 text-xs text-slate-400">Updates before you save</div>
+                          </div>
+                          <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-violet-200">
+                            {entryFormPreset.replaceAll("_", " ")}
+                          </span>
+                        </div>
+
+                        <div className={`max-h-[calc(100vh-12rem)] overflow-y-auto p-4 ${isDiaperDebaucheryEntryForm ? "bg-gradient-to-br from-fuchsia-950/25 via-slate-950 to-cyan-950/25" : "bg-slate-950"}`}>
+                          <div className="rounded-2xl border border-slate-700 bg-slate-900/75 p-4">
+                            <div className="text-lg font-bold text-white">
+                              {isDiaperDebaucheryEntryForm ? "KrINKles Connection Board" : "Add Entry"}
+                            </div>
+                            <div className="mt-1 text-xs leading-5 text-slate-400">This preview shows the section order, wording, buttons, and custom fields guests will see.</div>
+
+                            <div className="mt-4 space-y-3">
+                              <div>
+                                <div className="mb-1 text-xs font-bold text-slate-200">Name / Scene Name</div>
+                                <div className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-500">Example: “Real Name or Scene Name”</div>
+                              </div>
+
+                              {Object.entries(activeFormBuilderConfig || {}).map(([sectionKey, section]) => {
+                                if (section.enabled === false) return null;
+                                const enabledOptions = (section.options || []).filter((option) => option.enabled !== false);
+                                return (
+                                  <div key={`preview-${sectionKey}`} className="rounded-xl border border-slate-700/80 bg-slate-950/80 p-3">
+                                    <div className="text-xs font-black text-slate-100">{section.label || sectionKey.replace(/([A-Z])/g, " $1")}</div>
+                                    {section.prompt ? <div className="mt-1 text-[11px] leading-4 text-slate-500">{section.prompt}</div> : null}
+                                    {sectionKey === "photo" ? (
+                                      <div className="mt-2 flex items-center gap-2">
+                                        <div className="grid h-12 w-12 place-items-center rounded-lg border border-dashed border-slate-600 text-[9px] text-slate-500">Photo</div>
+                                        <div className="rounded-lg bg-sky-400 px-3 py-2 text-[10px] font-black text-slate-950">Choose photo</div>
+                                      </div>
+                                    ) : enabledOptions.length ? (
+                                      <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {enabledOptions.map((option, optionIndex) => (
+                                          <span key={`preview-${sectionKey}-${option.label}-${optionIndex}`} className="rounded-lg border border-slate-600 bg-slate-900 px-2 py-1 text-[10px] font-semibold text-slate-200">{option.label}</span>
+                                        ))}
+                                      </div>
+                                    ) : null}
+                                    {section.customField?.enabled ? (
+                                      <div className="mt-2">
+                                        {section.customField.label ? <div className="mb-1 text-[10px] font-semibold text-slate-300">{section.customField.label}{section.customField.required ? " *" : ""}</div> : null}
+                                        <div className={`rounded-lg border border-slate-700 bg-slate-950 px-2 py-2 text-[10px] text-slate-600 ${section.customField.multiline !== false ? "min-h-12" : ""}`}>{section.customField.placeholder || "Custom response"}</div>
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                );
+                              })}
+
+                              <div className="flex gap-2 pt-1">
+                                <div className="rounded-lg bg-amber-400 px-3 py-2 text-[10px] font-black text-slate-950">Add to board</div>
+                                <div className="rounded-lg border border-slate-700 px-3 py-2 text-[10px] font-bold text-slate-300">Reset form</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </aside>
                   </div>
 
                   <div className="hidden rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
@@ -6382,6 +6494,16 @@ export default function App() {
                 </div>
               ) : activeSetupTab === "Hosts & DMs" ? (
                 <div className="mt-5 space-y-5">
+                  <div className="rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Live Host / DM display preview</h3>
+                      <p className="mt-1 text-sm leading-6 text-slate-400">The scaled television output shows the saved support row and how it wraps beside the board legend.</p>
+                    </div>
+                    <div className="mt-4 overflow-hidden rounded-xl border border-slate-700 bg-black" style={{ aspectRatio: "16 / 9", containerType: "inline-size" }}>
+                      <iframe key={`staff-${staffTextSize}-${hostEntries.length}-${dmEntries.length}`} title="Host and DM television preview" src="?mode=display&backendPreview=staff" className="block border-0" style={{ width: "1920px", height: "1080px", transform: "scale(calc(100cqw / 1920))", transformOrigin: "top left", pointerEvents: "none" }} />
+                    </div>
+                  </div>
+
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <h3 className="text-2xl font-semibold tracking-tight text-slate-100">
                       Hosts & DMs
