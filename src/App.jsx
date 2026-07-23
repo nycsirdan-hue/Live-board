@@ -15,6 +15,47 @@ const PARTICIPANT_PHOTO_FOLDER = "participant-photos";
 const PARTICIPANT_PHOTO_MARKER = "__LIVEBOARD_PHOTO__:";
 const EVENT_SCHEDULE_PATTERN = /\n?\[\[LIVEBOARD_SCHEDULE:(\{[^\n]*\})\]\]\s*$/;
 
+function ScaledPreviewFrame({ title, src, sourceWidth = 1920, sourceHeight = 1080, refreshKey = "" }) {
+  const frameRef = useRef(null);
+  const [frameWidth, setFrameWidth] = useState(0);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return undefined;
+    const updateWidth = () => setFrameWidth(frame.getBoundingClientRect().width);
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
+
+  const scale = frameWidth > 0 ? frameWidth / sourceWidth : 0;
+
+  return (
+    <div
+      ref={frameRef}
+      className="relative w-full overflow-hidden rounded-xl border border-slate-700 bg-black shadow-2xl"
+      style={{ aspectRatio: `${sourceWidth} / ${sourceHeight}` }}
+    >
+      {scale > 0 ? (
+        <iframe
+          key={refreshKey}
+          title={title}
+          src={src}
+          className="absolute left-0 top-0 block border-0"
+          style={{
+            width: `${sourceWidth}px`,
+            height: `${sourceHeight}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 function getParticipantPhoto(items = []) {
   const marker = items.find(
     (item) => typeof item === "string" && item.startsWith(PARTICIPANT_PHOTO_MARKER)
@@ -5382,7 +5423,7 @@ export default function App() {
         )}
 
         {isSetupTabsMode ? (
-          <div className="mx-auto max-w-6xl rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl">
+          <div className="mx-auto max-w-[2200px] rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl">
             <div>
               <div>
                 <h2 className="text-3xl font-semibold tracking-tight text-slate-100">
@@ -5502,8 +5543,8 @@ export default function App() {
                       <h3 className="text-lg font-semibold text-white">Active event TV output</h3>
                       <p className="mt-1 text-sm leading-6 text-slate-400">Shows the currently activated event exactly as the 1920×1080 display sees it, including slide rotation.</p>
                     </div>
-                    <div className="mt-4 overflow-hidden rounded-xl border border-slate-700 bg-black" style={{ aspectRatio: "16 / 9", containerType: "inline-size" }}>
-                      <iframe title="Active event television preview" src="?mode=display&backendPreview=events" className="block border-0" style={{ width: "1920px", height: "1080px", transform: "scale(calc(100cqw / 1920))", transformOrigin: "top left", pointerEvents: "none" }} />
+                    <div className="mt-4">
+                      <ScaledPreviewFrame title="Active event television preview" src="?mode=display&backendPreview=events" />
                     </div>
                   </div>
 
@@ -5842,19 +5883,11 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="mt-4 overflow-hidden rounded-xl border border-slate-700 bg-black shadow-2xl" style={{ aspectRatio: "16 / 9", containerType: "inline-size" }}>
-                      <iframe
-                        key={`${participantDisplayLayout}-${participantDisplayColumns}-${boardEntryTextSize}-${staffTextSize}-${entryFormPreset}`}
+                    <div className="mt-4">
+                      <ScaledPreviewFrame
                         title="Scaled 1920 by 1080 LiveBoard preview"
                         src="?mode=display&backendPreview=1"
-                        className="block border-0"
-                        style={{
-                          width: "1920px",
-                          height: "1080px",
-                          transform: "scale(calc(100cqw / 1920))",
-                          transformOrigin: "top left",
-                          pointerEvents: "none",
-                        }}
+                        refreshKey={`${participantDisplayLayout}-${participantDisplayColumns}-${boardEntryTextSize}-${staffTextSize}-${entryFormPreset}`}
                       />
                     </div>
                     <p className="mt-2 text-xs leading-5 text-slate-500">
@@ -6011,7 +6044,7 @@ export default function App() {
                 </div>
               ) : activeSetupTab === "Entry Form" ? (
                 <div className="mt-5 space-y-5">
-                  <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.75fr)]">
+                  <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(600px,0.85fr)]">
                     <div className="space-y-5">
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <div className="mb-3">
@@ -6171,7 +6204,25 @@ export default function App() {
                     </div>
 
                     <aside className="xl:sticky xl:top-5">
-                      <div className="overflow-hidden rounded-2xl border border-violet-400/30 bg-slate-950 shadow-2xl">
+                      <div className="rounded-2xl border border-violet-400/30 bg-slate-900/80 p-4 shadow-2xl">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-black text-white">Kiosk entry-form preview</div>
+                            <div className="mt-0.5 text-xs text-slate-400">Exact saved kiosk presentation, scaled to fit</div>
+                          </div>
+                          <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-violet-200">{entryFormPreset.replaceAll("_", " ")}</span>
+                        </div>
+                        <ScaledPreviewFrame
+                          title="Kiosk entry form preview"
+                          src="?mode=entry&kiosk=1&backendPreview=entry"
+                          sourceWidth={1500}
+                          sourceHeight={1900}
+                          refreshKey={`entry-${entryFormPreset}-${JSON.stringify(activeFormBuilderConfig)}`}
+                        />
+                        <p className="mt-2 text-xs leading-5 text-slate-500">The preview reflects the saved kiosk form. Unsaved editor changes appear here after Save form builder is clicked.</p>
+                      </div>
+
+                      <div className="hidden overflow-hidden rounded-2xl border border-violet-400/30 bg-slate-950 shadow-2xl">
                         <div className="flex items-center justify-between gap-3 border-b border-slate-800 bg-slate-900/90 px-4 py-3">
                           <div>
                             <div className="text-sm font-black text-white">Live entry-form preview</div>
@@ -6499,8 +6550,8 @@ export default function App() {
                       <h3 className="text-lg font-semibold text-white">Live Host / DM display preview</h3>
                       <p className="mt-1 text-sm leading-6 text-slate-400">The scaled television output shows the saved support row and how it wraps beside the board legend.</p>
                     </div>
-                    <div className="mt-4 overflow-hidden rounded-xl border border-slate-700 bg-black" style={{ aspectRatio: "16 / 9", containerType: "inline-size" }}>
-                      <iframe key={`staff-${staffTextSize}-${hostEntries.length}-${dmEntries.length}`} title="Host and DM television preview" src="?mode=display&backendPreview=staff" className="block border-0" style={{ width: "1920px", height: "1080px", transform: "scale(calc(100cqw / 1920))", transformOrigin: "top left", pointerEvents: "none" }} />
+                    <div className="mt-4">
+                      <ScaledPreviewFrame refreshKey={`staff-${staffTextSize}-${hostEntries.length}-${dmEntries.length}`} title="Host and DM television preview" src="?mode=display&backendPreview=staff" />
                     </div>
                   </div>
 
