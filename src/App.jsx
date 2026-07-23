@@ -2006,8 +2006,9 @@ export default function App() {
 
   const setupTabOptions = ["Events", "Hosts & DMs", "Entry Form", "Display Sizing", "Entries", "Raffle"];
   const [activeSetupTab, setActiveSetupTab] = useState("Events");
+  const entryUrlParams = new URLSearchParams(window.location.search);
   const isKioskEntryMode =
-    isEntryMode && new URLSearchParams(window.location.search).get("kiosk") === "1";
+    isEntryMode && (entryUrlParams.get("kiosk") === "1" || entryUrlParams.get("directForm") === "1");
 
   const [entries, setEntries] = useState([]);
   const [raffleDraws, setRaffleDraws] = useState([]);
@@ -5423,7 +5424,8 @@ export default function App() {
         )}
 
         {isSetupTabsMode ? (
-          <div className="mx-auto max-w-[2200px] rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl">
+          <div className="mx-auto grid max-w-[2200px] items-start gap-6 xl:grid-cols-2">
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl">
             <div>
               <div>
                 <h2 className="text-3xl font-semibold tracking-tight text-slate-100">
@@ -5538,7 +5540,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
+                  <div className="hidden rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
                     <div>
                       <h3 className="text-lg font-semibold text-white">Active event TV output</h3>
                       <p className="mt-1 text-sm leading-6 text-slate-400">Shows the currently activated event exactly as the 1920×1080 display sees it, including slide rotation.</p>
@@ -5870,7 +5872,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
+                  <div className="hidden rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                       <div>
                         <h3 className="text-lg font-semibold text-white">1920 × 1080 TV preview</h3>
@@ -6044,7 +6046,7 @@ export default function App() {
                 </div>
               ) : activeSetupTab === "Entry Form" ? (
                 <div className="mt-5 space-y-5">
-                  <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(600px,0.85fr)]">
+                  <div className="block">
                     <div className="space-y-5">
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <div className="mb-3">
@@ -6203,7 +6205,7 @@ export default function App() {
 
                     </div>
 
-                    <aside className="xl:sticky xl:top-5">
+                    <aside className="hidden">
                       <div className="rounded-2xl border border-violet-400/30 bg-slate-900/80 p-4 shadow-2xl">
                         <div className="mb-3 flex items-center justify-between gap-3">
                           <div>
@@ -6545,7 +6547,7 @@ export default function App() {
                 </div>
               ) : activeSetupTab === "Hosts & DMs" ? (
                 <div className="mt-5 space-y-5">
-                  <div className="rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
+                  <div className="hidden rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
                     <div>
                       <h3 className="text-lg font-semibold text-white">Live Host / DM display preview</h3>
                       <p className="mt-1 text-sm leading-6 text-slate-400">The scaled television output shows the saved support row and how it wraps beside the board legend.</p>
@@ -7172,6 +7174,41 @@ export default function App() {
                 This tabbed setup screen is still in testing. The original setup page remains available at ?mode=setup.
               </div>
             </div>
+          </div>
+          {(["Events", "Hosts & DMs", "Entry Form", "Display Sizing"].includes(activeSetupTab)) ? (
+            <aside className="xl:sticky xl:top-6">
+              <div className="rounded-3xl border border-violet-400/30 bg-slate-900/80 p-5 shadow-2xl">
+                <div className="mb-4">
+                  <h2 className="text-xl font-semibold text-white">
+                    {activeSetupTab === "Entry Form" ? "Kiosk entry-form preview" : "Live television preview"}
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-slate-400">
+                    {activeSetupTab === "Entry Form"
+                      ? "The kiosk form itself, shown at its normal desktop proportions and scaled to fit this panel."
+                      : "The complete 1920×1080 output, uniformly scaled so every edge of the television screen remains visible."}
+                  </p>
+                </div>
+                {activeSetupTab === "Entry Form" ? (
+                  <>
+                    <ScaledPreviewFrame
+                      title="Kiosk entry form"
+                      src="?mode=entry&directForm=1&backendPreview=form"
+                      sourceWidth={1500}
+                      sourceHeight={1900}
+                      refreshKey={`form-${entryFormPreset}-${JSON.stringify(activeFormBuilderConfig)}`}
+                    />
+                    <p className="mt-3 text-xs leading-5 text-slate-500">This exact kiosk view refreshes after the selected form preset is saved.</p>
+                  </>
+                ) : (
+                  <ScaledPreviewFrame
+                    title={`${activeSetupTab} television preview`}
+                    src={`?mode=display&backendPreview=${encodeURIComponent(activeSetupTab)}`}
+                    refreshKey={`${activeSetupTab}-${participantDisplayLayout}-${participantDisplayColumns}-${boardEntryTextSize}-${staffTextSize}-${hostEntries.length}-${dmEntries.length}`}
+                  />
+                )}
+              </div>
+            </aside>
+          ) : null}
           </div>
         ) : isSetupMode ? (
           <div className="grid gap-5 xl:grid-cols-[430px,minmax(0,1fr)]">
