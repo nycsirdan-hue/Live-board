@@ -1936,7 +1936,7 @@ function VerticalStaffSection({
           }}
         >
           {entries.map((entry, index) => {
-            const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])]
+            const mergedItems = getVisibleEntryItems([...(entry.items || []), ...(entry.custom_items || [])])
               .filter(Boolean)
               .sort((a, b) => a.localeCompare(b));
 
@@ -2906,7 +2906,7 @@ export default function App() {
     const term = setupSearch.trim().toLowerCase();
 
     return participantEntries.filter((entry) => {
-      const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+      const mergedItems = getVisibleEntryItems([...(entry.items || []), ...(entry.custom_items || [])]);
       return (
         entry.name.toLowerCase().includes(term) ||
         (entry.position || "").toLowerCase().includes(term) ||
@@ -6894,7 +6894,7 @@ export default function App() {
                           const query = setupSearch.trim().toLowerCase();
                           const matchesSearch = (entry) => {
                             if (!query) return true;
-                            const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+                            const mergedItems = getVisibleEntryItems([...(entry.items || []), ...(entry.custom_items || [])]);
                             const haystack = [
                               entry.name,
                               entry.position,
@@ -6960,7 +6960,7 @@ export default function App() {
                                 </div>
                               ) : (
                                 column.entries.map((entry) => {
-                                  const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+                                  const mergedItems = getVisibleEntryItems([...(entry.items || []), ...(entry.custom_items || [])]);
 
                                   return (
                                     <div
@@ -8205,7 +8205,7 @@ export default function App() {
                         const query = setupSearch.trim().toLowerCase();
                         const matchesSearch = (entry) => {
                           if (!query) return true;
-                          const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+                          const mergedItems = getVisibleEntryItems([...(entry.items || []), ...(entry.custom_items || [])]);
                           const haystack = [
                             entry.name,
                             entry.position,
@@ -8275,7 +8275,7 @@ export default function App() {
                               </div>
                             ) : (
                               column.entries.map((entry) => {
-                                const mergedItems = [...(entry.items || []), ...(entry.custom_items || [])];
+                                const mergedItems = getVisibleEntryItems([...(entry.items || []), ...(entry.custom_items || [])]);
                                 return (
                                   <div
                                     key={`${column.key}-${entry.id}`}
