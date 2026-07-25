@@ -2832,6 +2832,9 @@ export default function App() {
     if (!availableHandlePlatforms.includes(socialPlatform)) {
       setSocialPlatform(availableHandlePlatforms[0] || "FetLife");
     }
+    if (!availableHandlePlatforms.includes(socialHandleDraftPlatform)) {
+      setSocialHandleDraftPlatform(availableHandlePlatforms[0] || "");
+    }
   }, [entryFormPreset, formBuilderConfigs]); // eslint-disable-line
 
   useEffect(() => {
