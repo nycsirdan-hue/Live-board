@@ -4896,18 +4896,18 @@ export default function App() {
     const finalSpankingExperienceItems =
       isMensSpankingEntryForm && getFormBuilderSection("experience")?.enabled !== false && spankingExperienceLevel ? [spankingExperienceLevel] : [];
 
-    if (getFormBuilderSection("sexual")?.enabled !== false && getFormBuilderSection("sexual")?.customField?.enabled && getFormBuilderSection("sexual")?.customField?.required && !sexualPreferenceInput.trim()) {
+    if (!isMensSpankingEntryForm && getFormBuilderSection("sexual")?.enabled !== false && getFormBuilderSection("sexual")?.customField?.enabled && getFormBuilderSection("sexual")?.customField?.required && !sexualPreferenceInput.trim()) {
       setMessage(`Please complete: ${getFormBuilderSection("sexual")?.customField?.label || "Sexual Preferences"}.`);
       return;
     }
-    if (getFormBuilderSection("interests")?.enabled !== false && getFormBuilderSection("interests")?.customField?.enabled && getFormBuilderSection("interests")?.customField?.required && !interestInput.trim()) {
+    if (!isMensSpankingEntryForm && getFormBuilderSection("interests")?.enabled !== false && getFormBuilderSection("interests")?.customField?.enabled && getFormBuilderSection("interests")?.customField?.required && !interestInput.trim()) {
       setMessage(`Please complete: ${getFormBuilderSection("interests")?.customField?.label || "Interests"}.`);
       return;
     }
     for (const [key, value] of [["topImplements", spankingTopOther], ["bottomImplements", spankingBottomOther], ["limits", spankingLimitsOther]]) {
       const section = getFormBuilderSection(key);
       const sectionApplies = key === "topImplements" ? showSpankingTopSection : key === "bottomImplements" ? showSpankingBottomSection : showSpankingLimitsSection;
-      if (sectionApplies && section?.customField?.enabled && section.customField.required && !String(value || "").trim()) {
+      if (!isMensSpankingEntryForm && sectionApplies && section?.customField?.enabled && section.customField.required && !String(value || "").trim()) {
         setMessage(`Please complete: ${section.customField.label || section.label}.`);
         return;
       }
@@ -4923,6 +4923,7 @@ export default function App() {
     const requiresAtLeastOneDetail = ["sexual", "interests", "intention", "topImplements", "bottomImplements", "limits", "experience"]
       .some((key) => getFormBuilderSection(key)?.enabled !== false && getFormBuilderSection(key));
     if (
+      !isMensSpankingEntryForm &&
       requiresAtLeastOneDetail &&
       finalSexualPreferenceItems.length < 1 &&
       finalInterestItems.length < 1 &&
