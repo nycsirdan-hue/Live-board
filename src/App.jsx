@@ -1192,10 +1192,18 @@ function ParticipantListDisplay({ entries = [], columns = 4 }) {
       };
     }
 
+    if (position === "Switch") {
+      return {
+        accentClass: "bg-sky-500",
+        icon: <DisplayRotateIcon />,
+        iconClass: "text-sky-400",
+      };
+    }
+
     return {
-      accentClass: "bg-sky-500",
-      icon: <DisplayRotateIcon />,
-      iconClass: "text-sky-400",
+      accentClass: "bg-slate-500",
+      icon: null,
+      iconClass: "text-slate-400",
     };
   };
 
@@ -1419,14 +1427,18 @@ function ParticipantListDisplay({ entries = [], columns = 4 }) {
                   >
                     {participantName}
                   </span>
-                  <span className="shrink-0 text-slate-400">|</span>
-                  <span
-                    className={"flex h-9 w-9 shrink-0 items-center justify-center " + meta.iconClass}
-                    role="img"
-                    aria-label={entry.position || "Entry"}
-                  >
-                    {meta.icon}
-                  </span>
+                  {meta.icon ? (
+                    <>
+                      <span className="shrink-0 text-slate-400">|</span>
+                      <span
+                        className={"flex h-9 w-9 shrink-0 items-center justify-center " + meta.iconClass}
+                        role="img"
+                        aria-label={entry.position || "Entry"}
+                      >
+                        {meta.icon}
+                      </span>
+                    </>
+                  ) : null}
                 </div>
 
                 {(entry.who_am_i_text || entry.seeking_text || orientation.length) ? (
@@ -4803,12 +4815,12 @@ export default function App() {
       return;
     }
 
-    if (!name.trim()) {
+    if (!isMensSpankingEntryForm && !name.trim()) {
       setMessage("Please enter a display name.");
       return;
     }
 
-    if (!isConnectionEntryForm && getFormBuilderSection("position")?.enabled !== false && !position) {
+    if (!isMensSpankingEntryForm && !isConnectionEntryForm && getFormBuilderSection("position")?.enabled !== false && !position) {
       setMessage("Please choose Top, Bottom, or Switch.");
       return;
     }
@@ -5006,10 +5018,12 @@ export default function App() {
           : null;
 
     const { error } = await supabase.from("board_entries").insert({
-      name: name.trim(),
+      name: name.trim() || (isMensSpankingEntryForm ? "Anonymous" : ""),
       social_handle: handleValue || null,
       social_platform: platformValue || null,
-      position: isConnectionEntryForm || getFormBuilderSection("position")?.enabled === false ? "Switch" : position,
+      position: isConnectionEntryForm || getFormBuilderSection("position")?.enabled === false
+        ? "Switch"
+        : position,
       who_am_i_text: finalWhoAmI || null,
       seeking_text: finalSeeking || null,
       items: standardItems.sort((a, b) => a.localeCompare(b)),
