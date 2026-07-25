@@ -2026,6 +2026,10 @@ export default function App() {
   const [displayNow, setDisplayNow] = useState(() => new Date());
   const [raffleSaving, setRaffleSaving] = useState(false);
   const [lastRemovedEntry, setLastRemovedEntry] = useState(null);
+  const [editingEntryId, setEditingEntryId] = useState(null);
+  const [editingEntryName, setEditingEntryName] = useState("");
+  const [entryEditSaving, setEntryEditSaving] = useState(false);
+  const undoRemovalTimerRef = useRef(null);
   const [settings, setSettings] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -3073,6 +3077,7 @@ export default function App() {
         }, 1500)
       : null;
     const settingsRefreshInterval = !isSetupMode ? window.setInterval(loadSettings, 1000) : null;
+    const backendEntriesRefreshInterval = isSetupMode ? window.setInterval(loadEntries, 1500) : null;
 
     const channel = supabase
       .channel("board-live")
@@ -3098,6 +3103,7 @@ export default function App() {
       window.clearInterval(raffleRefreshInterval);
       if (liveBoardRefreshInterval) window.clearInterval(liveBoardRefreshInterval);
       if (settingsRefreshInterval) window.clearInterval(settingsRefreshInterval);
+      if (backendEntriesRefreshInterval) window.clearInterval(backendEntriesRefreshInterval);
       supabase.removeChannel(channel);
     };
   }, []);
@@ -5214,6 +5220,8 @@ export default function App() {
       return;
     }
 
+    setEntries((current) => current.filter((entry) => entry.id !== id));
+
     if (entryToRemove) {
       setLastRemovedEntry(entryToRemove);
       setMessage(`${entryToRemove.name} removed.`);
@@ -5221,6 +5229,12 @@ export default function App() {
       setLastRemovedEntry({ id, name: "Entry" });
       setMessage("Entry removed.");
     }
+
+    if (undoRemovalTimerRef.current) window.clearTimeout(undoRemovalTimerRef.current);
+    undoRemovalTimerRef.current = window.setTimeout(() => {
+      setLastRemovedEntry(null);
+      undoRemovalTimerRef.current = null;
+    }, 8000);
 
     setTimeout(() => {
       setMessage((current) =>
@@ -5242,10 +5256,62 @@ export default function App() {
       return;
     }
 
+    setEntries((current) =>
+      current.some((entry) => entry.id === lastRemovedEntry.id)
+        ? current
+        : [lastRemovedEntry, ...current]
+    );
+    if (undoRemovalTimerRef.current) {
+      window.clearTimeout(undoRemovalTimerRef.current);
+      undoRemovalTimerRef.current = null;
+    }
     setMessage(`${lastRemovedEntry.name || "Entry"} restored.`);
     setLastRemovedEntry(null);
     setTimeout(() => setMessage(""), 2500);
   };
+
+  const startEditingEntry = (entry) => {
+    setEditingEntryId(entry.id);
+    setEditingEntryName(entry.name || "");
+  };
+
+  const cancelEditingEntry = () => {
+    setEditingEntryId(null);
+    setEditingEntryName("");
+  };
+
+  const saveEntryName = async (entry) => {
+    const nextName = editingEntryName.trim();
+    if (!supabase || !nextName) {
+      setMessage("Please enter a name before saving.");
+      return;
+    }
+
+    setEntryEditSaving(true);
+    const { error } = await supabase
+      .from("board_entries")
+      .update({ name: nextName })
+      .eq("id", entry.id);
+    setEntryEditSaving(false);
+
+    if (error) {
+      setMessage(`Could not update entry: ${error.message}`);
+      return;
+    }
+
+    setEntries((current) =>
+      current.map((currentEntry) =>
+        currentEntry.id === entry.id ? { ...currentEntry, name: nextName } : currentEntry
+      )
+    );
+    cancelEditingEntry();
+    setMessage(`${nextName} updated.`);
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  useEffect(() => () => {
+    if (undoRemovalTimerRef.current) window.clearTimeout(undoRemovalTimerRef.current);
+  }, []);
 
   const clearBoard = async () => {
     if (!supabase) return;
@@ -6899,13 +6965,30 @@ export default function App() {
                                     >
                                       <div className="flex flex-wrap items-start justify-between gap-3">
                                         <div>
-                                          <div className="text-base font-semibold">
-                                            {column.key === "hostdm"
-                                              ? entry.entry_kind === "dm"
-                                                ? entry.name
-                                                : `${entry.name} | ${entry.position || "Host"}`
-                                              : entry.name}
-                                          </div>
+                                          {editingEntryId === entry.id ? (
+                                            <div className="flex flex-wrap items-center gap-2">
+                                              <input
+                                                value={editingEntryName}
+                                                onChange={(event) => setEditingEntryName(event.target.value)}
+                                                onKeyDown={(event) => {
+                                                  if (event.key === "Enter") saveEntryName(entry);
+                                                  if (event.key === "Escape") cancelEditingEntry();
+                                                }}
+                                                autoFocus
+                                                className="min-w-0 flex-1 rounded-lg border border-sky-400 bg-slate-950 px-2 py-1 text-sm text-white outline-none"
+                                              />
+                                              <button type="button" onClick={() => saveEntryName(entry)} disabled={entryEditSaving} className="rounded-lg bg-sky-400 px-2 py-1 text-xs font-bold text-slate-950 disabled:opacity-50">Save</button>
+                                              <button type="button" onClick={cancelEditingEntry} className="rounded-lg border border-slate-600 px-2 py-1 text-xs text-slate-300">Cancel</button>
+                                            </div>
+                                          ) : (
+                                            <div className="text-base font-semibold">
+                                              {column.key === "hostdm"
+                                                ? entry.entry_kind === "dm"
+                                                  ? entry.name
+                                                  : `${entry.name} | ${entry.position || "Host"}`
+                                                : entry.name}
+                                            </div>
+                                          )}
 
                                           {entry.social_handle ? (
                                             <div className="mt-1 text-sm text-slate-400">
@@ -6930,13 +7013,16 @@ export default function App() {
                                           ) : null}
                                         </div>
 
-                                        <button
-                                          type="button"
-                                          onClick={() => removeEntry(entry.id)}
-                                          className="rounded-lg bg-rose-500/10 px-2 py-1 text-xs text-rose-200 hover:bg-rose-500/20"
-                                        >
-                                          Remove
-                                        </button>
+                                        <div className="flex shrink-0 gap-2">
+                                          <button type="button" onClick={() => startEditingEntry(entry)} className="rounded-lg bg-sky-500/10 px-2 py-1 text-xs text-sky-200 hover:bg-sky-500/20">Edit</button>
+                                          <button
+                                            type="button"
+                                            onClick={() => removeEntry(entry.id)}
+                                            className="rounded-lg bg-rose-500/10 px-2 py-1 text-xs text-rose-200 hover:bg-rose-500/20"
+                                          >
+                                            Remove
+                                          </button>
+                                        </div>
                                       </div>
 
                                       {mergedItems.length > 0 ? (
