@@ -837,16 +837,20 @@ function SocialHandleDisplay({ platform, handle }) {
 
   const knownPlatforms = ["Instagram / IG", "Instagram", "FetLife", "Bluesky", "Twitter", "X", "Whappz", "Telegram", "Other"];
   const lines = rawHandle.split(/\n+/).map((line) => line.trim()).filter(Boolean);
-  const displayLines = platform
-    ? [{ platform, handle: rawHandle }]
-    : lines.map((line) => {
-        const match = line.match(/^([^:]+):\s*(.+)$/);
-        const parsedPlatform = match?.[1]?.trim() || "";
-        const recognized = knownPlatforms.find((name) => name.toLowerCase() === parsedPlatform.toLowerCase());
-        return recognized
-          ? { platform: recognized, handle: match[2].trim() }
-          : { platform: "Other", handle: line };
-      });
+  const parsedLines = lines.map((line) => {
+    const match = line.match(/^([^:]+):\s*(.+)$/);
+    const parsedPlatform = match?.[1]?.trim() || "";
+    const recognized = knownPlatforms.find((name) => name.toLowerCase() === parsedPlatform.toLowerCase());
+    return recognized
+      ? { platform: recognized, handle: match[2].trim(), explicitlyLabeled: true }
+      : { platform: platform || "Other", handle: line, explicitlyLabeled: false };
+  });
+  const hasExplicitPlatformLabels = parsedLines.some((line) => line.explicitlyLabeled);
+  const displayLines = hasExplicitPlatformLabels
+    ? parsedLines
+    : platform
+      ? [{ platform, handle: rawHandle }]
+      : parsedLines;
 
   return (
     <span className="grid w-full grid-cols-2 gap-x-3 gap-y-1">
