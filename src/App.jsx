@@ -5720,7 +5720,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="hidden rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <h3 className="text-lg font-semibold text-white">
                       {editingEventDisplayId ? "Edit Event Display" : "Create Event Display"}
                     </h3>
@@ -5732,7 +5732,7 @@ export default function App() {
 
                     <div className="mt-4 grid gap-4">
                       <div>
-                        <label className="mb-2 block text-sm font-semibold">Event display name</label>
+                        <label className="mb-2 block text-sm font-semibold">Event title</label>
                         <input
                           value={displayEventName}
                           onChange={(e) => setDisplayEventName(e.target.value)}
