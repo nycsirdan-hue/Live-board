@@ -387,6 +387,8 @@ const REMOVED_ENTRY_OPTION_PREFIX = "__liveboard_removed_option__:";
 const PARTICIPANT_PHOTO_SETTING_PREFIX = "__liveboard_setting__:participant_photos=";
 const TELEGRAM_SETTING_PREFIX = "__liveboard_setting__:telegram=";
 const PARTICIPANT_COLUMNS_SETTING_PREFIX = "__liveboard_setting__:participant_columns=";
+const DISPLAY_RULES_SETTING_PREFIX = "__liveboard_setting__:display_rules=";
+const ENTRY_FILL_SETTING_PREFIX = "__liveboard_setting__:entry_fill=";
 
 const getRemovedEntryOptionMarker = (option) => REMOVED_ENTRY_OPTION_PREFIX + option;
 const isRemovedEntryOptionMarker = (option) =>
@@ -430,6 +432,28 @@ const withParticipantColumnsSetting = (options, columns) => [
 ];
 const withoutParticipantColumnsSetting = (options) =>
   (options || []).filter((option) => !isParticipantColumnsSettingMarker(option));
+const isDisplayRulesSettingMarker = (option) =>
+  String(option || "").startsWith(DISPLAY_RULES_SETTING_PREFIX);
+const getDisplayRulesSetting = (options) => {
+  const marker = (options || []).find(isDisplayRulesSettingMarker);
+  return marker ? marker === DISPLAY_RULES_SETTING_PREFIX + "on" : true;
+};
+const withDisplayRulesSetting = (options, enabled) => [
+  ...(options || []).filter((option) => !isDisplayRulesSettingMarker(option)),
+  DISPLAY_RULES_SETTING_PREFIX + (enabled ? "on" : "off"),
+];
+const withoutDisplayRulesSetting = (options) =>
+  (options || []).filter((option) => !isDisplayRulesSettingMarker(option));
+const isEntryFillSettingMarker = (option) => String(option || "").startsWith(ENTRY_FILL_SETTING_PREFIX);
+const getEntryFillSetting = (options) => {
+  const marker = (options || []).find(isEntryFillSettingMarker);
+  return marker?.slice(ENTRY_FILL_SETTING_PREFIX.length) === "column" ? "column" : "row";
+};
+const withEntryFillSetting = (options, direction) => [
+  ...(options || []).filter((option) => !isEntryFillSettingMarker(option)),
+  ENTRY_FILL_SETTING_PREFIX + (direction === "column" ? "column" : "row"),
+];
+const withoutEntryFillSetting = (options) => (options || []).filter((option) => !isEntryFillSettingMarker(option));
 const quickTagOptions = ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"];
 
 const diaperDebaucheryVibeOptions = [
@@ -1165,7 +1189,7 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
-function ParticipantListDisplay({ entries = [], columns = 4 }) {
+function ParticipantListDisplay({ entries = [], columns = 4, fillDirection = "row" }) {
   const maxLineLength = 40;
 
   const getPositionRank = (entry) => {
@@ -1323,12 +1347,17 @@ function ParticipantListDisplay({ entries = [], columns = 4 }) {
         className="w-full"
         style={{
           height: "calc(100vh - 15.5rem)",
-          display: "flex",
-          flexFlow: "column wrap",
-          alignContent: "flex-start",
-          alignItems: "flex-start",
-          rowGap: "0.625rem",
-          columnGap: "0.625rem",
+          display: fillDirection === "column" ? "flex" : "grid",
+          ...(fillDirection === "column"
+            ? { flexFlow: "column wrap", alignContent: "flex-start" }
+            : {
+                gridTemplateColumns: `repeat(${clampParticipantColumns(columns)}, minmax(0, 1fr))`,
+                gridAutoFlow: "row",
+              }),
+          alignContent: "start",
+          alignItems: "start",
+          gap: "0.625rem",
+          overflow: "hidden",
         }}
       >
         {sortedEntries.map((entry) => {
@@ -1402,8 +1431,9 @@ function ParticipantListDisplay({ entries = [], columns = 4 }) {
               className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
-                width: `calc((100vw - ${(clampParticipantColumns(columns) - 1) * 0.625}rem - 3rem) / ${clampParticipantColumns(columns)})`,
-                flex: "0 0 auto",
+                width: fillDirection === "column"
+                  ? `calc((100vw - ${(clampParticipantColumns(columns) - 1) * 0.625}rem - 3rem) / ${clampParticipantColumns(columns)})`
+                  : "100%",
                 breakInside: "avoid",
                 WebkitColumnBreakInside: "avoid",
                 pageBreakInside: "avoid",
@@ -2134,6 +2164,8 @@ export default function App() {
   const [setupVenueName, setSetupVenueName] = useState("");
   const [layoutSettings, setLayoutSettings] = useState(defaultDisplayLayout);
   const [participantDisplayColumns, setParticipantDisplayColumns] = useState(4);
+  const [displayRulesEnabled, setDisplayRulesEnabled] = useState(true);
+  const [entryFillDirection, setEntryFillDirection] = useState("row");
   const [formBuilderConfigs, setFormBuilderConfigs] = useState(createDefaultFormBuilderConfigs);
   const [formBuilderNewOptions, setFormBuilderNewOptions] = useState({});
   const [activeEventDisplayId, setActiveEventDisplayId] = useState(() => {
@@ -2311,12 +2343,18 @@ export default function App() {
     configs = formBuilderConfigs,
     columns = participantDisplayColumns
   ) => withFormBuilderSetting(
-    withParticipantColumnsSetting(
-      withTelegramSetting(
-        withParticipantPhotoSetting(baseOptions, allowParticipantPhotos),
-        allowTelegram
+    withEntryFillSetting(
+      withDisplayRulesSetting(
+        withParticipantColumnsSetting(
+        withTelegramSetting(
+          withParticipantPhotoSetting(baseOptions, allowParticipantPhotos),
+          allowTelegram
+        ),
+          columns
+        ),
+        displayRulesEnabled
       ),
-      columns
+      entryFillDirection
     ),
     configs
   );
@@ -3042,11 +3080,17 @@ export default function App() {
           setAllowParticipantPhotos(getParticipantPhotoSetting(data.custom_interest_options));
           setAllowTelegram(getTelegramSetting(data.custom_interest_options));
           setParticipantDisplayColumns(getParticipantColumnsSetting(data.custom_interest_options));
+          setDisplayRulesEnabled(getDisplayRulesSetting(data.custom_interest_options));
+          setEntryFillDirection(getEntryFillSetting(data.custom_interest_options));
           setFormBuilderConfigs(getFormBuilderSetting(data.custom_interest_options));
           setCustomInterestOptions(
             withoutFormBuilderSetting(
-              withoutParticipantColumnsSetting(
-                withoutTelegramSetting(withoutParticipantPhotoSetting(data.custom_interest_options))
+              withoutEntryFillSetting(
+                withoutDisplayRulesSetting(
+                  withoutParticipantColumnsSetting(
+                  withoutTelegramSetting(withoutParticipantPhotoSetting(data.custom_interest_options))
+                  )
+                )
               )
             )
           );
@@ -3276,6 +3320,87 @@ export default function App() {
     setParticipantDisplayColumns(columns);
     setSettings(data);
     setMessage(`Participant display changed to ${columns} columns.`);
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const updateDisplayRulesEnabled = async (enabled) => {
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const payload = {
+      custom_interest_options: withFormBuilderSetting(
+        withEntryFillSetting(withDisplayRulesSetting(
+          withParticipantColumnsSetting(
+            withTelegramSetting(
+              withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+              allowTelegram
+            ),
+            participantDisplayColumns
+          ),
+          enabled
+        ), entryFillDirection),
+        formBuilderConfigs
+      ),
+      updated_at: new Date().toISOString(),
+    };
+    const query = settings?.id
+      ? supabase.from("board_settings").update(payload).eq("id", settings.id)
+      : supabase.from("board_settings").insert({
+          event_name: setupEventName || defaultConfig.eventName,
+          venue_name: setupVenueName || defaultConfig.venueName,
+          display_mode: "liveboard",
+          ...payload,
+        });
+    const { data, error } = await query.select("*").single();
+
+    if (error) {
+      setMessage("Could not update the rules overlay: " + error.message);
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
+    setDisplayRulesEnabled(enabled);
+    setSettings(data);
+    setMessage(`Rules overlay ${enabled ? "enabled" : "disabled"}.`);
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const updateEntryFillDirection = async (direction) => {
+    const nextDirection = direction === "column" ? "column" : "row";
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      return;
+    }
+    const payload = {
+      custom_interest_options: withFormBuilderSetting(
+        withEntryFillSetting(
+          withDisplayRulesSetting(
+            withParticipantColumnsSetting(
+              withTelegramSetting(withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos), allowTelegram),
+              participantDisplayColumns
+            ),
+            displayRulesEnabled
+          ),
+          nextDirection
+        ),
+        formBuilderConfigs
+      ),
+      updated_at: new Date().toISOString(),
+    };
+    const query = settings?.id
+      ? supabase.from("board_settings").update(payload).eq("id", settings.id)
+      : supabase.from("board_settings").insert({ event_name: setupEventName || defaultConfig.eventName, venue_name: setupVenueName || defaultConfig.venueName, display_mode: "liveboard", ...payload });
+    const { data, error } = await query.select("*").single();
+    if (error) {
+      setMessage("Could not update entry direction: " + error.message);
+      return;
+    }
+    setEntryFillDirection(nextDirection);
+    setSettings(data);
+    setMessage(nextDirection === "row" ? "Entries now fill left to right." : "Entries now fill top to bottom.");
     setTimeout(() => setMessage(""), 2500);
   };
 
@@ -6026,6 +6151,41 @@ export default function App() {
                         }`}>
                           One continuous list: Tops first, Bottoms second, Switches third.
                         </div>
+                      </button>
+                    </div>
+
+                    <div className="mt-5 border-t border-slate-800 pt-5">
+                      <div className="font-semibold text-white">Entry Fill Direction</div>
+                      <p className="mt-1 text-sm text-slate-400">Choose where the next participant tile appears.</p>
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        {[{ value: "row", label: "Left to Right" }, { value: "column", label: "Top to Bottom" }].map((option) => (
+                          <button key={option.value} type="button" onClick={() => updateEntryFillDirection(option.value)} className={`rounded-2xl border px-4 py-3 font-black ${entryFillDirection === option.value ? "border-sky-300 bg-sky-400 text-slate-950" : "border-slate-700 bg-slate-950 text-slate-100"}`}>
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">Studio 125 Rules Overlay</h3>
+                        <p className="mt-1 text-sm leading-6 text-slate-400">
+                          Show the rules across the bottom of the public display while guests join the board.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => updateDisplayRulesEnabled(!displayRulesEnabled)}
+                        aria-pressed={displayRulesEnabled}
+                        className={`min-w-32 rounded-2xl border px-5 py-3 font-black transition ${
+                          displayRulesEnabled
+                            ? "border-emerald-300 bg-emerald-400 text-slate-950"
+                            : "border-slate-700 bg-slate-950 text-slate-200"
+                        }`}
+                      >
+                        {displayRulesEnabled ? "Enabled" : "Disabled"}
                       </button>
                     </div>
                   </div>
@@ -9342,6 +9502,17 @@ export default function App() {
           >
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
 
+            {displayRulesEnabled && !isRaffleDisplayActive ? (
+              <aside className="displayRulesOverlay" aria-label="Studio 125 rules">
+                <img
+                  src="/SSF-Studio-125-rules.png"
+                  alt="Studio 125 rules: phones and photos, safe, sane, and consensual guidance"
+                  className="displayRulesOverlayImage"
+                  draggable="false"
+                />
+              </aside>
+            ) : null}
+
             {isRaffleDisplayActive && currentRaffleDraw ? (
           <div className={
             currentRaffleDraw.status === "winner"
@@ -9505,6 +9676,7 @@ export default function App() {
                 <ParticipantListDisplay
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   columns={participantDisplayColumns}
+                  fillDirection={entryFillDirection}
                 />
               </div>
             ) : (

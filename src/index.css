@@ -2358,6 +2358,28 @@ body:has(.displayBoardSurface) #root {
     0 0 22px rgba(217, 70, 239, 0.08) !important;
 }
 
+/* Bottom rules overlay. The source artwork is a full 16:9 frame; crop it to its
+   lower content area so the board remains visible while the rules are readable. */
+.displayRulesOverlay {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 9000;
+  height: min(51vh, 552px);
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+}
+
+.displayRulesOverlayImage {
+  position: absolute;
+  inset: auto 0 0;
+  display: block;
+  width: 100vw;
+  height: auto;
+  max-width: none;
+  user-select: none;
+}
+
 /* Keep Host/DM content inside the header space available before the legend. */
 .displayStaffRowCombined,
 .displayStaffRowCombined > .displaySectionCard,
