@@ -5696,48 +5696,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className={`mx-auto max-w-[2400px] ${isDisplayMode ? "p-2" : "p-5 md:p-8"}`}>
         <div className={`mb-6 ${isDisplayMode ? "mb-8" : ""}`}>
-          {isDisplayMode ? (
-            <div className="grid items-start gap-[0.375rem] xl:grid-cols-[minmax(520px,1fr)_minmax(760px,1.35fr)_auto]">
-              <div className="xl:col-span-2">
-                <h1 className="flex items-end gap-3 text-8xl md:text-9xl font-bold tracking-tight">
-                  <span>{appConfig.eventName}</span>
-                  <span className="text-slate-400 leading-none">|</span>
-                  <span className="text-3xl md:text-[2.4rem] font-medium tracking-[0.08em] text-slate-400 leading-none pb-1">
-                    {appConfig.venueName}
-                  </span>
-                </h1>
-              </div>
-
-              <div className="flex items-center justify-end pr-2">
-                <img
-                  src={DISPLAY_LOGO_SRC}
-                  alt="Sanctuary Sessions logo"
-                  className="h-[110px] w-auto object-contain md:h-[140px]"
-                />
-              </div>
-
-              <div className="min-w-0">
-                <VerticalStaffSection
-                    title="Hosts"
-                    entries={hostEntries}
-                    maxRows={displayLayout.host_max_rows}
-                    maxCols={displayLayout.host_max_cols}
-                    theme={{ outer: "displayThemeHost", inner: "displayThemeHostInner" }}
-                  />
-              </div>
-
-              <div className="min-w-0 xl:col-span-2">
-                <DisplaySection
-                  title="Dungeon Monitors"
-                  entries={dmEntries}
-                  theme={sectionThemes.DM}
-                  maxRows={displayLayout.dm_max_rows}
-                  maxCols={displayLayout.dm_max_cols}
-                  isDM
-                />
-              </div>
-            </div>
-          ) : (
+          {isDisplayMode ? null : (
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 {isEntryMode ? (

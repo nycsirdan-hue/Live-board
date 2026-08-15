@@ -2673,34 +2673,44 @@ body:has(.displayBoardSurface) #root {
   transform-origin: left top !important;
 }
 
-.displayBoardSurface > :not(.automaticFitWatermark) {
-  transition: opacity 0.5s ease-in-out;
-}
-
 .automaticFitWatermark {
   position: fixed;
   inset: 0;
-  z-index: 9998;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.5s ease-in-out;
+  visibility: hidden;
+  background:
+    radial-gradient(circle at 8% 18%, rgba(255, 36, 93, 0.32), transparent 32%),
+    radial-gradient(circle at 92% 18%, rgba(44, 167, 255, 0.30), transparent 34%),
+    linear-gradient(90deg,
+      rgba(125, 0, 42, 0.92) 0%,
+      rgba(4, 7, 18, 1) 38%,
+      rgba(4, 7, 18, 1) 62%,
+      rgba(0, 69, 150, 0.92) 100%
+    ),
+    #02050d;
+  transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s;
 }
 
 .automaticFitWatermark img {
   width: min(72vw, 86rem);
   max-height: 68vh;
   object-fit: contain;
-  opacity: 0.62;
-  filter: brightness(1.8) contrast(1.08);
+  opacity: 0.76;
+  filter: brightness(2.6) contrast(1.08);
 }
 
 .displayBoardSurface.automaticFitTransitioning > :not(.automaticFitWatermark) {
   opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 .displayBoardSurface.automaticFitTransitioning .automaticFitWatermark {
   opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
 }
