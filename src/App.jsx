@@ -390,6 +390,7 @@ const PARTICIPANT_COLUMNS_SETTING_PREFIX = "__liveboard_setting__:participant_co
 const DISPLAY_SIZING_MODE_SETTING_PREFIX = "__liveboard_setting__:display_sizing_mode=";
 const DISPLAY_RULES_SETTING_PREFIX = "__liveboard_setting__:display_rules=";
 const ENTRY_FILL_SETTING_PREFIX = "__liveboard_setting__:entry_fill=";
+const LEGEND_PRESET_SETTING_PREFIX = "__liveboard_setting__:legend_preset=";
 
 const getRemovedEntryOptionMarker = (option) => REMOVED_ENTRY_OPTION_PREFIX + option;
 const isRemovedEntryOptionMarker = (option) =>
@@ -471,6 +472,17 @@ const withEntryFillSetting = (options, direction) => [
   ENTRY_FILL_SETTING_PREFIX + (direction === "column" ? "column" : "row"),
 ];
 const withoutEntryFillSetting = (options) => (options || []).filter((option) => !isEntryFillSettingMarker(option));
+const isLegendPresetSettingMarker = (option) => String(option || "").startsWith(LEGEND_PRESET_SETTING_PREFIX);
+const getLegendPresetSetting = (options) => {
+  const marker = (options || []).find(isLegendPresetSettingMarker);
+  const value = marker?.slice(LEGEND_PRESET_SETTING_PREFIX.length);
+  return ["automatic", "standard", "mens_spanking"].includes(value) ? value : "automatic";
+};
+const withLegendPresetSetting = (options, preset) => [
+  ...(options || []).filter((option) => !isLegendPresetSettingMarker(option)),
+  LEGEND_PRESET_SETTING_PREFIX + (["standard", "mens_spanking"].includes(preset) ? preset : "automatic"),
+];
+const withoutLegendPresetSetting = (options) => (options || []).filter((option) => !isLegendPresetSettingMarker(option));
 
 const quickTagOptions = ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"];
 
@@ -1207,7 +1219,7 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
-function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, setAutomaticFitting = null, fillDirection = "row", textSizeStep = 0 }) {
+function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, setAutomaticFitting = null, fillDirection = "row", textSizeStep = 0, spankingLegend = false }) {
   const maxLineLength = 40;
   const listRef = useRef(null);
 
@@ -1551,8 +1563,8 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
                 ) : null}
 
                 <div className={`${participantPhoto ? "clear-left" : ""} mt-2 min-w-0 space-y-1`}>
-                  {renderDetail("🔵", topGive)}
-                  {renderDetail("🟢", bottomReceive)}
+                  {renderDetail(spankingLegend ? <span className="text-red-400"><DisplayUpArrowIcon /></span> : "🔵", topGive)}
+                  {renderDetail(spankingLegend ? <span className="text-emerald-400"><DisplayDownArrowIcon /></span> : "🟢", bottomReceive)}
                   {renderDetail("⛔", limits)}
                   {renderDetail("🟠", experience)}
                   {renderDetail("👀", interests.length ? interests : plainItems)}
@@ -2294,6 +2306,7 @@ export default function App() {
       return "standard";
     }
   });
+  const [legendPreset, setLegendPreset] = useState("automatic");
 
   const [visibleSexualPreferenceOptions, setVisibleSexualPreferenceOptions] = useState(() => {
     try {
@@ -2415,7 +2428,7 @@ export default function App() {
     configs = formBuilderConfigs,
     columns = participantDisplayColumns,
     sizingMode = displaySizingMode
-  ) => withFormBuilderSetting(
+  ) => withLegendPresetSetting(withFormBuilderSetting(
     withEntryFillSetting(
       withDisplayRulesSetting(
         withDisplaySizingModeSetting(
@@ -2433,7 +2446,7 @@ export default function App() {
       entryFillDirection
     ),
     configs
-  );
+  ), legendPreset);
 
   const allSexualPreferenceOptions = useMemo(() => {
     const removedOptions = new Set(
@@ -3208,9 +3221,10 @@ export default function App() {
           setDisplaySizingMode(getDisplaySizingModeSetting(data.custom_interest_options));
           setDisplayRulesEnabled(getDisplayRulesSetting(data.custom_interest_options));
           setEntryFillDirection(getEntryFillSetting(data.custom_interest_options));
+          setLegendPreset(getLegendPresetSetting(data.custom_interest_options));
           setFormBuilderConfigs(getFormBuilderSetting(data.custom_interest_options));
           setCustomInterestOptions(
-            withoutFormBuilderSetting(
+            withoutLegendPresetSetting(withoutFormBuilderSetting(
               withoutEntryFillSetting(
                 withoutDisplayRulesSetting(
                   withoutDisplaySizingModeSetting(
@@ -3220,7 +3234,7 @@ export default function App() {
                   )
                 )
               )
-            )
+            ))
           );
         }
       }
@@ -3499,7 +3513,7 @@ export default function App() {
     }
 
     const payload = {
-      custom_interest_options: withFormBuilderSetting(
+      custom_interest_options: withLegendPresetSetting(withFormBuilderSetting(
         withEntryFillSetting(withDisplayRulesSetting(
           withDisplaySizingModeSetting(
             withParticipantColumnsSetting(
@@ -3514,7 +3528,7 @@ export default function App() {
           enabled
         ), entryFillDirection),
         formBuilderConfigs
-      ),
+      ), legendPreset),
       updated_at: new Date().toISOString(),
     };
     const query = settings?.id
@@ -3546,7 +3560,7 @@ export default function App() {
       return;
     }
     const payload = {
-      custom_interest_options: withFormBuilderSetting(
+      custom_interest_options: withLegendPresetSetting(withFormBuilderSetting(
         withEntryFillSetting(
           withDisplayRulesSetting(
             withDisplaySizingModeSetting(
@@ -3561,7 +3575,7 @@ export default function App() {
           nextDirection
         ),
         formBuilderConfigs
-      ),
+      ), legendPreset),
       updated_at: new Date().toISOString(),
     };
     const query = settings?.id
@@ -3934,6 +3948,41 @@ export default function App() {
             : "Standard";
 
     setMessage("Entry form switched to " + label + ".");
+    setTimeout(() => setMessage(""), 2500);
+  };
+
+  const updateLegendPreset = async (nextPreset) => {
+    const normalizedPreset = ["standard", "mens_spanking"].includes(nextPreset) ? nextPreset : "automatic";
+    setLegendPreset(normalizedPreset);
+
+    if (!supabase) {
+      setMessage("Legend changed locally, but Supabase connection is missing.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const payload = {
+      custom_interest_options: withLegendPresetSetting(buildSettingsCustomInterestOptions(), normalizedPreset),
+      updated_at: new Date().toISOString(),
+    };
+    const query = settings?.id
+      ? supabase.from("board_settings").update(payload).eq("id", settings.id)
+      : supabase.from("board_settings").insert({
+          event_name: setupEventName || defaultConfig.eventName,
+          venue_name: setupVenueName || defaultConfig.venueName,
+          display_mode: "liveboard",
+          ...payload,
+        });
+    const { data, error } = await query.select("*").single();
+
+    if (error) {
+      setMessage("Could not update the display legend: " + error.message);
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
+    setSettings(data);
+    setMessage("Display legend updated.");
     setTimeout(() => setMessage(""), 2500);
   };
 
@@ -6470,9 +6519,9 @@ export default function App() {
                 <div className="mt-5 space-y-5">
                   <div className="block">
                     <div className="space-y-5">
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                  <div className="rounded-2xl border border-sky-400/30 bg-sky-950/20 p-5 shadow-[inset_0_1px_0_rgba(125,211,252,0.06)]">
                     <div className="mb-3">
-                      <div className="text-sm font-semibold text-slate-100">Entry Form Preset</div>
+                      <div className="text-sm font-semibold text-sky-100">Entry Form Preset</div>
                       <p className="mt-1 text-xs leading-5 text-slate-500">
                         Choose how much the kiosk asks guests before adding them to the board.
                       </p>
@@ -6540,6 +6589,34 @@ export default function App() {
                           Glow-themed connection board form with vibe, looking-for, kinks, sexual preferences, and socials.
                         </div>
                       </button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
+                    <div className="text-sm font-semibold text-slate-100">Display Legend Preset</div>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                      Choose which legend appears on the television display. Automatic follows the selected entry form preset.
+                    </p>
+                    <div className="mt-4 grid gap-3 md:grid-cols-3">
+                      {[
+                        ["automatic", "Automatic", "Follows the active party preset."],
+                        ["standard", "Standard Party", "Explains the entry layout and shows general-interest icons."],
+                        ["mens_spanking", "Men’s Spanking", "Shows give, receive, limits, experience, interests, and preferences."],
+                      ].map(([value, label, description]) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => updateLegendPreset(value)}
+                          className={`rounded-2xl border px-4 py-3 text-left ${
+                            legendPreset === value
+                              ? "border-violet-300 bg-violet-400/15 text-violet-100"
+                              : "border-slate-700 bg-slate-950 text-slate-200"
+                          }`}
+                        >
+                          <div className="font-semibold">{label}</div>
+                          <div className="mt-1 text-xs leading-5 text-slate-400">{description}</div>
+                        </button>
+                      ))}
                     </div>
                   </div>
 
@@ -9790,14 +9867,31 @@ export default function App() {
                 className="displayIconLegend flex h-full w-[30rem] shrink-0 self-stretch flex-col justify-center px-2 py-4 text-white"
                 aria-label="Board icon guide"
               >
-                <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-2xl font-bold leading-tight">
-                  <div className="flex items-center gap-4"><span className="text-3xl">🔵</span><span>Likes to give</span></div>
-                  <div className="flex items-center gap-4"><span className="text-3xl">🟢</span><span>Likes to receive</span></div>
-                  <div className="flex items-center gap-4"><span className="text-3xl">⛔</span><span>Limits</span></div>
-                  <div className="flex items-center gap-4"><span className="text-3xl">🟠</span><span>Experience</span></div>
-                  <div className="flex items-center gap-4"><span className="text-3xl">👀</span><span>Interests</span></div>
-                  <div className="flex items-center gap-4"><span className="whitespace-nowrap text-3xl">🍑🍆</span><span>Sexual preferences</span></div>
-                </div>
+                {(legendPreset === "mens_spanking" || (legendPreset === "automatic" && isMensSpankingEntryForm)) ? (
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-2xl font-bold leading-tight">
+                    <div className="flex items-center gap-4"><span className="legendArrowIcon text-red-400"><DisplayUpArrowIcon /></span><span>Likes to give</span></div>
+                    <div className="flex items-center gap-4"><span className="legendArrowIcon text-emerald-400"><DisplayDownArrowIcon /></span><span>Likes to receive</span></div>
+                    <div className="flex items-center gap-4"><span className="text-3xl">⛔</span><span>Limits</span></div>
+                    <div className="flex items-center gap-4"><span className="text-3xl">🟠</span><span>Experience</span></div>
+                    <div className="flex items-center gap-4"><span className="text-3xl">👀</span><span>Interests</span></div>
+                    <div className="flex items-center gap-4"><span className="whitespace-nowrap text-3xl">🍑🍆</span><span>Sexual preferences</span></div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-[1.35fr_1fr] gap-x-5 text-lg font-bold leading-tight">
+                    <div className="space-y-1.5 border-r border-white/20 pr-4">
+                      <div>Name <span className="text-slate-400">|</span> Position</div>
+                      <div>I am a <span className="text-red-300">→</span> Seeking <span className="text-slate-400">|</span> Orientation</div>
+                      <div>Intention</div>
+                      <div>Looking for</div>
+                      <div>Sexual preference</div>
+                      <div>Social handles</div>
+                    </div>
+                    <div className="flex flex-col justify-center gap-5">
+                      <div className="flex items-center gap-3"><span className="text-3xl">👀</span><span>Interests</span></div>
+                      <div className="flex items-center gap-3"><span className="whitespace-nowrap text-3xl">🍑🍆</span><span>Sexual preferences</span></div>
+                    </div>
+                  </div>
+                )}
               </aside>
 
               <div className="flex h-full w-[14rem] shrink-0 self-stretch flex-col items-stretch gap-2">
@@ -9856,6 +9950,7 @@ export default function App() {
                 <ParticipantListDisplay
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   columns={effectiveParticipantColumns}
+                  spankingLegend={legendPreset === "mens_spanking" || (legendPreset === "automatic" && isMensSpankingEntryForm)}
                   automaticColumns={automaticSizingActive && automaticFitReady}
                   setAutomaticColumns={setAutomaticParticipantColumns}
                   setAutomaticTextSize={setAutomaticBoardEntryTextSize}

@@ -224,6 +224,14 @@ body,
   grid-template-columns: minmax(0, 1fr) 30rem 14rem 30rem !important;
 }
 
+.legendArrowIcon,
+.participantListDetail .displaySectionIconSvg {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+}
+
 .displayBoardTitleBlock h1 {
   margin: 0 !important;
   display: flex !important;
