@@ -9894,28 +9894,31 @@ export default function App() {
                 )}
               </aside>
 
-              <div className="flex h-full w-[36rem] shrink-0 self-stretch items-center gap-5 rounded-2xl border border-white/20 bg-black/30 px-6 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
-                <p className="m-0 flex-1 text-right text-2xl font-bold leading-tight text-white">
-                  Scan with your phone to add yourself to the Board
-                </p>
-                <div className="flex w-52 shrink-0 flex-col items-center justify-center gap-2 text-center text-white">
+              <div className="flex h-full w-[36rem] shrink-0 self-stretch flex-col justify-center gap-4 rounded-2xl border border-white/20 bg-black/30 px-6 py-4 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+                <div className="grid w-full grid-cols-2 items-end gap-4 border-b border-white/15 pb-4 text-center">
                   <div
-                    className="text-3xl font-black leading-none tracking-[0.04em]"
+                    className="text-5xl font-black leading-none tracking-[0.04em]"
                     aria-label={"Current Eastern time: " + displayEasternTime}
                   >
                     {displayEasternTime}
                   </div>
+                  {eventCountdown ? (
+                    <div className="leading-none">
+                      <div className="text-xs font-bold uppercase tracking-[0.16em] text-slate-300">Ends in</div>
+                      <div className="mt-2 text-4xl font-black tracking-[0.03em]">{eventCountdown}</div>
+                    </div>
+                  ) : <div />}
+                </div>
+
+                <div className="flex h-44 w-full items-stretch gap-5">
+                  <p className="m-0 flex min-w-0 flex-1 items-center justify-end text-right text-2xl font-bold leading-tight text-white">
+                    Scan with your phone to add yourself to the Board
+                  </p>
                   <img
                     src="/liveboard-entry-qr.png"
                     alt="QR code to join the LiveBoard"
                     className="h-44 w-44 shrink-0 rounded-2xl bg-white p-2"
                   />
-                  {eventCountdown ? (
-                    <div className="leading-none">
-                      <div className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-slate-300">Ends in</div>
-                      <div className="mt-1 text-2xl font-black tracking-[0.04em]">{eventCountdown}</div>
-                    </div>
-                  ) : null}
                 </div>
               </div>
             </div>
