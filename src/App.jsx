@@ -9864,7 +9864,7 @@ export default function App() {
               </div>
 
               <aside
-                className="displayIconLegend flex h-full w-[30rem] shrink-0 self-stretch flex-col justify-center px-2 py-4 text-white"
+                className="displayIconLegend flex h-full w-[36rem] shrink-0 self-stretch flex-col justify-center px-2 py-4 text-white"
                 aria-label="Board icon guide"
               >
                 {(legendPreset === "mens_spanking" || (legendPreset === "automatic" && isMensSpankingEntryForm)) ? (
@@ -9877,8 +9877,8 @@ export default function App() {
                     <div className="flex items-center gap-4"><span className="whitespace-nowrap text-3xl">🍑🍆</span><span>Sexual preferences</span></div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-[1.35fr_1fr] gap-x-5 text-lg font-bold leading-tight">
-                    <div className="space-y-1.5 border-r border-white/20 pr-4">
+                  <div className="grid grid-cols-[1.45fr_1fr] gap-x-5 text-lg font-bold leading-tight">
+                    <div className="space-y-1.5 whitespace-nowrap border-r border-white/20 pr-4">
                       <div>Name <span className="text-slate-400">|</span> Position</div>
                       <div>I am a <span className="text-red-300">→</span> Seeking <span className="text-slate-400">|</span> Orientation</div>
                       <div>Intention</div>
@@ -9887,8 +9887,8 @@ export default function App() {
                       <div>Social handles</div>
                     </div>
                     <div className="flex flex-col justify-center gap-5">
-                      <div className="flex items-center gap-3"><span className="text-3xl">👀</span><span>Interests</span></div>
-                      <div className="flex items-center gap-3"><span className="whitespace-nowrap text-3xl">🍑🍆</span><span>Sexual preferences</span></div>
+                      <div className="flex items-center gap-3 whitespace-nowrap"><span className="text-3xl">👀</span><span>Interests</span></div>
+                      <div className="flex items-center gap-3 whitespace-nowrap"><span className="whitespace-nowrap text-3xl">🍑🍆</span><span>Sexual preferences</span></div>
                     </div>
                   </div>
                 )}
