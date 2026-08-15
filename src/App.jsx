@@ -1396,7 +1396,7 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
         ref={listRef}
         className="w-full"
         style={{
-          height: "calc(100vh - 15.5rem)",
+          height: "calc(125vh - 15.5rem)",
           display: fillDirection === "column" ? "flex" : "grid",
           ...(fillDirection === "column"
             ? { flexFlow: "column wrap", alignContent: "flex-start" }
@@ -1486,7 +1486,7 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
                 width: fillDirection === "column"
-                  ? `calc((100vw - ${(clampParticipantColumns(columns) - 1) * 0.625}rem - 3rem) / ${clampParticipantColumns(columns)})`
+                  ? `calc((100% - ${(clampParticipantColumns(columns) - 1) * 0.625}rem) / ${clampParticipantColumns(columns)})`
                   : "100%",
                 breakInside: "avoid",
                 WebkitColumnBreakInside: "avoid",
@@ -1504,7 +1504,7 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
                   />
                 ) : null}
                 <div className="min-w-0">
-                <div className="participantListTitle flex min-w-0 items-center gap-2 text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
+                <div className="participantListTitle flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[1.65rem] font-black leading-none tracking-tight text-white md:text-[1.95rem]">
                   <span
                     className="min-w-0 whitespace-nowrap"
                     style={{ fontSize: `${participantNameFontSize}px` }}
