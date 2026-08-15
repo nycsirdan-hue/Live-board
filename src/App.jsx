@@ -1384,7 +1384,7 @@ function ParticipantListDisplay({ entries = [], columns = 4, rows = null, fillDi
             ? { flexFlow: "column wrap", alignContent: "flex-start" }
             : {
                 gridTemplateColumns: `repeat(${clampParticipantColumns(columns)}, minmax(0, 1fr))`,
-                ...(rows
+                ...(rows && fillDirection === "column"
                   ? {
                       gridTemplateRows: `repeat(${rows}, max-content)`,
                       gridAutoFlow: "column",
@@ -6280,10 +6280,10 @@ export default function App() {
 
                     <div className="mt-5 border-t border-slate-800 pt-5">
                       <div className="font-semibold text-white">Entry Fill Direction</div>
-                      <p className="mt-1 text-sm text-slate-400">{displaySizingMode === "automatic" ? "Automatic sizing fills each target row from top to bottom." : "Choose where the next participant tile appears."}</p>
+                      <p className="mt-1 text-sm text-slate-400">Choose where the next participant tile appears. Automatic sizing will preserve this direction.</p>
                       <div className="mt-3 grid gap-3 md:grid-cols-2">
                         {[{ value: "row", label: "Left to Right" }, { value: "column", label: "Top to Bottom" }].map((option) => (
-                          <button key={option.value} type="button" disabled={displaySizingMode === "automatic"} onClick={() => updateEntryFillDirection(option.value)} className={`rounded-2xl border px-4 py-3 font-black disabled:cursor-not-allowed disabled:opacity-35 ${entryFillDirection === option.value ? "border-sky-300 bg-sky-400 text-slate-950" : "border-slate-700 bg-slate-950 text-slate-100"}`}>
+                          <button key={option.value} type="button" onClick={() => updateEntryFillDirection(option.value)} className={`rounded-2xl border px-4 py-3 font-black ${entryFillDirection === option.value ? "border-sky-300 bg-sky-400 text-slate-950" : "border-slate-700 bg-slate-950 text-slate-100"}`}>
                             {option.label}
                           </button>
                         ))}
