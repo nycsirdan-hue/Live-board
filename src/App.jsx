@@ -9894,37 +9894,29 @@ export default function App() {
                 )}
               </aside>
 
-              <div className="flex h-full w-[14rem] shrink-0 self-stretch flex-col items-stretch gap-2">
-                  <div
-                    className="flex min-h-0 flex-1 flex-col justify-center rounded-2xl border border-white/20 bg-black/30 px-4 py-3 text-center text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
-                    aria-label={"Current Eastern time: " + displayEasternTime}
-                  >
-                    <div className="text-6xl font-black leading-none tracking-[0.04em]">
-                      {displayEasternTime}
-                    </div>
-                  </div>
-
-                  {eventCountdown ? (
-                    <div className="flex min-h-0 flex-1 flex-col justify-center rounded-2xl border border-white/20 bg-black/30 px-4 py-3 text-center text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
-                      <div className="text-sm font-bold uppercase tracking-[0.16em] text-slate-300">
-                        Ends in
-                      </div>
-                      <div className="mt-2 text-4xl font-black leading-none tracking-[0.04em]">
-                        {eventCountdown}
-                      </div>
-                    </div>
-                  ) : null}
-              </div>
-
-              <div className="flex h-full w-[30rem] shrink-0 self-stretch items-center gap-5 rounded-2xl border border-white/20 bg-black/30 px-6 py-5 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
+              <div className="flex h-full w-[36rem] shrink-0 self-stretch items-center gap-5 rounded-2xl border border-white/20 bg-black/30 px-6 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
                 <p className="m-0 flex-1 text-right text-2xl font-bold leading-tight text-white">
                   Scan with your phone to add yourself to the Board
                 </p>
-                <img
-                  src="/liveboard-entry-qr.png"
-                  alt="QR code to join the LiveBoard"
-                  className="h-44 w-44 shrink-0 rounded-2xl bg-white p-2"
-                />
+                <div className="flex w-52 shrink-0 flex-col items-center justify-center gap-2 text-center text-white">
+                  <div
+                    className="text-3xl font-black leading-none tracking-[0.04em]"
+                    aria-label={"Current Eastern time: " + displayEasternTime}
+                  >
+                    {displayEasternTime}
+                  </div>
+                  <img
+                    src="/liveboard-entry-qr.png"
+                    alt="QR code to join the LiveBoard"
+                    className="h-44 w-44 shrink-0 rounded-2xl bg-white p-2"
+                  />
+                  {eventCountdown ? (
+                    <div className="leading-none">
+                      <div className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-slate-300">Ends in</div>
+                      <div className="mt-1 text-2xl font-black tracking-[0.04em]">{eventCountdown}</div>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
 
