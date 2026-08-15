@@ -1207,28 +1207,39 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
-function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = false, setAutomaticColumns = null, fillDirection = "row", textSizeStep = 0 }) {
+function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, fillDirection = "row", textSizeStep = 0 }) {
   const maxLineLength = 40;
   const listRef = useRef(null);
 
   useEffect(() => {
-    if (!automaticColumns || !setAutomaticColumns || columns >= 6) return undefined;
+    if (!automaticColumns || !setAutomaticColumns || !setAutomaticTextSize) return undefined;
 
     const frameId = window.requestAnimationFrame(() => {
       const list = listRef.current;
       if (!list) return;
 
-      const overflows = fillDirection === "column"
+      const cardContentOverflows = Array.from(list.children).some(
+        (card) => card.scrollWidth > card.clientWidth + 2
+      );
+      const layoutOverflows = fillDirection === "column"
         ? list.scrollWidth > list.clientWidth + 2
         : list.scrollHeight > list.clientHeight + 2;
 
-      if (overflows) {
-        setAutomaticColumns((current) => Math.min(6, Math.max(current, columns + 1)));
+      if (cardContentOverflows && textSizeStep > 0) {
+        setAutomaticTextSize((current) => Math.max(0, current - 1));
+        setAutomaticColumns(2);
+      } else if (layoutOverflows) {
+        if (columns < 6) {
+          setAutomaticColumns((current) => Math.min(6, Math.max(current, columns + 1)));
+        } else if (textSizeStep > 0) {
+          setAutomaticTextSize((current) => Math.max(0, current - 1));
+          setAutomaticColumns(2);
+        }
       }
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [automaticColumns, columns, entries, fillDirection, setAutomaticColumns, textSizeStep]);
+  }, [automaticColumns, columns, entries, fillDirection, setAutomaticColumns, setAutomaticTextSize, textSizeStep]);
 
   const getPositionRank = (entry) => {
     if (entry.position === "Top") return 0;
@@ -2211,6 +2222,7 @@ export default function App() {
   const [layoutSettings, setLayoutSettings] = useState(defaultDisplayLayout);
   const [participantDisplayColumns, setParticipantDisplayColumns] = useState(4);
   const [automaticParticipantColumns, setAutomaticParticipantColumns] = useState(2);
+  const [automaticBoardEntryTextSize, setAutomaticBoardEntryTextSize] = useState(30);
   const [displaySizingMode, setDisplaySizingMode] = useState("manual");
   const [displayViewport, setDisplayViewport] = useState(() => ({
     width: window.innerWidth || 1920,
@@ -3059,7 +3071,9 @@ export default function App() {
   const effectiveParticipantColumns = automaticSizingActive
     ? automaticParticipantColumns
     : participantDisplayColumns;
-  const effectiveBoardEntryTextSize = boardEntryTextSize;
+  const effectiveBoardEntryTextSize = automaticSizingActive
+    ? automaticBoardEntryTextSize
+    : boardEntryTextSize;
   const automaticSizingContentKey = useMemo(
     () => JSON.stringify(participantEntries.map((entry) => [
       entry.id,
@@ -3075,9 +3089,10 @@ export default function App() {
 
   useEffect(() => {
     setAutomaticParticipantColumns(2);
+    setAutomaticBoardEntryTextSize(30);
   }, [
     automaticSizingContentKey,
-    boardEntryTextSize,
+    displaySizingMode,
     displayViewport.height,
     displayViewport.width,
     entryFillDirection,
@@ -6340,7 +6355,7 @@ export default function App() {
 
                     <div className="mt-4 grid gap-3 md:grid-cols-2">
                       {[
-                        { value: "automatic", label: "Automatic Columns", description: "Keeps your text size and adds columns only when the rendered cards no longer fit." },
+                        { value: "automatic", label: "Automatic", description: "Finds the largest readable text and adds columns only when the rendered cards need them." },
                         { value: "manual", label: "Manual", description: "Uses the participant text size and column controls below." },
                       ].map((option) => (
                         <button
@@ -6363,7 +6378,7 @@ export default function App() {
 
                     {displaySizingMode === "automatic" ? (
                       <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
-                        The live display measures the actual cards and available screen space, beginning at 2 columns and expanding through 6 as needed.
+                        The live display measures the actual cards and screen space, testing text from +30 down to a hard minimum of 0 and using 2–6 columns.
                         {participantDisplayLayout !== "list" ? " · Switch to List View to apply automatic sizing." : ""}
                       </div>
                     ) : null}
@@ -6386,23 +6401,25 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => updateBoardEntryTextSize(-1)}
-                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                            disabled={displaySizingMode === "automatic"}
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35"
                           >
                             −
                           </button>
                           <div className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-center font-semibold text-white">
-                            {boardEntryTextSize > 0 ? `+${boardEntryTextSize}` : boardEntryTextSize}
+                            {displaySizingMode === "automatic" ? "AUTO" : boardEntryTextSize > 0 ? `+${boardEntryTextSize}` : boardEntryTextSize}
                           </div>
                           <button
                             type="button"
                             onClick={() => updateBoardEntryTextSize(1)}
-                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                            disabled={displaySizingMode === "automatic"}
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35"
                           >
                             +
                           </button>
                         </div>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                          Controls participant names, handles, intentions, and open-to text. Automatic Columns uses this exact size. Range: 0 to +30.
+                          {displaySizingMode === "automatic" ? "Automatically selects the largest size that fits, never below 0." : "Controls participant names, handles, intentions, and open-to text. Range: 0 to +30."}
                         </p>
                       </div>
 
@@ -9859,6 +9876,7 @@ export default function App() {
                   columns={effectiveParticipantColumns}
                   automaticColumns={automaticSizingActive}
                   setAutomaticColumns={setAutomaticParticipantColumns}
+                  setAutomaticTextSize={setAutomaticBoardEntryTextSize}
                   fillDirection={entryFillDirection}
                   textSizeStep={effectiveBoardEntryTextSize}
                 />
