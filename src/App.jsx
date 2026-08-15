@@ -419,7 +419,9 @@ const withoutTelegramSetting = (options) =>
   (options || []).filter((option) => !isTelegramSettingMarker(option));
 const isParticipantColumnsSettingMarker = (option) =>
   String(option || "").startsWith(PARTICIPANT_COLUMNS_SETTING_PREFIX);
-const clampParticipantColumns = (value) => Math.min(6, Math.max(3, Number(value) || 4));
+const clampParticipantColumns = (value) => Math.min(6, Math.max(2, Number(value) || 4));
+const clampBoardEntryTextSize = (value) => Math.max(-15, Math.min(30, Number(value) || 0));
+const clampStaffTextSize = (value) => Math.max(-20, Math.min(10, Number(value) || 0));
 const getParticipantColumnsSetting = (options) => {
   const marker = (options || []).find(isParticipantColumnsSettingMarker);
   return marker
@@ -1189,7 +1191,7 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
-function ParticipantListDisplay({ entries = [], columns = 4, fillDirection = "row" }) {
+function ParticipantListDisplay({ entries = [], columns = 4, fillDirection = "row", textSizeStep = 0 }) {
   const maxLineLength = 40;
 
   const getPositionRank = (entry) => {
@@ -1370,8 +1372,12 @@ function ParticipantListDisplay({ entries = [], columns = 4, fillDirection = "ro
           const participantName = entry.name || "Unnamed";
           const availableNameWidth = participantPhoto ? 240 : 300;
           const participantNameFontSize = Math.max(
-            14,
-            Math.min(31, availableNameWidth / Math.max(1, participantName.length * 0.58))
+            8,
+            Math.min(
+              60,
+              Math.min(31, availableNameWidth / Math.max(1, participantName.length * 0.58))
+                + clampBoardEntryTextSize(textSizeStep) * 0.96
+            )
           );
 
           const quickTags = getSimpleValues(mergedItems, "Quick Tag:");
@@ -2265,7 +2271,7 @@ export default function App() {
   const [boardEntryTextSize, setBoardEntryTextSize] = useState(() => {
     try {
       const stored = Number(window.localStorage.getItem("boardEntryTextSize") || 0);
-      return stored > 10 ? 0 : stored;
+      return clampBoardEntryTextSize(stored);
     } catch {
       return 0;
     }
@@ -2274,7 +2280,7 @@ export default function App() {
   const [staffTextSize, setStaffTextSize] = useState(() => {
     try {
       const stored = Number(window.localStorage.getItem("staffTextSize") || 0);
-      return stored > 10 ? 0 : stored;
+      return clampStaffTextSize(stored);
     } catch {
       return 0;
     }
@@ -2395,14 +2401,12 @@ export default function App() {
     ).filter(Boolean);
   }, [customInterestOptions]);
 
-  const clampTextSizeStep = (value) => Math.max(-20, Math.min(10, Number(value) || 0));
-
   const updateBoardEntryTextSize = (direction) => {
-    setBoardEntryTextSize((current) => clampTextSizeStep(current + direction));
+    setBoardEntryTextSize((current) => clampBoardEntryTextSize(current + direction));
   };
 
   const updateStaffTextSize = (direction) => {
-    setStaffTextSize((current) => clampTextSizeStep(current + direction));
+    setStaffTextSize((current) => clampStaffTextSize(current + direction));
   };
 
   const eventDisplayOptions = useMemo(() => {
@@ -2609,7 +2613,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem("boardEntryTextSize", String(clampTextSizeStep(boardEntryTextSize)));
+      window.localStorage.setItem("boardEntryTextSize", String(clampBoardEntryTextSize(boardEntryTextSize)));
     } catch {
       // Local storage may be unavailable in some browser privacy modes.
     }
@@ -2617,7 +2621,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem("staffTextSize", String(clampTextSizeStep(staffTextSize)));
+      window.localStorage.setItem("staffTextSize", String(clampStaffTextSize(staffTextSize)));
     } catch {
       // Local storage may be unavailable in some browser privacy modes.
     }
@@ -2630,10 +2634,10 @@ export default function App() {
 
     const readDisplayTextSizeSettings = () => {
       try {
-        const nextBoardSize = clampTextSizeStep(
+        const nextBoardSize = clampBoardEntryTextSize(
           Number(window.localStorage.getItem("boardEntryTextSize") || 0)
         );
-        const nextStaffSize = clampTextSizeStep(
+        const nextStaffSize = clampStaffTextSize(
           Number(window.localStorage.getItem("staffTextSize") || 0)
         );
 
@@ -6223,7 +6227,7 @@ export default function App() {
                           </button>
                         </div>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                          Controls participant names, handles, intentions, and open-to text. Range: -10 to +10.
+                          Controls participant names, handles, intentions, and open-to text. Range: -15 to +30.
                         </p>
                       </div>
 
@@ -6265,8 +6269,8 @@ export default function App() {
                       Choose how many entry columns appear on Standard, Men Only, Men&apos;s Spanking, and KrINKles displays.
                     </p>
 
-                    <div className="mt-4 grid grid-cols-4 gap-3">
-                      {[3, 4, 5, 6].map((columns) => (
+                    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+                      {[2, 3, 4, 5, 6].map((columns) => (
                         <button
                           key={columns}
                           type="button"
@@ -7726,7 +7730,7 @@ export default function App() {
                         </button>
                       </div>
                       <p className="mt-2 text-xs leading-5 text-slate-500">
-                        Controls participant names, handles, intentions, and open-to text. Range: -10 to +10.
+                        Controls participant names, handles, intentions, and open-to text. Range: -15 to +30.
                       </p>
                     </div>
 
@@ -9492,12 +9496,12 @@ export default function App() {
           <div
             className={`displayBoardSurface ${usesSingleConnectionBoard ? "diaperGlowDisplayBoard" : ""}`}
             style={{
-              "--board-entry-detail-size": `${1.535 + clampTextSizeStep(boardEntryTextSize) * 0.045}rem`,
-              "--board-entry-name-size": `${2.23 + clampTextSizeStep(boardEntryTextSize) * 0.07}rem`,
-              "--participant-list-detail-size": `${1 + clampTextSizeStep(boardEntryTextSize) * 0.03}rem`,
-              "--participant-list-name-size": `${1.95 + clampTextSizeStep(boardEntryTextSize) * 0.06}rem`,
-              "--staff-detail-size": `${1.36 + clampTextSizeStep(staffTextSize) * 0.04}rem`,
-              "--staff-name-size": `${1.88 + clampTextSizeStep(staffTextSize) * 0.06}rem`,
+              "--board-entry-detail-size": `${1.535 + clampBoardEntryTextSize(boardEntryTextSize) * 0.045}rem`,
+              "--board-entry-name-size": `${2.23 + clampBoardEntryTextSize(boardEntryTextSize) * 0.07}rem`,
+              "--participant-list-detail-size": `${1 + clampBoardEntryTextSize(boardEntryTextSize) * 0.03}rem`,
+              "--participant-list-name-size": `${1.95 + clampBoardEntryTextSize(boardEntryTextSize) * 0.06}rem`,
+              "--staff-detail-size": `${1.36 + clampStaffTextSize(staffTextSize) * 0.04}rem`,
+              "--staff-name-size": `${1.88 + clampStaffTextSize(staffTextSize) * 0.06}rem`,
             }}
           >
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
@@ -9677,6 +9681,7 @@ export default function App() {
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   columns={participantDisplayColumns}
                   fillDirection={entryFillDirection}
+                  textSizeStep={boardEntryTextSize}
                 />
               </div>
             ) : (
