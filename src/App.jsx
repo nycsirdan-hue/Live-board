@@ -474,9 +474,9 @@ const withoutEntryFillSetting = (options) => (options || []).filter((option) => 
 
 const getAutomaticParticipantSizing = (entryCount, viewportWidth = 1920, viewportHeight = 1080) => {
   const count = Math.max(0, Number(entryCount) || 0);
-  const rows = Math.min(6, Math.max(2, Math.ceil(count / 6)));
-  const columns = Math.min(6, Math.max(2, Math.ceil(Math.max(1, count) / rows)));
-  const textSizeByRows = { 2: 30, 3: 15, 4: 5, 5: -5, 6: -15 };
+  const columns = Math.min(6, Math.max(2, Math.ceil(Math.max(1, count) / 6)));
+  const rows = Math.min(6, Math.max(1, Math.ceil(Math.max(1, count) / columns)));
+  const textSizeByRows = { 1: 30, 2: 30, 3: 15, 4: 5, 5: -5, 6: -15 };
   const screenScale = Math.min(viewportWidth / 1920, viewportHeight / 1080);
   const screenAdjustment = Math.round((screenScale - 1) * 20);
 
@@ -6322,7 +6322,7 @@ export default function App() {
 
                     <div className="mt-4 grid gap-3 md:grid-cols-2">
                       {[
-                        { value: "automatic", label: "Automatic", description: "Starts at 2 rows and expands through 6 rows as entries are added." },
+                        { value: "automatic", label: "Automatic", description: "Starts at 2 columns, fills up to 6 rows, then adds columns as entries are added." },
                         { value: "manual", label: "Manual", description: "Uses the participant text size and column controls below." },
                       ].map((option) => (
                         <button
