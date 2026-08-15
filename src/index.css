@@ -2671,10 +2671,36 @@ body:has(.displayBoardSurface) #root {
   height: 125vh !important;
   transform: scale(0.8) !important;
   transform-origin: left top !important;
-  opacity: 1;
+}
+
+.displayBoardSurface > :not(.automaticFitWatermark) {
   transition: opacity 0.5s ease-in-out;
 }
 
-.displayBoardSurface.automaticFitTransitioning {
+.automaticFitWatermark {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.automaticFitWatermark img {
+  width: min(72vw, 86rem);
+  max-height: 68vh;
+  object-fit: contain;
+  opacity: 0.62;
+  filter: brightness(1.8) contrast(1.08);
+}
+
+.displayBoardSurface.automaticFitTransitioning > :not(.automaticFitWatermark) {
   opacity: 0 !important;
+}
+
+.displayBoardSurface.automaticFitTransitioning .automaticFitWatermark {
+  opacity: 1;
 }

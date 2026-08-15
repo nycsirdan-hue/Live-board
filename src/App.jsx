@@ -9715,6 +9715,10 @@ export default function App() {
               "--staff-name-size": `${1.88 + clampStaffTextSize(staffTextSize) * 0.06}rem`,
             }}
           >
+            <div className="automaticFitWatermark" aria-hidden="true">
+              <img src="/studio125-watermark.png" alt="" />
+            </div>
+
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
 
             {displayRulesEnabled && !isRaffleDisplayActive ? (
