@@ -1467,11 +1467,14 @@ function ParticipantListDisplay({ entries = [], columns = 4, fillDirection = "ro
                     <>
                       <span className="shrink-0 text-slate-400">|</span>
                       <span
-                        className={"flex h-9 w-9 shrink-0 items-center justify-center " + meta.iconClass}
+                        className={"participantListPosition flex shrink-0 items-center gap-1.5 font-black uppercase tracking-[0.08em] " + meta.iconClass}
                         role="img"
                         aria-label={entry.position || "Entry"}
                       >
-                        {meta.icon}
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center">
+                          {meta.icon}
+                        </span>
+                        <span>{entry.position}</span>
                       </span>
                     </>
                   ) : null}

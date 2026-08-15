@@ -2458,6 +2458,11 @@ body:has(.displayBoardSurface) #root {
   line-height: 1.12 !important;
 }
 
+.participantListPosition {
+  font-size: var(--participant-list-detail-size, 1rem) !important;
+  line-height: 1 !important;
+}
+
 /* KrINKles: restrained rainbow accents for entry forms and live display. */
 .diaperGlowKiosk > .rounded-3xl {
   border-color: rgba(250, 204, 21, 0.34) !important;
