@@ -9674,11 +9674,6 @@ export default function App() {
               "--staff-name-size": `${1.88 + clampStaffTextSize(staffTextSize) * 0.06}rem`,
             }}
           >
-            <div className="automaticFitWatermark" aria-hidden="true">
-              <img src="/studio125-watermark.png" alt="" />
-            </div>
-
-            <div className="automaticFitContent">
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
 
             {displayRulesEnabled && !isRaffleDisplayActive ? (
@@ -9839,6 +9834,12 @@ export default function App() {
               </div>
             </div>
 
+            <div className="automaticFitParticipantStage">
+            <div className="automaticFitWatermark" aria-hidden="true">
+              <img src="/studio125-watermark.png" alt="" />
+            </div>
+
+            <div className="automaticFitContent">
             {usesSingleConnectionBoard ? (
               <div className="displayRoleRow displayConnectionRow">
                 <DisplaySection
@@ -9890,6 +9891,7 @@ export default function App() {
                 />
               </div>
             )}
+            </div>
             </div>
           </div>
         )}
