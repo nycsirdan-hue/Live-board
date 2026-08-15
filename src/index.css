@@ -2704,9 +2704,24 @@ body:has(.displayBoardSurface) #root {
   filter: brightness(2.6) contrast(1.08);
 }
 
-.displayBoardSurface.automaticFitTransitioning > :not(.automaticFitWatermark) {
+.automaticFitContent {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px 28px 22px;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+  will-change: opacity;
+}
+
+.displayBoardSurface.automaticFitTransitioning .automaticFitContent {
   opacity: 0 !important;
-  visibility: hidden !important;
 }
 
 .displayBoardSurface.automaticFitTransitioning .automaticFitWatermark {

@@ -9678,6 +9678,7 @@ export default function App() {
               <img src="/studio125-watermark.png" alt="" />
             </div>
 
+            <div className="automaticFitContent">
             <DisplayRotationOverlay eventDisplay={activeEventDisplay} />
 
             {displayRulesEnabled && !isRaffleDisplayActive ? (
@@ -9889,6 +9890,7 @@ export default function App() {
                 />
               </div>
             )}
+            </div>
           </div>
         )}
       </div>
