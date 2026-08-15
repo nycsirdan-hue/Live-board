@@ -387,6 +387,7 @@ const REMOVED_ENTRY_OPTION_PREFIX = "__liveboard_removed_option__:";
 const PARTICIPANT_PHOTO_SETTING_PREFIX = "__liveboard_setting__:participant_photos=";
 const TELEGRAM_SETTING_PREFIX = "__liveboard_setting__:telegram=";
 const PARTICIPANT_COLUMNS_SETTING_PREFIX = "__liveboard_setting__:participant_columns=";
+const DISPLAY_SIZING_MODE_SETTING_PREFIX = "__liveboard_setting__:display_sizing_mode=";
 const DISPLAY_RULES_SETTING_PREFIX = "__liveboard_setting__:display_rules=";
 const ENTRY_FILL_SETTING_PREFIX = "__liveboard_setting__:entry_fill=";
 
@@ -434,6 +435,20 @@ const withParticipantColumnsSetting = (options, columns) => [
 ];
 const withoutParticipantColumnsSetting = (options) =>
   (options || []).filter((option) => !isParticipantColumnsSettingMarker(option));
+const isDisplaySizingModeSettingMarker = (option) =>
+  String(option || "").startsWith(DISPLAY_SIZING_MODE_SETTING_PREFIX);
+const getDisplaySizingModeSetting = (options) => {
+  const marker = (options || []).find(isDisplaySizingModeSettingMarker);
+  return marker?.slice(DISPLAY_SIZING_MODE_SETTING_PREFIX.length) === "automatic"
+    ? "automatic"
+    : "manual";
+};
+const withDisplaySizingModeSetting = (options, mode) => [
+  ...(options || []).filter((option) => !isDisplaySizingModeSettingMarker(option)),
+  DISPLAY_SIZING_MODE_SETTING_PREFIX + (mode === "automatic" ? "automatic" : "manual"),
+];
+const withoutDisplaySizingModeSetting = (options) =>
+  (options || []).filter((option) => !isDisplaySizingModeSettingMarker(option));
 const isDisplayRulesSettingMarker = (option) =>
   String(option || "").startsWith(DISPLAY_RULES_SETTING_PREFIX);
 const getDisplayRulesSetting = (options) => {
@@ -456,6 +471,21 @@ const withEntryFillSetting = (options, direction) => [
   ENTRY_FILL_SETTING_PREFIX + (direction === "column" ? "column" : "row"),
 ];
 const withoutEntryFillSetting = (options) => (options || []).filter((option) => !isEntryFillSettingMarker(option));
+
+const getAutomaticParticipantSizing = (entryCount, viewportWidth = 1920, viewportHeight = 1080) => {
+  const count = Math.max(0, Number(entryCount) || 0);
+  const rows = Math.min(6, Math.max(2, Math.ceil(count / 6)));
+  const columns = Math.min(6, Math.max(2, Math.ceil(Math.max(1, count) / rows)));
+  const textSizeByRows = { 2: 30, 3: 15, 4: 5, 5: -5, 6: -15 };
+  const screenScale = Math.min(viewportWidth / 1920, viewportHeight / 1080);
+  const screenAdjustment = Math.round((screenScale - 1) * 20);
+
+  return {
+    rows,
+    columns,
+    textSize: clampBoardEntryTextSize(textSizeByRows[rows] + screenAdjustment),
+  };
+};
 const quickTagOptions = ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"];
 
 const diaperDebaucheryVibeOptions = [
@@ -1191,7 +1221,7 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
-function ParticipantListDisplay({ entries = [], columns = 4, fillDirection = "row", textSizeStep = 0 }) {
+function ParticipantListDisplay({ entries = [], columns = 4, rows = null, fillDirection = "row", textSizeStep = 0 }) {
   const maxLineLength = 40;
 
   const getPositionRank = (entry) => {
@@ -1349,12 +1379,17 @@ function ParticipantListDisplay({ entries = [], columns = 4, fillDirection = "ro
         className="w-full"
         style={{
           height: "calc(100vh - 15.5rem)",
-          display: fillDirection === "column" ? "flex" : "grid",
-          ...(fillDirection === "column"
+          display: fillDirection === "column" && !rows ? "flex" : "grid",
+          ...(fillDirection === "column" && !rows
             ? { flexFlow: "column wrap", alignContent: "flex-start" }
             : {
                 gridTemplateColumns: `repeat(${clampParticipantColumns(columns)}, minmax(0, 1fr))`,
-                gridAutoFlow: "row",
+                ...(rows
+                  ? {
+                      gridTemplateRows: `repeat(${rows}, max-content)`,
+                      gridAutoFlow: "column",
+                    }
+                  : { gridAutoFlow: "row" }),
               }),
           alignContent: "start",
           alignItems: "start",
@@ -1437,7 +1472,7 @@ function ParticipantListDisplay({ entries = [], columns = 4, fillDirection = "ro
               className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
-                width: fillDirection === "column"
+                width: fillDirection === "column" && !rows
                   ? `calc((100vw - ${(clampParticipantColumns(columns) - 1) * 0.625}rem - 3rem) / ${clampParticipantColumns(columns)})`
                   : "100%",
                 breakInside: "avoid",
@@ -2173,6 +2208,11 @@ export default function App() {
   const [setupVenueName, setSetupVenueName] = useState("");
   const [layoutSettings, setLayoutSettings] = useState(defaultDisplayLayout);
   const [participantDisplayColumns, setParticipantDisplayColumns] = useState(4);
+  const [displaySizingMode, setDisplaySizingMode] = useState("manual");
+  const [displayViewport, setDisplayViewport] = useState(() => ({
+    width: window.innerWidth || 1920,
+    height: window.innerHeight || 1080,
+  }));
   const [displayRulesEnabled, setDisplayRulesEnabled] = useState(true);
   const [entryFillDirection, setEntryFillDirection] = useState("row");
   const [formBuilderConfigs, setFormBuilderConfigs] = useState(createDefaultFormBuilderConfigs);
@@ -2350,16 +2390,20 @@ export default function App() {
   const buildSettingsCustomInterestOptions = (
     baseOptions = customInterestOptions,
     configs = formBuilderConfigs,
-    columns = participantDisplayColumns
+    columns = participantDisplayColumns,
+    sizingMode = displaySizingMode
   ) => withFormBuilderSetting(
     withEntryFillSetting(
       withDisplayRulesSetting(
-        withParticipantColumnsSetting(
-        withTelegramSetting(
-          withParticipantPhotoSetting(baseOptions, allowParticipantPhotos),
-          allowTelegram
-        ),
-          columns
+        withDisplaySizingModeSetting(
+          withParticipantColumnsSetting(
+            withTelegramSetting(
+              withParticipantPhotoSetting(baseOptions, allowParticipantPhotos),
+              allowTelegram
+            ),
+            columns
+          ),
+          sizingMode
         ),
         displayRulesEnabled
       ),
@@ -2411,6 +2455,18 @@ export default function App() {
   const updateStaffTextSize = (direction) => {
     setStaffTextSize((current) => clampStaffTextSize(current + direction));
   };
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setDisplayViewport({
+        width: window.innerWidth || 1920,
+        height: window.innerHeight || 1080,
+      });
+    };
+
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
 
   const eventDisplayOptions = useMemo(() => {
     const options =
@@ -2996,6 +3052,18 @@ export default function App() {
   const previousRaffleDraws = useMemo(() => raffleDraws.slice(1, 9), [raffleDraws]);
   const isRaffleDisplayActive = settings?.display_mode === "raffle";
   const participantDisplayLayout = settings?.participant_display_layout === "list" ? "list" : "tiles";
+  const automaticParticipantSizing = getAutomaticParticipantSizing(
+    participantEntries.length,
+    displayViewport.width,
+    displayViewport.height
+  );
+  const automaticSizingActive = displaySizingMode === "automatic" && participantDisplayLayout === "list";
+  const effectiveParticipantColumns = automaticSizingActive
+    ? automaticParticipantSizing.columns
+    : participantDisplayColumns;
+  const effectiveBoardEntryTextSize = automaticSizingActive
+    ? automaticParticipantSizing.textSize
+    : boardEntryTextSize;
 
   const getRaffleStatusLabel = (status) => {
     if (status === "winner") return "Winner";
@@ -3087,6 +3155,7 @@ export default function App() {
           setAllowParticipantPhotos(getParticipantPhotoSetting(data.custom_interest_options));
           setAllowTelegram(getTelegramSetting(data.custom_interest_options));
           setParticipantDisplayColumns(getParticipantColumnsSetting(data.custom_interest_options));
+          setDisplaySizingMode(getDisplaySizingModeSetting(data.custom_interest_options));
           setDisplayRulesEnabled(getDisplayRulesSetting(data.custom_interest_options));
           setEntryFillDirection(getEntryFillSetting(data.custom_interest_options));
           setFormBuilderConfigs(getFormBuilderSetting(data.custom_interest_options));
@@ -3094,8 +3163,10 @@ export default function App() {
             withoutFormBuilderSetting(
               withoutEntryFillSetting(
                 withoutDisplayRulesSetting(
-                  withoutParticipantColumnsSetting(
-                  withoutTelegramSetting(withoutParticipantPhotoSetting(data.custom_interest_options))
+                  withoutDisplaySizingModeSetting(
+                    withoutParticipantColumnsSetting(
+                      withoutTelegramSetting(withoutParticipantPhotoSetting(data.custom_interest_options))
+                    )
                   )
                 )
               )
@@ -3330,6 +3401,46 @@ export default function App() {
     setTimeout(() => setMessage(""), 2500);
   };
 
+  const updateDisplaySizingMode = async (nextMode) => {
+    const sizingMode = nextMode === "automatic" ? "automatic" : "manual";
+
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      setTimeout(() => setMessage(""), 2500);
+      return;
+    }
+
+    const payload = {
+      custom_interest_options: buildSettingsCustomInterestOptions(
+        customInterestOptions,
+        formBuilderConfigs,
+        participantDisplayColumns,
+        sizingMode
+      ),
+      updated_at: new Date().toISOString(),
+    };
+    const query = settings?.id
+      ? supabase.from("board_settings").update(payload).eq("id", settings.id)
+      : supabase.from("board_settings").insert({
+          event_name: setupEventName || defaultConfig.eventName,
+          venue_name: setupVenueName || defaultConfig.venueName,
+          display_mode: "liveboard",
+          ...payload,
+        });
+    const { data, error } = await query.select("*").single();
+
+    if (error) {
+      setMessage("Could not change display sizing mode: " + error.message);
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
+    setDisplaySizingMode(sizingMode);
+    setSettings(data);
+    setMessage(`Participant display sizing changed to ${sizingMode}.`);
+    setTimeout(() => setMessage(""), 2500);
+  };
+
   const updateDisplayRulesEnabled = async (enabled) => {
     if (!supabase) {
       setMessage("Supabase connection is missing.");
@@ -3340,12 +3451,15 @@ export default function App() {
     const payload = {
       custom_interest_options: withFormBuilderSetting(
         withEntryFillSetting(withDisplayRulesSetting(
-          withParticipantColumnsSetting(
-            withTelegramSetting(
-              withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
-              allowTelegram
+          withDisplaySizingModeSetting(
+            withParticipantColumnsSetting(
+              withTelegramSetting(
+                withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos),
+                allowTelegram
+              ),
+              participantDisplayColumns
             ),
-            participantDisplayColumns
+            displaySizingMode
           ),
           enabled
         ), entryFillDirection),
@@ -3385,9 +3499,12 @@ export default function App() {
       custom_interest_options: withFormBuilderSetting(
         withEntryFillSetting(
           withDisplayRulesSetting(
-            withParticipantColumnsSetting(
-              withTelegramSetting(withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos), allowTelegram),
-              participantDisplayColumns
+            withDisplaySizingModeSetting(
+              withParticipantColumnsSetting(
+                withTelegramSetting(withParticipantPhotoSetting(customInterestOptions, allowParticipantPhotos), allowTelegram),
+                participantDisplayColumns
+              ),
+              displaySizingMode
             ),
             displayRulesEnabled
           ),
@@ -6163,10 +6280,10 @@ export default function App() {
 
                     <div className="mt-5 border-t border-slate-800 pt-5">
                       <div className="font-semibold text-white">Entry Fill Direction</div>
-                      <p className="mt-1 text-sm text-slate-400">Choose where the next participant tile appears.</p>
+                      <p className="mt-1 text-sm text-slate-400">{displaySizingMode === "automatic" ? "Automatic sizing fills each target row from top to bottom." : "Choose where the next participant tile appears."}</p>
                       <div className="mt-3 grid gap-3 md:grid-cols-2">
                         {[{ value: "row", label: "Left to Right" }, { value: "column", label: "Top to Bottom" }].map((option) => (
-                          <button key={option.value} type="button" onClick={() => updateEntryFillDirection(option.value)} className={`rounded-2xl border px-4 py-3 font-black ${entryFillDirection === option.value ? "border-sky-300 bg-sky-400 text-slate-950" : "border-slate-700 bg-slate-950 text-slate-100"}`}>
+                          <button key={option.value} type="button" disabled={displaySizingMode === "automatic"} onClick={() => updateEntryFillDirection(option.value)} className={`rounded-2xl border px-4 py-3 font-black disabled:cursor-not-allowed disabled:opacity-35 ${entryFillDirection === option.value ? "border-sky-300 bg-sky-400 text-slate-950" : "border-slate-700 bg-slate-950 text-slate-100"}`}>
                             {option.label}
                           </button>
                         ))}
@@ -6198,6 +6315,43 @@ export default function App() {
                   </div>
 
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                    <h3 className="text-lg font-semibold text-white">Participant Sizing Mode</h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
+                      Let the board maximize participant text automatically, or choose the text size and columns yourself.
+                    </p>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      {[
+                        { value: "automatic", label: "Automatic", description: "Starts at 2 rows and expands through 6 rows as entries are added." },
+                        { value: "manual", label: "Manual", description: "Uses the participant text size and column controls below." },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => updateDisplaySizingMode(option.value)}
+                          className={`rounded-2xl border px-4 py-4 text-left transition ${
+                            displaySizingMode === option.value
+                              ? "border-sky-300 bg-sky-400 text-slate-950"
+                              : "border-slate-700 bg-slate-950 text-slate-100"
+                          }`}
+                        >
+                          <div className="font-black">{option.label}</div>
+                          <div className={`mt-1 text-sm leading-5 ${displaySizingMode === option.value ? "text-slate-800" : "text-slate-400"}`}>
+                            {option.description}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+
+                    {displaySizingMode === "automatic" ? (
+                      <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
+                        Current automatic fit: {automaticParticipantSizing.rows} rows · {automaticParticipantSizing.columns} columns · text {automaticParticipantSizing.textSize > 0 ? `+${automaticParticipantSizing.textSize}` : automaticParticipantSizing.textSize}
+                        {participantDisplayLayout !== "list" ? " · Switch to List View to apply automatic sizing." : ""}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <h3 className="text-lg font-semibold text-white">
                       Display Text Size
                     </h3>
@@ -6214,23 +6368,27 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => updateBoardEntryTextSize(-1)}
-                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                            disabled={displaySizingMode === "automatic"}
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35"
                           >
                             −
                           </button>
                           <div className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-center font-semibold text-white">
-                            {boardEntryTextSize > 0 ? `+${boardEntryTextSize}` : boardEntryTextSize}
+                            {displaySizingMode === "automatic"
+                              ? automaticParticipantSizing.textSize > 0 ? `+${automaticParticipantSizing.textSize}` : automaticParticipantSizing.textSize
+                              : boardEntryTextSize > 0 ? `+${boardEntryTextSize}` : boardEntryTextSize}
                           </div>
                           <button
                             type="button"
                             onClick={() => updateBoardEntryTextSize(1)}
-                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
+                            disabled={displaySizingMode === "automatic"}
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35"
                           >
                             +
                           </button>
                         </div>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                          Controls participant names, handles, intentions, and open-to text. Range: -15 to +30.
+                          {displaySizingMode === "automatic" ? "Controlled automatically from the number of rows and screen size." : "Controls participant names, handles, intentions, and open-to text. Range: -15 to +30."}
                         </p>
                       </div>
 
@@ -6278,10 +6436,12 @@ export default function App() {
                           key={columns}
                           type="button"
                           onClick={() => updateParticipantDisplayColumns(columns)}
+                          disabled={displaySizingMode === "automatic"}
                           className={`rounded-2xl border px-4 py-4 text-center transition ${
                             participantDisplayColumns === columns
                               ? "border-sky-300 bg-sky-400 text-slate-950"
                               : "border-slate-700 bg-slate-950 text-slate-100"
+                          } ${displaySizingMode === "automatic" ? "cursor-not-allowed opacity-35" : ""
                           }`}
                         >
                           <div className="text-2xl font-black">{columns}</div>
@@ -9499,10 +9659,10 @@ export default function App() {
           <div
             className={`displayBoardSurface ${usesSingleConnectionBoard ? "diaperGlowDisplayBoard" : ""}`}
             style={{
-              "--board-entry-detail-size": `${1.535 + clampBoardEntryTextSize(boardEntryTextSize) * 0.045}rem`,
-              "--board-entry-name-size": `${2.23 + clampBoardEntryTextSize(boardEntryTextSize) * 0.07}rem`,
-              "--participant-list-detail-size": `${1 + clampBoardEntryTextSize(boardEntryTextSize) * 0.03}rem`,
-              "--participant-list-name-size": `${1.95 + clampBoardEntryTextSize(boardEntryTextSize) * 0.06}rem`,
+              "--board-entry-detail-size": `${1.535 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.045}rem`,
+              "--board-entry-name-size": `${2.23 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.07}rem`,
+              "--participant-list-detail-size": `${1 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.03}rem`,
+              "--participant-list-name-size": `${1.95 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.06}rem`,
               "--staff-detail-size": `${1.36 + clampStaffTextSize(staffTextSize) * 0.04}rem`,
               "--staff-name-size": `${1.88 + clampStaffTextSize(staffTextSize) * 0.06}rem`,
             }}
@@ -9674,7 +9834,7 @@ export default function App() {
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   theme={sectionThemes.Switch}
                   maxRows={8}
-                  maxCols={participantDisplayColumns}
+                  maxCols={effectiveParticipantColumns}
                   connectionBoard
                 />
               </div>
@@ -9682,9 +9842,10 @@ export default function App() {
               <div className="displayConnectionRow relative z-[8] min-h-0 flex-1">
                 <ParticipantListDisplay
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
-                  columns={participantDisplayColumns}
+                  columns={effectiveParticipantColumns}
+                  rows={automaticSizingActive ? automaticParticipantSizing.rows : null}
                   fillDirection={entryFillDirection}
-                  textSizeStep={boardEntryTextSize}
+                  textSizeStep={effectiveBoardEntryTextSize}
                 />
               </div>
             ) : (
@@ -9694,7 +9855,7 @@ export default function App() {
                   entries={topEntries}
                   theme={sectionThemes.Top}
                   maxRows={displayLayout.top_max_rows}
-                  maxCols={participantDisplayColumns}
+                  maxCols={effectiveParticipantColumns}
                 />
 
                 <DisplaySection
@@ -9702,7 +9863,7 @@ export default function App() {
                   entries={bottomEntries}
                   theme={sectionThemes.Bottom}
                   maxRows={displayLayout.bottom_max_rows}
-                  maxCols={participantDisplayColumns}
+                  maxCols={effectiveParticipantColumns}
                 />
 
                 <DisplaySection
@@ -9710,7 +9871,7 @@ export default function App() {
                   entries={switchEntries}
                   theme={sectionThemes.Switch}
                   maxRows={displayLayout.switch_max_rows}
-                  maxCols={participantDisplayColumns}
+                  maxCols={effectiveParticipantColumns}
                 />
               </div>
             )}
