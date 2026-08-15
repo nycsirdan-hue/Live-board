@@ -421,7 +421,7 @@ const withoutTelegramSetting = (options) =>
 const isParticipantColumnsSettingMarker = (option) =>
   String(option || "").startsWith(PARTICIPANT_COLUMNS_SETTING_PREFIX);
 const clampParticipantColumns = (value) => Math.min(6, Math.max(2, Number(value) || 4));
-const clampBoardEntryTextSize = (value) => Math.max(-15, Math.min(30, Number(value) || 0));
+const clampBoardEntryTextSize = (value) => Math.max(0, Math.min(30, Number(value) || 0));
 const clampStaffTextSize = (value) => Math.max(-20, Math.min(10, Number(value) || 0));
 const getParticipantColumnsSetting = (options) => {
   const marker = (options || []).find(isParticipantColumnsSettingMarker);
@@ -472,20 +472,6 @@ const withEntryFillSetting = (options, direction) => [
 ];
 const withoutEntryFillSetting = (options) => (options || []).filter((option) => !isEntryFillSettingMarker(option));
 
-const getAutomaticParticipantSizing = (entryCount, viewportWidth = 1920, viewportHeight = 1080) => {
-  const count = Math.max(0, Number(entryCount) || 0);
-  const columns = Math.min(6, Math.max(2, Math.ceil(Math.max(1, count) / 6)));
-  const rows = Math.min(6, Math.max(1, Math.ceil(Math.max(1, count) / columns)));
-  const textSizeByRows = { 1: 30, 2: 30, 3: 15, 4: 5, 5: -5, 6: -15 };
-  const screenScale = Math.min(viewportWidth / 1920, viewportHeight / 1080);
-  const screenAdjustment = Math.round((screenScale - 1) * 20);
-
-  return {
-    rows,
-    columns,
-    textSize: clampBoardEntryTextSize(textSizeByRows[rows] + screenAdjustment),
-  };
-};
 const quickTagOptions = ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"];
 
 const diaperDebaucheryVibeOptions = [
@@ -1221,8 +1207,28 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
-function ParticipantListDisplay({ entries = [], columns = 4, rows = null, fillDirection = "row", textSizeStep = 0 }) {
+function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = false, setAutomaticColumns = null, fillDirection = "row", textSizeStep = 0 }) {
   const maxLineLength = 40;
+  const listRef = useRef(null);
+
+  useEffect(() => {
+    if (!automaticColumns || !setAutomaticColumns || columns >= 6) return undefined;
+
+    const frameId = window.requestAnimationFrame(() => {
+      const list = listRef.current;
+      if (!list) return;
+
+      const overflows = fillDirection === "column"
+        ? list.scrollWidth > list.clientWidth + 2
+        : list.scrollHeight > list.clientHeight + 2;
+
+      if (overflows) {
+        setAutomaticColumns((current) => Math.min(6, Math.max(current, columns + 1)));
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [automaticColumns, columns, entries, fillDirection, setAutomaticColumns, textSizeStep]);
 
   const getPositionRank = (entry) => {
     if (entry.position === "Top") return 0;
@@ -1376,20 +1382,16 @@ function ParticipantListDisplay({ entries = [], columns = 4, rows = null, fillDi
   return (
     <section className="w-full overflow-hidden">
       <div
+        ref={listRef}
         className="w-full"
         style={{
           height: "calc(100vh - 15.5rem)",
-          display: fillDirection === "column" && !rows ? "flex" : "grid",
-          ...(fillDirection === "column" && !rows
+          display: fillDirection === "column" ? "flex" : "grid",
+          ...(fillDirection === "column"
             ? { flexFlow: "column wrap", alignContent: "flex-start" }
             : {
                 gridTemplateColumns: `repeat(${clampParticipantColumns(columns)}, minmax(0, 1fr))`,
-                ...(rows && fillDirection === "column"
-                  ? {
-                      gridTemplateRows: `repeat(${rows}, max-content)`,
-                      gridAutoFlow: "column",
-                    }
-                  : { gridAutoFlow: "row" }),
+                gridAutoFlow: "row",
               }),
           alignContent: "start",
           alignItems: "start",
@@ -1472,7 +1474,7 @@ function ParticipantListDisplay({ entries = [], columns = 4, rows = null, fillDi
               className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
-                width: fillDirection === "column" && !rows
+                width: fillDirection === "column"
                   ? `calc((100vw - ${(clampParticipantColumns(columns) - 1) * 0.625}rem - 3rem) / ${clampParticipantColumns(columns)})`
                   : "100%",
                 breakInside: "avoid",
@@ -2208,6 +2210,7 @@ export default function App() {
   const [setupVenueName, setSetupVenueName] = useState("");
   const [layoutSettings, setLayoutSettings] = useState(defaultDisplayLayout);
   const [participantDisplayColumns, setParticipantDisplayColumns] = useState(4);
+  const [automaticParticipantColumns, setAutomaticParticipantColumns] = useState(2);
   const [displaySizingMode, setDisplaySizingMode] = useState("manual");
   const [displayViewport, setDisplayViewport] = useState(() => ({
     width: window.innerWidth || 1920,
@@ -3052,18 +3055,33 @@ export default function App() {
   const previousRaffleDraws = useMemo(() => raffleDraws.slice(1, 9), [raffleDraws]);
   const isRaffleDisplayActive = settings?.display_mode === "raffle";
   const participantDisplayLayout = settings?.participant_display_layout === "list" ? "list" : "tiles";
-  const automaticParticipantSizing = getAutomaticParticipantSizing(
-    participantEntries.length,
-    displayViewport.width,
-    displayViewport.height
-  );
   const automaticSizingActive = displaySizingMode === "automatic" && participantDisplayLayout === "list";
   const effectiveParticipantColumns = automaticSizingActive
-    ? automaticParticipantSizing.columns
+    ? automaticParticipantColumns
     : participantDisplayColumns;
-  const effectiveBoardEntryTextSize = automaticSizingActive
-    ? automaticParticipantSizing.textSize
-    : boardEntryTextSize;
+  const effectiveBoardEntryTextSize = boardEntryTextSize;
+  const automaticSizingContentKey = useMemo(
+    () => JSON.stringify(participantEntries.map((entry) => [
+      entry.id,
+      entry.name,
+      entry.who_am_i_text,
+      entry.seeking_text,
+      entry.social_handle,
+      entry.items,
+      entry.custom_items,
+    ])),
+    [participantEntries]
+  );
+
+  useEffect(() => {
+    setAutomaticParticipantColumns(2);
+  }, [
+    automaticSizingContentKey,
+    boardEntryTextSize,
+    displayViewport.height,
+    displayViewport.width,
+    entryFillDirection,
+  ]);
 
   const getRaffleStatusLabel = (status) => {
     if (status === "winner") return "Winner";
@@ -6322,7 +6340,7 @@ export default function App() {
 
                     <div className="mt-4 grid gap-3 md:grid-cols-2">
                       {[
-                        { value: "automatic", label: "Automatic", description: "Starts at 2 columns, fills up to 6 rows, then adds columns as entries are added." },
+                        { value: "automatic", label: "Automatic Columns", description: "Keeps your text size and adds columns only when the rendered cards no longer fit." },
                         { value: "manual", label: "Manual", description: "Uses the participant text size and column controls below." },
                       ].map((option) => (
                         <button
@@ -6345,7 +6363,7 @@ export default function App() {
 
                     {displaySizingMode === "automatic" ? (
                       <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
-                        Current automatic fit: {automaticParticipantSizing.rows} rows · {automaticParticipantSizing.columns} columns · text {automaticParticipantSizing.textSize > 0 ? `+${automaticParticipantSizing.textSize}` : automaticParticipantSizing.textSize}
+                        The live display measures the actual cards and available screen space, beginning at 2 columns and expanding through 6 as needed.
                         {participantDisplayLayout !== "list" ? " · Switch to List View to apply automatic sizing." : ""}
                       </div>
                     ) : null}
@@ -6368,27 +6386,23 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => updateBoardEntryTextSize(-1)}
-                            disabled={displaySizingMode === "automatic"}
-                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35"
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
                           >
                             −
                           </button>
                           <div className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-center font-semibold text-white">
-                            {displaySizingMode === "automatic"
-                              ? automaticParticipantSizing.textSize > 0 ? `+${automaticParticipantSizing.textSize}` : automaticParticipantSizing.textSize
-                              : boardEntryTextSize > 0 ? `+${boardEntryTextSize}` : boardEntryTextSize}
+                            {boardEntryTextSize > 0 ? `+${boardEntryTextSize}` : boardEntryTextSize}
                           </div>
                           <button
                             type="button"
                             onClick={() => updateBoardEntryTextSize(1)}
-                            disabled={displaySizingMode === "automatic"}
-                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35"
+                            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-semibold text-white"
                           >
                             +
                           </button>
                         </div>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                          {displaySizingMode === "automatic" ? "Controlled automatically from the number of rows and screen size." : "Controls participant names, handles, intentions, and open-to text. Range: -15 to +30."}
+                          Controls participant names, handles, intentions, and open-to text. Automatic Columns uses this exact size. Range: 0 to +30.
                         </p>
                       </div>
 
@@ -7893,7 +7907,7 @@ export default function App() {
                         </button>
                       </div>
                       <p className="mt-2 text-xs leading-5 text-slate-500">
-                        Controls participant names, handles, intentions, and open-to text. Range: -15 to +30.
+                        Controls participant names, handles, intentions, and open-to text. Range: 0 to +30.
                       </p>
                     </div>
 
@@ -9843,7 +9857,8 @@ export default function App() {
                 <ParticipantListDisplay
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   columns={effectiveParticipantColumns}
-                  rows={automaticSizingActive ? automaticParticipantSizing.rows : null}
+                  automaticColumns={automaticSizingActive}
+                  setAutomaticColumns={setAutomaticParticipantColumns}
                   fillDirection={entryFillDirection}
                   textSizeStep={effectiveBoardEntryTextSize}
                 />
