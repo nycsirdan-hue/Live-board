@@ -1207,12 +1207,12 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
-function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, fillDirection = "row", textSizeStep = 0 }) {
+function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, setAutomaticFitting = null, fillDirection = "row", textSizeStep = 0 }) {
   const maxLineLength = 40;
   const listRef = useRef(null);
 
   useEffect(() => {
-    if (!automaticColumns || !setAutomaticColumns || !setAutomaticTextSize) return undefined;
+    if (!automaticColumns || !setAutomaticColumns || !setAutomaticTextSize || !setAutomaticFitting) return undefined;
 
     const frameId = window.requestAnimationFrame(() => {
       const list = listRef.current;
@@ -1228,18 +1228,24 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
       if (cardContentOverflows && textSizeStep > 0) {
         setAutomaticTextSize((current) => Math.max(0, current - 1));
         setAutomaticColumns(2);
+      } else if (cardContentOverflows) {
+        setAutomaticFitting(false);
       } else if (layoutOverflows) {
         if (columns < 6) {
           setAutomaticColumns((current) => Math.min(6, Math.max(current, columns + 1)));
         } else if (textSizeStep > 0) {
           setAutomaticTextSize((current) => Math.max(0, current - 1));
           setAutomaticColumns(2);
+        } else {
+          setAutomaticFitting(false);
         }
+      } else {
+        setAutomaticFitting(false);
       }
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [automaticColumns, columns, entries, fillDirection, setAutomaticColumns, setAutomaticTextSize, textSizeStep]);
+  }, [automaticColumns, columns, entries, fillDirection, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
 
   const getPositionRank = (entry) => {
     if (entry.position === "Top") return 0;
@@ -1391,12 +1397,12 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
   }
 
   return (
-    <section className="w-full overflow-hidden">
+    <section className="h-full w-full overflow-hidden">
       <div
         ref={listRef}
         className="w-full"
         style={{
-          height: "calc(125vh - 15.5rem)",
+          height: "100%",
           display: fillDirection === "column" ? "flex" : "grid",
           ...(fillDirection === "column"
             ? { flexFlow: "column wrap", alignContent: "flex-start" }
@@ -2223,6 +2229,8 @@ export default function App() {
   const [participantDisplayColumns, setParticipantDisplayColumns] = useState(4);
   const [automaticParticipantColumns, setAutomaticParticipantColumns] = useState(2);
   const [automaticBoardEntryTextSize, setAutomaticBoardEntryTextSize] = useState(30);
+  const [automaticFitting, setAutomaticFitting] = useState(false);
+  const [automaticFitReady, setAutomaticFitReady] = useState(false);
   const [displaySizingMode, setDisplaySizingMode] = useState("manual");
   const [displayViewport, setDisplayViewport] = useState(() => ({
     width: window.innerWidth || 1920,
@@ -3090,8 +3098,17 @@ export default function App() {
   useEffect(() => {
     setAutomaticParticipantColumns(2);
     setAutomaticBoardEntryTextSize(30);
+    setAutomaticFitting(automaticSizingActive);
+    setAutomaticFitReady(false);
+
+    const fitDelay = window.setTimeout(() => {
+      setAutomaticFitReady(automaticSizingActive);
+    }, 500);
+
+    return () => window.clearTimeout(fitDelay);
   }, [
     automaticSizingContentKey,
+    automaticSizingActive,
     displaySizingMode,
     displayViewport.height,
     displayViewport.width,
@@ -9688,7 +9705,7 @@ export default function App() {
           )
         ) : (
           <div
-            className={`displayBoardSurface ${usesSingleConnectionBoard ? "diaperGlowDisplayBoard" : ""}`}
+            className={`displayBoardSurface ${usesSingleConnectionBoard ? "diaperGlowDisplayBoard" : ""} ${automaticSizingActive && automaticFitting ? "automaticFitTransitioning" : ""}`}
             style={{
               "--board-entry-detail-size": `${1.535 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.045}rem`,
               "--board-entry-name-size": `${2.23 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.07}rem`,
@@ -9874,9 +9891,10 @@ export default function App() {
                 <ParticipantListDisplay
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   columns={effectiveParticipantColumns}
-                  automaticColumns={automaticSizingActive}
+                  automaticColumns={automaticSizingActive && automaticFitReady}
                   setAutomaticColumns={setAutomaticParticipantColumns}
                   setAutomaticTextSize={setAutomaticBoardEntryTextSize}
+                  setAutomaticFitting={setAutomaticFitting}
                   fillDirection={entryFillDirection}
                   textSizeStep={effectiveBoardEntryTextSize}
                 />

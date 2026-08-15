@@ -2671,4 +2671,10 @@ body:has(.displayBoardSurface) #root {
   height: 125vh !important;
   transform: scale(0.8) !important;
   transform-origin: left top !important;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.displayBoardSurface.automaticFitTransitioning {
+  opacity: 0 !important;
 }
