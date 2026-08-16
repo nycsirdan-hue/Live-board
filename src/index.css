@@ -2578,23 +2578,35 @@ body:has(.displayBoardSurface) #root {
 
 .diaperGlowDisplayBoard {
   background:
-    radial-gradient(circle at 5% 16%, rgba(248, 113, 113, 0.23), transparent 30%),
-    radial-gradient(circle at 30% 0%, rgba(251, 191, 36, 0.18), transparent 30%),
-    radial-gradient(circle at 58% 105%, rgba(74, 222, 128, 0.17), transparent 36%),
-    radial-gradient(circle at 92% 12%, rgba(167, 139, 250, 0.22), transparent 34%),
-    linear-gradient(135deg, #030712 0%, #090b16 48%, #040611 100%) !important;
+    linear-gradient(180deg, rgba(3, 7, 18, 0.08) 0%, rgba(3, 7, 18, 0.48) 58%, rgba(3, 7, 18, 0.72) 100%),
+    linear-gradient(
+      90deg,
+      rgba(239, 68, 68, 0.32) 0%,
+      rgba(249, 115, 22, 0.28) 16%,
+      rgba(250, 204, 21, 0.24) 32%,
+      rgba(34, 197, 94, 0.22) 49%,
+      rgba(6, 182, 212, 0.24) 66%,
+      rgba(59, 130, 246, 0.28) 83%,
+      rgba(168, 85, 247, 0.32) 100%
+    ),
+    #030712 !important;
 }
 
 .diaperGlowDisplayBoard::before {
-  opacity: 0.58 !important;
+  inset: 0 0 auto !important;
+  height: 14px !important;
+  opacity: 1 !important;
   background: linear-gradient(
-    100deg,
-    rgba(248, 113, 113, 0.12),
-    rgba(251, 191, 36, 0.09),
-    rgba(74, 222, 128, 0.08),
-    rgba(96, 165, 250, 0.07),
-    rgba(167, 139, 250, 0.11)
+    90deg,
+    #ef4444 0%,
+    #f97316 17%,
+    #facc15 34%,
+    #22c55e 51%,
+    #06b6d4 68%,
+    #3b82f6 84%,
+    #a855f7 100%
   ) !important;
+  box-shadow: 0 3px 16px rgba(255, 255, 255, 0.18) !important;
 }
 
 .diaperGlowDisplayBoard .displayBoardEventName,
@@ -2721,6 +2733,41 @@ body:has(.displayBoardSurface) #root {
   filter: brightness(2.6) contrast(1.08);
 }
 
+.automaticFitWatermarkKrinkles img {
+  width: min(42vw, 48rem);
+  max-height: 76vh;
+  opacity: 0.72;
+  filter: none;
+}
+
+.automaticFitKrinklesLogo {
+  display: none;
+}
+
+.automaticFitWatermarkKrinkles {
+  background:
+    linear-gradient(180deg, rgba(3, 7, 18, 0.08) 0%, rgba(3, 7, 18, 0.48) 58%, rgba(3, 7, 18, 0.72) 100%),
+    linear-gradient(
+      90deg,
+      rgba(239, 68, 68, 0.32) 0%,
+      rgba(249, 115, 22, 0.28) 16%,
+      rgba(250, 204, 21, 0.24) 32%,
+      rgba(34, 197, 94, 0.22) 49%,
+      rgba(6, 182, 212, 0.24) 66%,
+      rgba(59, 130, 246, 0.28) 83%,
+      rgba(168, 85, 247, 0.32) 100%
+    ),
+    #030712;
+}
+
+.automaticFitWatermarkKrinkles .automaticFitStudioLogo {
+  display: none;
+}
+
+.automaticFitWatermarkKrinkles .automaticFitKrinklesLogo {
+  display: block;
+}
+
 .automaticFitContent {
   position: absolute;
   inset: 0;
@@ -2738,6 +2785,16 @@ body:has(.displayBoardSurface) #root {
 
 .displayBoardSurface.automaticFitTransitioning .automaticFitContent {
   opacity: 0 !important;
+}
+
+/* Once entries exist, keep their overlay visible while automatic sizing recalculates. */
+.displayBoardSurface.displayBoardHasParticipants.automaticFitTransitioning .automaticFitContent {
+  opacity: 1 !important;
+}
+
+.displayBoardSurface.displayBoardHasParticipants .automaticFitWatermark {
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 .displayBoardSurface.automaticFitTransitioning .automaticFitWatermark {

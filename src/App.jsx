@@ -1816,15 +1816,52 @@ function DisplayRotationOverlay({ eventDisplay }) {
   );
 }
 
-function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false, connectionBoard = false }) {
+function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false, connectionBoard = false, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, setAutomaticFitting = null, textSizeStep = 0 }) {
+  const sectionRef = useRef(null);
   const { rows, cols } = getSectionGrid(entries.length, maxRows, maxCols);
   const gridCols = connectionBoard ? Math.max(1, Number(maxCols) || 4) : cols;
   const compact = rows >= 4 || gridCols >= 3 || entries.length > 8;
   const sectionMeta = getDisplaySectionMeta(title);
   const showInlineRoleSubtitle = ["Top", "Bottom", "Switch"].includes(title);
 
+  useEffect(() => {
+    if (!connectionBoard || !automaticColumns || !setAutomaticColumns || !setAutomaticTextSize || !setAutomaticFitting) return undefined;
+
+    const frameId = window.requestAnimationFrame(() => {
+      const section = sectionRef.current;
+      const availableStage = section?.parentElement;
+      if (!section || !availableStage) return;
+
+      const cards = section.querySelectorAll(".displayConnectionEntry");
+      const cardContentOverflows = Array.from(cards).some(
+        (card) => card.scrollWidth > card.clientWidth + 2
+      );
+      const layoutOverflows = section.scrollHeight > availableStage.clientHeight + 2;
+
+      if (cardContentOverflows && textSizeStep > 0) {
+        setAutomaticTextSize((current) => Math.max(0, current - 1));
+        setAutomaticColumns(2);
+      } else if (cardContentOverflows) {
+        setAutomaticFitting(false);
+      } else if (layoutOverflows) {
+        if (gridCols < 6) {
+          setAutomaticColumns((current) => Math.min(6, Math.max(current, gridCols + 1)));
+        } else if (textSizeStep > 0) {
+          setAutomaticTextSize((current) => Math.max(0, current - 1));
+          setAutomaticColumns(2);
+        } else {
+          setAutomaticFitting(false);
+        }
+      } else {
+        setAutomaticFitting(false);
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [automaticColumns, entries, gridCols, connectionBoard, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
+
   return (
-    <section className={`displaySectionCard self-start rounded-2xl border px-2.5 pt-2.5 pb-1 shadow-2xl min-h-[120px] ${theme.section}`}>
+    <section ref={sectionRef} className={`displaySectionCard self-start rounded-2xl border px-2.5 pt-2.5 pb-1 shadow-2xl min-h-[120px] ${theme.section}`}>
       <div className={title ? "displaySectionHeader mb-2" : "mb-0"}>
         {sectionMeta.icon ? (
           <div className={`displaySectionIcon ${theme.title}`}>
@@ -3088,7 +3125,7 @@ export default function App() {
   const previousRaffleDraws = useMemo(() => raffleDraws.slice(1, 9), [raffleDraws]);
   const isRaffleDisplayActive = settings?.display_mode === "raffle";
   const participantDisplayLayout = settings?.participant_display_layout === "list" ? "list" : "tiles";
-  const automaticSizingActive = displaySizingMode === "automatic" && participantDisplayLayout === "list";
+  const automaticSizingActive = displaySizingMode === "automatic" && (participantDisplayLayout === "list" || usesSingleConnectionBoard);
   const effectiveParticipantColumns = automaticSizingActive
     ? automaticParticipantColumns
     : participantDisplayColumns;
@@ -6404,7 +6441,7 @@ export default function App() {
                     {displaySizingMode === "automatic" ? (
                       <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
                         The live display measures the actual cards and screen space, testing text from +30 down to a hard minimum of 0 and using 2–6 columns.
-                        {participantDisplayLayout !== "list" ? " · Switch to List View to apply automatic sizing." : ""}
+                        {participantDisplayLayout !== "list" && !usesSingleConnectionBoard ? " · Switch to List View to apply automatic sizing." : ""}
                       </div>
                     ) : null}
                   </div>
@@ -9741,7 +9778,7 @@ export default function App() {
           )
         ) : (
           <div
-            className={`displayBoardSurface ${usesSingleConnectionBoard ? "diaperGlowDisplayBoard" : ""} ${automaticSizingActive && automaticFitting ? "automaticFitTransitioning" : ""}`}
+            className={`displayBoardSurface ${usesSingleConnectionBoard ? "diaperGlowDisplayBoard" : ""} ${participantEntries.length > 0 ? "displayBoardHasParticipants" : ""} ${automaticSizingActive && automaticFitting ? "automaticFitTransitioning" : ""}`}
             style={{
               "--board-entry-detail-size": `${1.535 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.045}rem`,
               "--board-entry-name-size": `${2.23 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.07}rem`,
@@ -9924,8 +9961,16 @@ export default function App() {
             </div>
 
             <div className="automaticFitParticipantStage">
-            <div className="automaticFitWatermark" aria-hidden="true">
-              <img src="/studio125-watermark.png" alt="" />
+            <div
+              className={`automaticFitWatermark ${isDiaperDebaucheryEntryForm ? "automaticFitWatermarkKrinkles" : ""}`}
+              aria-hidden="true"
+            >
+              {participantEntries.length === 0 ? (
+                <>
+                  <img className="automaticFitStudioLogo" src="/studio125-watermark.png" alt="" />
+                  <img className="automaticFitKrinklesLogo" src="/krinkles-badge.png" alt="" />
+                </>
+              ) : null}
             </div>
 
             <div className="automaticFitContent">
@@ -9938,6 +9983,11 @@ export default function App() {
                   maxRows={8}
                   maxCols={effectiveParticipantColumns}
                   connectionBoard
+                  automaticColumns={automaticSizingActive && automaticFitReady}
+                  setAutomaticColumns={setAutomaticParticipantColumns}
+                  setAutomaticTextSize={setAutomaticBoardEntryTextSize}
+                  setAutomaticFitting={setAutomaticFitting}
+                  textSizeStep={effectiveBoardEntryTextSize}
                 />
               </div>
             ) : participantDisplayLayout === "list" ? (

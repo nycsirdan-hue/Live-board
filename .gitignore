@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# One-off local patch scripts and source snapshots
+/*.sh
+*.backup-*
+*.broken-*
+*.crashed-*
+*.bak
+*.bak.*
+*.save
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,3 +32,4 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+.env*
