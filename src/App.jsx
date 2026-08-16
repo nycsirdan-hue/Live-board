@@ -1836,7 +1836,14 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
       const cardContentOverflows = Array.from(cards).some(
         (card) => card.scrollWidth > card.clientWidth + 2
       );
-      const layoutOverflows = section.scrollHeight > availableStage.clientHeight + 2;
+      const availableBounds = availableStage.getBoundingClientRect();
+      const lowestCardBottom = Array.from(cards).reduce(
+        (lowest, card) => Math.max(lowest, card.getBoundingClientRect().bottom),
+        availableBounds.top
+      );
+      const layoutOverflows =
+        lowestCardBottom > availableBounds.bottom + 2 ||
+        section.scrollHeight > availableStage.clientHeight + 2;
 
       if (cardContentOverflows && textSizeStep > 0) {
         setAutomaticTextSize((current) => Math.max(0, current - 1));
