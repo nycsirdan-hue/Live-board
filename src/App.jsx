@@ -1826,8 +1826,24 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
   const connectionColumnEntries = Array.from({ length: gridCols }, () => []);
 
   if (connectionBoard) {
-    entries.forEach((entry, index) => {
-      connectionColumnEntries[index % gridCols].push(entry);
+    const columnWeights = Array.from({ length: gridCols }, () => 0);
+
+    entries.forEach((entry) => {
+      const entryText = [
+        entry.name,
+        entry.who_am_i_text,
+        entry.seeking_text,
+        entry.social_handle,
+        ...(entry.items || []),
+        ...(entry.custom_items || []).filter((item) => typeof item === "string"),
+      ].filter(Boolean).join(" ");
+      const hasPhoto = Boolean(getParticipantPhoto(entry.custom_items || []));
+      const estimatedLines = Math.max(3, Math.ceil(entryText.length / 24));
+      const estimatedWeight = estimatedLines + (hasPhoto ? 2.5 : 0);
+      const shortestColumnIndex = columnWeights.indexOf(Math.min(...columnWeights));
+
+      connectionColumnEntries[shortestColumnIndex].push(entry);
+      columnWeights[shortestColumnIndex] += estimatedWeight;
     });
   }
 
@@ -1849,7 +1865,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
         availableBounds.top
       );
       const layoutOverflows =
-        lowestCardBottom > availableBounds.bottom + 2 ||
+        lowestCardBottom > availableBounds.bottom - 12 ||
         section.scrollHeight > availableStage.clientHeight + 2;
 
       if (cardContentOverflows && textSizeStep > 0) {
