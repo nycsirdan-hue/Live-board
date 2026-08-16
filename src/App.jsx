@@ -9972,11 +9972,10 @@ export default function App() {
               className={`automaticFitWatermark ${isDiaperDebaucheryEntryForm ? "automaticFitWatermarkKrinkles" : ""}`}
               aria-hidden="true"
             >
-              {participantEntries.length === 0 ? (
-                <>
-                  <img className="automaticFitStudioLogo" src="/studio125-watermark.png" alt="" />
-                  <img className="automaticFitKrinklesLogo" src="/krinkles-badge.png" alt="" />
-                </>
+              {isDiaperDebaucheryEntryForm ? (
+                <img className="automaticFitKrinklesLogo" src="/krinkles-badge.png" alt="" />
+              ) : participantEntries.length === 0 ? (
+                <img className="automaticFitStudioLogo" src="/studio125-watermark.png" alt="" />
               ) : null}
             </div>
 

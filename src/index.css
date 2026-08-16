@@ -2802,3 +2802,14 @@ body:has(.displayBoardSurface) #root {
   visibility: visible;
   transition-delay: 0s;
 }
+
+/* KrINKles briefly shows its logo while automatic sizing recalculates. */
+.diaperGlowDisplayBoard.displayBoardHasParticipants.automaticFitTransitioning .automaticFitContent {
+  opacity: 0 !important;
+}
+
+.diaperGlowDisplayBoard.displayBoardHasParticipants.automaticFitTransitioning .automaticFitWatermarkKrinkles {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition-delay: 0s;
+}
