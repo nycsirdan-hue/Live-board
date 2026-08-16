@@ -1857,9 +1857,6 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
       if (!section || !availableStage) return;
 
       const cards = section.querySelectorAll(".displayConnectionEntry");
-      const cardContentOverflows = Array.from(cards).some(
-        (card) => card.scrollWidth > card.clientWidth + 2
-      );
       const availableBounds = availableStage.getBoundingClientRect();
       const lowestCardBottom = Array.from(cards).reduce(
         (lowest, card) => Math.max(lowest, card.getBoundingClientRect().bottom),
@@ -1869,12 +1866,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
         lowestCardBottom > availableBounds.bottom - 12 ||
         section.scrollHeight > availableStage.clientHeight + 2;
 
-      if (cardContentOverflows && textSizeStep > MIN_BOARD_ENTRY_TEXT_SIZE) {
-        setAutomaticTextSize((current) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, current - 1));
-        setAutomaticColumns(2);
-      } else if (cardContentOverflows) {
-        setAutomaticFitting(false);
-      } else if (layoutOverflows) {
+      if (layoutOverflows) {
         if (gridCols < 6) {
           setAutomaticColumns((current) => Math.min(6, Math.max(current, gridCols + 1)));
         } else if (textSizeStep > MIN_BOARD_ENTRY_TEXT_SIZE) {
