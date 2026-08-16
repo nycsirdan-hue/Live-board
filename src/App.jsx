@@ -422,7 +422,8 @@ const withoutTelegramSetting = (options) =>
 const isParticipantColumnsSettingMarker = (option) =>
   String(option || "").startsWith(PARTICIPANT_COLUMNS_SETTING_PREFIX);
 const clampParticipantColumns = (value) => Math.min(6, Math.max(2, Number(value) || 4));
-const clampBoardEntryTextSize = (value) => Math.max(0, Math.min(30, Number(value) || 0));
+const MIN_BOARD_ENTRY_TEXT_SIZE = -15;
+const clampBoardEntryTextSize = (value) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, Math.min(30, Number(value) || 0));
 const clampStaffTextSize = (value) => Math.max(-20, Math.min(10, Number(value) || 0));
 const getParticipantColumnsSetting = (options) => {
   const marker = (options || []).find(isParticipantColumnsSettingMarker);
@@ -1237,16 +1238,16 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
         ? list.scrollWidth > list.clientWidth + 2
         : list.scrollHeight > list.clientHeight + 2;
 
-      if (cardContentOverflows && textSizeStep > 0) {
-        setAutomaticTextSize((current) => Math.max(0, current - 1));
+      if (cardContentOverflows && textSizeStep > MIN_BOARD_ENTRY_TEXT_SIZE) {
+        setAutomaticTextSize((current) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, current - 1));
         setAutomaticColumns(2);
       } else if (cardContentOverflows) {
         setAutomaticFitting(false);
       } else if (layoutOverflows) {
         if (columns < 6) {
           setAutomaticColumns((current) => Math.min(6, Math.max(current, columns + 1)));
-        } else if (textSizeStep > 0) {
-          setAutomaticTextSize((current) => Math.max(0, current - 1));
+        } else if (textSizeStep > MIN_BOARD_ENTRY_TEXT_SIZE) {
+          setAutomaticTextSize((current) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, current - 1));
           setAutomaticColumns(2);
         } else {
           setAutomaticFitting(false);
@@ -1868,16 +1869,16 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
         lowestCardBottom > availableBounds.bottom - 12 ||
         section.scrollHeight > availableStage.clientHeight + 2;
 
-      if (cardContentOverflows && textSizeStep > 0) {
-        setAutomaticTextSize((current) => Math.max(0, current - 1));
+      if (cardContentOverflows && textSizeStep > MIN_BOARD_ENTRY_TEXT_SIZE) {
+        setAutomaticTextSize((current) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, current - 1));
         setAutomaticColumns(2);
       } else if (cardContentOverflows) {
         setAutomaticFitting(false);
       } else if (layoutOverflows) {
         if (gridCols < 6) {
           setAutomaticColumns((current) => Math.min(6, Math.max(current, gridCols + 1)));
-        } else if (textSizeStep > 0) {
-          setAutomaticTextSize((current) => Math.max(0, current - 1));
+        } else if (textSizeStep > MIN_BOARD_ENTRY_TEXT_SIZE) {
+          setAutomaticTextSize((current) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, current - 1));
           setAutomaticColumns(2);
         } else {
           setAutomaticFitting(false);
@@ -6487,7 +6488,7 @@ export default function App() {
 
                     {displaySizingMode === "automatic" ? (
                       <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
-                        The live display measures the actual cards and screen space, testing text from +30 down to a hard minimum of 0 and using 2–6 columns.
+                        The live display measures the actual cards and screen space, testing text from +30 down to a hard minimum of −15 and using 2–6 columns.
                         {participantDisplayLayout !== "list" && !usesSingleConnectionBoard ? " · Switch to List View to apply automatic sizing." : ""}
                       </div>
                     ) : null}
@@ -6528,7 +6529,7 @@ export default function App() {
                           </button>
                         </div>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                          {displaySizingMode === "automatic" ? "Automatically selects the largest size that fits, never below 0." : "Controls participant names, handles, intentions, and open-to text. Range: 0 to +30."}
+                          {displaySizingMode === "automatic" ? "Automatically selects the largest size that fits, never below −15." : "Controls participant names, handles, intentions, and open-to text. Range: −15 to +30."}
                         </p>
                       </div>
 
@@ -8061,7 +8062,7 @@ export default function App() {
                         </button>
                       </div>
                       <p className="mt-2 text-xs leading-5 text-slate-500">
-                        Controls participant names, handles, intentions, and open-to text. Range: 0 to +30.
+                        Controls participant names, handles, intentions, and open-to text. Range: −15 to +30.
                       </p>
                     </div>
 

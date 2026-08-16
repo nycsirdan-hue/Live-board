@@ -1809,8 +1809,8 @@ body:has(.displayBoardSurface) #root {
 
 /* =========================================================
    REBASELINED DISPLAY TEXT SIZE
-   Participant setup range: 0 to +30
-   0 now equals the old +15 visual size.
+   Participant setup range: -15 to +30
+   0 equals the previous baseline visual size.
    These variables are computed in App.jsx and applied here.
    ========================================================= */
 
