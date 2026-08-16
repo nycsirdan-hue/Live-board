@@ -1823,6 +1823,13 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
   const compact = rows >= 4 || gridCols >= 3 || entries.length > 8;
   const sectionMeta = getDisplaySectionMeta(title);
   const showInlineRoleSubtitle = ["Top", "Bottom", "Switch"].includes(title);
+  const connectionColumnEntries = Array.from({ length: gridCols }, () => []);
+
+  if (connectionBoard) {
+    entries.forEach((entry, index) => {
+      connectionColumnEntries[index % gridCols].push(entry);
+    });
+  }
 
   useEffect(() => {
     if (!connectionBoard || !automaticColumns || !setAutomaticColumns || !setAutomaticTextSize || !setAutomaticFitting) return undefined;
@@ -1866,6 +1873,39 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
 
     return () => window.cancelAnimationFrame(frameId);
   }, [automaticColumns, entries, gridCols, connectionBoard, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
+
+  const renderParticipantEntry = (entry, index, useGridPlacement = true) => {
+    const mergedItems = sortDisplayItemsByConfiguredOrder([
+      ...(entry.items || []),
+      ...(entry.custom_items || []),
+    ]);
+
+    return (
+      <div
+        key={entry.id}
+        style={useGridPlacement ? gridPlacement(index, gridCols) : undefined}
+        className={connectionBoard
+          ? "displayConnectionEntry min-h-0 self-start"
+          : "min-h-0 self-start border-b border-slate-700/40 last:border-b-0"}
+      >
+        <EntryLine
+          name={entry.name}
+          participantPhoto={getParticipantPhoto(entry.custom_items || [])}
+          socialHandle={entry.social_handle || ""}
+          socialPlatform={entry.social_platform || ""}
+          whoAmI={entry.who_am_i_text || ""}
+          seeking={entry.seeking_text || ""}
+          items={mergedItems}
+          category={entry.dm_category || entry.position || ""}
+          compact={compact}
+          itemLimit={compact ? 8 : 10}
+          isDM={false}
+          isHost={false}
+          preserveTaggedCategories
+        />
+      </div>
+    );
+  };
 
   return (
     <section ref={sectionRef} className={`displaySectionCard self-start rounded-2xl border px-2.5 pt-2.5 pb-1 shadow-2xl min-h-[120px] ${theme.section}`}>
@@ -1956,49 +1996,33 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
         </div>
       ) : (
         <div className={`displaySectionEntries rounded-2xl border p-5 md:p-6 h-full ${connectionBoard ? "displayConnectionEntries" : ""} ${theme.inner}`}>
-          <div
-            className={`grid items-start content-start ${connectionBoard ? "displayConnectionEntriesGrid" : "gap-x-4 gap-y-1"}`}
-            style={{
-              gridTemplateColumns: `repeat(${Math.max(1, gridCols)}, minmax(0, 1fr))`,
-              gridTemplateRows: `repeat(${Math.max(1, rows)}, minmax(0, auto))`,
-              gridAutoFlow: "row",
-              width: "100%",
-            }}
-          >
-            {entries.map((entry, index) => {
-              const mergedItems = sortDisplayItemsByConfiguredOrder([
-                ...(entry.items || []),
-                ...(entry.custom_items || []),
-              ]);
-              const placement = gridPlacement(index, gridCols);
-
-              return (
-                <div
-                  key={entry.id}
-                  style={placement}
-                  className={connectionBoard
-                    ? "displayConnectionEntry min-h-0 self-start"
-                    : "min-h-0 self-start border-b border-slate-700/40 last:border-b-0"}
-                >
-                  <EntryLine
-                    name={entry.name}
-                    participantPhoto={getParticipantPhoto(entry.custom_items || [])}
-                    socialHandle={entry.social_handle || ""}
-                    socialPlatform={entry.social_platform || ""}
-                    whoAmI={entry.who_am_i_text || ""}
-                    seeking={entry.seeking_text || ""}
-                    items={mergedItems}
-                    category={entry.dm_category || entry.position || ""}
-                    compact={compact}
-                    itemLimit={compact ? 8 : 10}
-                    isDM={false}
-                    isHost={false}
-                    preserveTaggedCategories
-                  />
+          {connectionBoard ? (
+            <div
+              className="displayConnectionEntriesGrid grid items-start"
+              style={{
+                gridTemplateColumns: `repeat(${Math.max(1, gridCols)}, minmax(0, 1fr))`,
+                width: "100%",
+              }}
+            >
+              {connectionColumnEntries.map((columnEntries, columnIndex) => (
+                <div key={`connection-column-${columnIndex}`} className="flex min-w-0 flex-col gap-[0.65rem]">
+                  {columnEntries.map((entry, entryIndex) => renderParticipantEntry(entry, entryIndex, false))}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              className="grid items-start content-start gap-x-4 gap-y-1"
+              style={{
+                gridTemplateColumns: `repeat(${Math.max(1, gridCols)}, minmax(0, 1fr))`,
+                gridTemplateRows: `repeat(${Math.max(1, rows)}, minmax(0, auto))`,
+                gridAutoFlow: "row",
+                width: "100%",
+              }}
+            >
+              {entries.map((entry, index) => renderParticipantEntry(entry, index))}
+            </div>
+          )}
         </div>
       )}
     </section>
