@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/liveboard/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/liveboard/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}
