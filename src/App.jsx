@@ -625,6 +625,146 @@ const withFormBuilderSetting = (options, configs) => [
 ];
 const withoutFormBuilderSetting = (options) => (options || []).filter((option) => !isFormBuilderSettingMarker(option));
 
+const FORM_DISPLAY_PREFIXES = {
+  intention: "Quick Tag: ",
+  topImplements: "Top likes to give: ",
+  bottomImplements: "Bottom likes to receive: ",
+  limits: "Limits: ",
+  experience: "Experience: ",
+  sexual: "Sexual: ",
+  interests: "Interests: ",
+};
+
+const FORM_DISPLAY_PREFIX_ALIASES = [
+  { key: "topImplements", prefixes: ["Top likes to give:", "Top likes to use:", "Top:", "As a top I like to use:"] },
+  { key: "bottomImplements", prefixes: ["Bottom likes to receive:", "Bottom:", "As a bottom I like to receive:"] },
+  { key: "limits", prefixes: ["Limits:", "Limit:"] },
+  { key: "experience", prefixes: ["Experience:", "Experience Level:"] },
+  { key: "sexual", prefixes: ["Sexual:", "Sex:", "Sexual Preference:", "Sexual Preferences:"] },
+  { key: "interests", prefixes: ["Interests:", "Interest:", "Looking For:", "Looking for:"] },
+  { key: "intention", prefixes: ["Quick Tag:"] },
+];
+
+const normalizeFormDisplayValue = (value) => {
+  const clean = String(value || "").trim();
+
+  if (/^learn new skills$/i.test(clean)) {
+    return "learning";
+  }
+
+  return clean.toLowerCase();
+};
+
+const parseStoredFormDisplayItem = (item) => {
+  if (typeof item !== "string") return null;
+
+  for (const group of FORM_DISPLAY_PREFIX_ALIASES) {
+    const match = group.prefixes.find((prefix) =>
+      item.toLowerCase().startsWith(prefix.toLowerCase())
+    );
+
+    if (!match) continue;
+
+    const value = item.slice(match.length).trim();
+
+    if (!value) return null;
+
+    return {
+      sectionKey: group.key,
+      value,
+    };
+  }
+
+  return null;
+};
+
+const normalizeEntryItemsForCurrentForm = (items = [], formConfig = null) => {
+  if (!formConfig || typeof formConfig !== "object") {
+    return items;
+  }
+
+  const enabledOwners = new Map();
+  const configuredLabels = new Set();
+
+  Object.keys(FORM_DISPLAY_PREFIXES).forEach((sectionKey) => {
+    const section = formConfig?.[sectionKey];
+
+    if (!section || !Array.isArray(section.options)) return;
+
+    const sectionEnabled = section.enabled !== false;
+
+    section.options.forEach((option) => {
+      const label =
+        typeof option === "string"
+          ? option
+          : option?.label;
+
+      if (!String(label || "").trim()) return;
+
+      const key = normalizeFormDisplayValue(label);
+      configuredLabels.add(key);
+
+      if (!sectionEnabled || option?.enabled === false) return;
+
+      const owners = enabledOwners.get(key) || [];
+
+      if (!owners.includes(sectionKey)) {
+        owners.push(sectionKey);
+      }
+
+      enabledOwners.set(key, owners);
+    });
+  });
+
+  const normalized = [];
+
+  (items || []).forEach((item) => {
+    const parsed = parseStoredFormDisplayItem(item);
+
+    // Photos, orientation, untagged legacy data, etc. stay untouched.
+    if (!parsed) {
+      normalized.push(item);
+      return;
+    }
+
+    const valueKey = normalizeFormDisplayValue(parsed.value);
+    const owners = enabledOwners.get(valueKey) || [];
+
+    // One clear current owner: current form wins.
+    if (owners.length === 1) {
+      normalized.push(
+        FORM_DISPLAY_PREFIXES[owners[0]] + parsed.value
+      );
+      return;
+    }
+
+    // Same label intentionally exists in multiple sections.
+    // Keep its original category when that category still exists.
+    if (owners.length > 1) {
+      if (owners.includes(parsed.sectionKey)) {
+        normalized.push(
+          FORM_DISPLAY_PREFIXES[parsed.sectionKey] + parsed.value
+        );
+      } else {
+        normalized.push(item);
+      }
+
+      return;
+    }
+
+    // It is a configured form button, but it currently has no enabled
+    // section. Hide it from the public board.
+    if (configuredLabels.has(valueKey)) {
+      return;
+    }
+
+    // Unknown values are attendee-entered custom text. Preserve them.
+    normalized.push(item);
+  });
+
+  return Array.from(new Set(normalized));
+};
+
 const searchAliases = {
   rope: ["Rope Bondage", "Shibari", "Suspension", "Partial Suspension"],
   flog: ["Flogging"],
@@ -1436,10 +1576,15 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
       >
         {sortedEntries.map((entry) => {
           const meta = getPositionMeta(entry.position);
-          const mergedItems = sortDisplayItemsByConfiguredOrder(getVisibleEntryItems([
-            ...(entry.items || []),
-            ...(entry.custom_items || []),
-          ]));
+          const mergedItems = sortDisplayItemsByConfiguredOrder(
+            normalizeEntryItemsForCurrentForm(
+              getVisibleEntryItems([
+                ...(entry.items || []),
+                ...(entry.custom_items || []),
+              ]),
+              formConfig
+            )
+          );
           const participantPhoto = getParticipantPhoto(entry.custom_items || []);
           const participantName = entry.name || "Unnamed";
           const availableNameWidth = participantPhoto ? 240 : 300;
@@ -1822,7 +1967,7 @@ function DisplayRotationOverlay({ eventDisplay }) {
   );
 }
 
-function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false, connectionBoard = false, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, setAutomaticFitting = null, textSizeStep = 0 }) {
+function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false, connectionBoard = false, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, setAutomaticFitting = null, textSizeStep = 0, formConfig = null }) {
   const sectionRef = useRef(null);
   const { rows, cols } = getSectionGrid(entries.length, maxRows, maxCols);
   const gridCols = connectionBoard ? Math.max(1, Number(maxCols) || 4) : cols;
@@ -1889,10 +2034,15 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
   }, [automaticColumns, entries, gridCols, connectionBoard, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
 
   const renderParticipantEntry = (entry, index, useGridPlacement = true) => {
-    const mergedItems = sortDisplayItemsByConfiguredOrder([
-      ...(entry.items || []),
-      ...(entry.custom_items || []),
-    ]);
+    const mergedItems = sortDisplayItemsByConfiguredOrder(
+      normalizeEntryItemsForCurrentForm(
+        [
+          ...(entry.items || []),
+          ...(entry.custom_items || []),
+        ],
+        formConfig
+      )
+    );
 
     return (
       <div
@@ -2106,6 +2256,7 @@ function VerticalStaffSection({
   maxCols,
   theme,
   isDM = false,
+  formConfig = null,
 }) {
   const { rows, cols } = getSectionGrid(entries.length, maxRows, maxCols);
   const compact = rows >= 2 || cols >= 2 || entries.length > 2;
@@ -10334,6 +10485,7 @@ export default function App() {
 
                 <div className="displayStaffRow displayStaffRowCombined">
                   <DisplaySection
+                  formConfig={formBuilderConfigs?.[entryFormPreset] || null}
                     title=""
                     entries={[...hostEntries, ...dmEntries].sort((a, b) => {
                       const getStaffRank = (entry) => {
@@ -10432,6 +10584,7 @@ export default function App() {
             {usesSingleConnectionBoard ? (
               <div className="displayRoleRow displayConnectionRow">
                 <DisplaySection
+                  formConfig={formBuilderConfigs?.[entryFormPreset] || null}
                   title="Connection Board"
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   theme={sectionThemes.Switch}
@@ -10448,6 +10601,7 @@ export default function App() {
             ) : participantDisplayLayout === "list" ? (
               <div className="displayConnectionRow relative z-[8] min-h-0 flex-1">
                 <ParticipantListDisplay
+                  formConfig={formBuilderConfigs?.[entryFormPreset] || null}
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   columns={effectiveParticipantColumns}
                   spankingLegend={legendPreset === "mens_spanking" || (legendPreset === "automatic" && isMensSpankingEntryForm)}
@@ -10462,6 +10616,7 @@ export default function App() {
             ) : (
               <div className="displayRoleRow">
                 <DisplaySection
+                  formConfig={formBuilderConfigs?.[entryFormPreset] || null}
                   title="Top"
                   entries={topEntries}
                   theme={sectionThemes.Top}
@@ -10470,6 +10625,7 @@ export default function App() {
                 />
 
                 <DisplaySection
+                  formConfig={formBuilderConfigs?.[entryFormPreset] || null}
                   title="Bottom"
                   entries={bottomEntries}
                   theme={sectionThemes.Bottom}
@@ -10478,6 +10634,7 @@ export default function App() {
                 />
 
                 <DisplaySection
+                  formConfig={formBuilderConfigs?.[entryFormPreset] || null}
                   title="Switch"
                   entries={switchEntries}
                   theme={sectionThemes.Switch}
