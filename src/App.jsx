@@ -9095,16 +9095,19 @@ export default function App() {
                       </p>
                     </div>
 
-                    <div className="mt-8 grid gap-3">
+                    <div className="mx-auto mt-8 grid w-full max-w-[980px] gap-4">
                       <button
                         type="button"
                         onClick={() => {
                           setMobileEntryStart("new");
                           setSavedProfileError("");
                         }}
-                        className="rounded-full border border-white/25 bg-white/[0.07] px-5 py-4 text-base font-bold text-slate-100 transition hover:bg-white/[0.11]"
+                        className="group rounded-full border border-emerald-400/35 bg-[linear-gradient(90deg,rgba(16,185,129,0.09),rgba(255,255,255,0.025))] px-6 py-4 text-base font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_10px_30px_rgba(0,0,0,0.18)] transition hover:border-emerald-300/55 hover:bg-[linear-gradient(90deg,rgba(16,185,129,0.13),rgba(255,255,255,0.035))] active:scale-[0.992]"
                       >
-                        Create a New Entry
+                        <span className="inline-flex items-center justify-center gap-3">
+                          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.50)]" />
+                          Create a New Entry
+                        </span>
                       </button>
 
                       <button
@@ -9113,9 +9116,12 @@ export default function App() {
                           setMobileEntryStart("saved");
                           setSavedProfileError("");
                         }}
-                        className="rounded-full border border-slate-600/80 bg-transparent px-5 py-4 text-base font-bold text-slate-300 transition hover:border-slate-500 hover:bg-white/[0.04] hover:text-slate-100"
+                        className="group rounded-full border border-blue-400/35 bg-[linear-gradient(90deg,rgba(59,130,246,0.08),rgba(255,255,255,0.02))] px-6 py-4 text-base font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_10px_30px_rgba(0,0,0,0.16)] transition hover:border-blue-300/55 hover:bg-[linear-gradient(90deg,rgba(59,130,246,0.12),rgba(255,255,255,0.03))] active:scale-[0.992]"
                       >
-                        Use a Saved Profile
+                        <span className="inline-flex items-center justify-center gap-3">
+                          <span className="h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_12px_rgba(96,165,250,0.50)]" />
+                          Use a Saved Profile
+                        </span>
                       </button>
                     </div>
                   </>
@@ -9133,9 +9139,11 @@ export default function App() {
                       ← Back
                     </button>
 
-                    <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-100">
-                      Use a Saved Profile
-                    </h2>
+                    {!(savedProfileResult?.profile && savedProfileResult.cards.length > 0) ? (
+                      <>
+                        <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-100">
+                          Use a Saved Profile
+                        </h2>
 
                     <p className="mt-2 text-sm leading-6 text-slate-400">
                       Enter the email connected to your Studio125 Profile.
@@ -9173,10 +9181,12 @@ export default function App() {
                       </button>
                     </div>
 
-                    {savedProfileError ? (
-                      <div className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                        {savedProfileError}
-                      </div>
+                        {savedProfileError ? (
+                          <div className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                            {savedProfileError}
+                          </div>
+                        ) : null}
+                      </>
                     ) : null}
 
                     {savedProfileResult && !savedProfileResult.profile ? (
