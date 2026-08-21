@@ -5568,6 +5568,74 @@ export default function App() {
     }
   };
 
+  const removeSavedCardFromBoard = async (card) => {
+    const email = savedProfileEmail.trim().toLowerCase();
+    const eventSlug = savedProfileResult?.event?.slug;
+
+    if (!email || !card?.cardKey || !eventSlug) {
+      setSavedProfileError(
+        "The saved Connection Card could not be removed."
+      );
+      return;
+    }
+
+    setSavedProfileBoardSaving(card.cardKey);
+    setSavedProfileError("");
+
+    try {
+      const response = await fetch(
+        "/api/connection-board",
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            cardKey: card.cardKey,
+            eventSlug,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(
+          data?.error ||
+          "The Connection Card could not be removed."
+        );
+      }
+
+      setSavedProfileResult((current) => {
+        if (!current) return current;
+
+        return {
+          ...current,
+          cards: current.cards.map((item) =>
+            item.cardKey === card.cardKey
+              ? {
+                  ...item,
+                  onBoard: false,
+                  boardState: null,
+                }
+              : item
+          ),
+        };
+      });
+
+      setMessage("");
+    } catch (error) {
+      setSavedProfileError(
+        error instanceof Error
+          ? error.message
+          : "The Connection Card could not be removed."
+      );
+    } finally {
+      setSavedProfileBoardSaving("");
+    }
+  };
+
   const createEntry = async () => {
     if (!supabase) {
       setMessage("Supabase connection is missing.");
@@ -6637,6 +6705,7 @@ export default function App() {
                               >
                                 Remove
                               </button>
+
                             </div>
                           </div>
                         ))}
@@ -9439,6 +9508,19 @@ export default function App() {
                               >
                                 Edit Card
                               </button>
+
+                              {card.onBoard ? (
+                                <button
+                                  type="button"
+                                  onClick={() => removeSavedCardFromBoard(card)}
+                                  disabled={savedProfileBoardSaving === card.cardKey}
+                                  className="rounded-full border border-rose-500/35 bg-rose-500/[0.06] px-4 py-3 font-bold text-rose-200 transition hover:bg-rose-500/10 disabled:cursor-wait disabled:opacity-60 sm:col-span-2"
+                                >
+                                  {savedProfileBoardSaving === card.cardKey
+                                    ? "Removing..."
+                                    : "Remove from Connection Board"}
+                                </button>
+                              ) : null}
                             </div>
                           </div>
                         ))}
