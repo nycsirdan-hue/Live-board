@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { eventDisplayPresets } from "./eventDisplayPresets";
 import { createClient } from "@supabase/supabase-js";
 
+import { getLiveboardPathMode, isLiveboardKioskPath } from "./liveboardRoutes";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -723,6 +724,10 @@ function useMode() {
     }
     if (urlMode === "setup-tabs") return "setup";
     if (urlMode === "admin") return "setup";
+
+    const pathMode = getLiveboardPathMode();
+    if (pathMode) return pathMode;
+
     return "entry";
   };
 
@@ -2206,7 +2211,12 @@ export default function App() {
   const [activeSetupTab, setActiveSetupTab] = useState("Events");
   const entryUrlParams = new URLSearchParams(window.location.search);
   const isKioskEntryMode =
-    isEntryMode && (entryUrlParams.get("kiosk") === "1" || entryUrlParams.get("directForm") === "1");
+    isEntryMode &&
+    (
+      isLiveboardKioskPath() ||
+      entryUrlParams.get("kiosk") === "1" ||
+      entryUrlParams.get("directForm") === "1"
+    );
 
   const [entries, setEntries] = useState([]);
   const [raffleDraws, setRaffleDraws] = useState([]);
@@ -5855,7 +5865,7 @@ export default function App() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => {
-                      window.history.pushState({}, "", `${window.location.pathname}?mode=setup`);
+                      window.history.pushState({}, "", "/liveboard/admin");
                       window.dispatchEvent(new PopStateEvent("popstate"));
                     }}
                     className="rounded-2xl border border-sky-400 bg-sky-400 px-4 py-2 font-semibold text-slate-950"
@@ -5864,21 +5874,21 @@ export default function App() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => window.open(`${window.location.pathname}?mode=entry&kiosk=1`, "_blank")}
+                    onClick={() => window.open("/liveboard/kiosk", "_blank")}
                     className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-2 font-semibold text-slate-100"
                   >
                     Kiosk
                   </button>
                   <button
                     type="button"
-                    onClick={() => window.open(`${window.location.pathname}?mode=entry`, "_blank")}
+                    onClick={() => window.open("/liveboard/mobile", "_blank")}
                     className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-2 font-semibold text-slate-100"
                   >
                     Mobile
                   </button>
                   <button
                     type="button"
-                    onClick={() => window.open(`${window.location.pathname}?mode=display`, "_blank")}
+                    onClick={() => window.open("/liveboard/display", "_blank")}
                     className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-2 font-semibold text-slate-100"
                   >
                     Display
@@ -7843,7 +7853,7 @@ export default function App() {
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       <button
                         type="button"
-                        onClick={() => window.open(`${window.location.pathname}?mode=display`, "_blank")}
+                        onClick={() => window.open("/liveboard/display", "_blank")}
                         className="rounded-2xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100"
                       >
                         Open Display Preview

@@ -2,10 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import App from "./App";
 import KioskStartPage from "./components/KioskStartPage";
 import "./kiosk-success-return.css";
+import { getLiveboardPathMode, isLiveboardKioskPath } from "./liveboardRoutes";
 
 export default function KioskEntryShell() {
   const params = new URLSearchParams(window.location.search);
-  const mode = params.get("mode");
+  const mode = params.get("mode") || getLiveboardPathMode();
+  const cleanKioskPath = isLiveboardKioskPath();
   const [showKioskStart, setShowKioskStart] = useState(true);
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const returnTimerRef = useRef(null);
@@ -14,26 +16,49 @@ export default function KioskEntryShell() {
     Kiosk start page is only for iPad kiosk mode.
     Phone/mobile direct entry, display, and setup bypass the kiosk start page.
   */
-  const isPhoneEntryMode = mode === "entry" && params.get("kiosk") !== "1";
+  const isPhoneEntryMode =
+    mode === "entry" &&
+    !cleanKioskPath &&
+    params.get("kiosk") !== "1";
 
   const bypassKioskStart =
     isPhoneEntryMode || mode === "display" || mode === "setup" || mode === "admin";
 
   const startEntry = () => {
-    const nextParams = new URLSearchParams(window.location.search);
-    nextParams.set("mode", "entry");
-    nextParams.set("kiosk", "1");
-    window.history.replaceState({}, "", `${window.location.pathname}?${nextParams.toString()}`);
+    /*
+      Clean Studio125 kiosk route already tells the app what it is.
+      Legacy query-string URLs retain their old behavior.
+    */
+    if (!cleanKioskPath) {
+      const nextParams = new URLSearchParams(window.location.search);
+      nextParams.set("mode", "entry");
+      nextParams.set("kiosk", "1");
+      window.history.replaceState(
+        {},
+        "",
+        `${window.location.pathname}?${nextParams.toString()}`
+      );
+    }
 
     setShowSuccessOverlay(false);
     setShowKioskStart(false);
   };
 
   const returnToStart = () => {
-    const nextParams = new URLSearchParams(window.location.search);
-    nextParams.set("mode", "kiosk");
-    nextParams.delete("kiosk");
-    window.history.replaceState({}, "", `${window.location.pathname}?${nextParams.toString()}`);
+    /*
+      Keep /liveboard/kiosk clean after a successful entry.
+      Legacy kiosk URLs still return using their query-string mode.
+    */
+    if (!cleanKioskPath) {
+      const nextParams = new URLSearchParams(window.location.search);
+      nextParams.set("mode", "kiosk");
+      nextParams.delete("kiosk");
+      window.history.replaceState(
+        {},
+        "",
+        `${window.location.pathname}?${nextParams.toString()}`
+      );
+    }
 
     setShowSuccessOverlay(false);
     setShowKioskStart(true);
