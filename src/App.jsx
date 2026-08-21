@@ -2218,6 +2218,11 @@ export default function App() {
       entryUrlParams.get("directForm") === "1"
     );
 
+  const isMobileProfileDoorway =
+    isEntryMode &&
+    !isKioskEntryMode &&
+    /\/liveboard\/mobile\/?$/.test(window.location.pathname);
+
   const [entries, setEntries] = useState([]);
   const [raffleDraws, setRaffleDraws] = useState([]);
   const formatEasternDisplayTime = (date) =>
@@ -2279,6 +2284,13 @@ export default function App() {
   const [quickTags, setQuickTags] = useState([]);
   const [message, setMessage] = useState("");
   const [entrySuccess, setEntrySuccess] = useState(false);
+  const [mobileEntryStart, setMobileEntryStart] = useState("choose");
+  const [savedProfileEmail, setSavedProfileEmail] = useState("");
+  const [savedProfileLoading, setSavedProfileLoading] = useState(false);
+  const [savedProfileError, setSavedProfileError] = useState("");
+  const [savedProfileResult, setSavedProfileResult] = useState(null);
+  const [savedProfileBoardSaving, setSavedProfileBoardSaving] = useState("");
+
   const [participantPhotoFile, setParticipantPhotoFile] = useState(null);
   const [participantPhotoPreview, setParticipantPhotoPreview] = useState("");
   const [participantCropSource, setParticipantCropSource] = useState(null);
@@ -5245,6 +5257,174 @@ export default function App() {
     stopParticipantCamera();
     openParticipantCropper(photo);
     setMessage("");
+  };
+
+  const lookupSavedProfile = async () => {
+    const email = savedProfileEmail.trim().toLowerCase();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setSavedProfileError("Enter a valid email address.");
+      return;
+    }
+
+    setSavedProfileLoading(true);
+    setSavedProfileError("");
+    setSavedProfileResult(null);
+
+    try {
+      const eventResponse = await fetch(
+        "/api/connection-board?currentEvent=1",
+        { cache: "no-store" }
+      );
+
+      const eventData = await eventResponse.json();
+
+      if (!eventResponse.ok || !eventData?.ok || !eventData?.event) {
+        throw new Error(
+          eventData?.error ||
+          "The current Connection Board could not be identified."
+        );
+      }
+
+      const profileResponse = await fetch(
+        "/api/profiles?email=" + encodeURIComponent(email),
+        { cache: "no-store" }
+      );
+
+      const profileData = await profileResponse.json();
+
+      if (!profileResponse.ok || !profileData?.ok) {
+        throw new Error(
+          profileData?.error ||
+          "Your Studio125 Profile could not be loaded."
+        );
+      }
+
+      if (!profileData.profile) {
+        setSavedProfileResult({
+          profile: null,
+          event: eventData.event,
+          cards: [],
+        });
+        return;
+      }
+
+      const matchingCards = (
+        Array.isArray(profileData.profile.cards)
+          ? profileData.profile.cards
+          : []
+      ).filter(
+        (card) =>
+          card.formKey === eventData.event.formKey &&
+          Array.isArray(card.assignments) &&
+          card.assignments.some(
+            (assignment) =>
+              assignment.slug === eventData.event.slug
+          )
+      );
+
+      const cardsWithStatus = await Promise.all(
+        matchingCards.map(async (card) => {
+          try {
+            const statusUrl =
+              "/api/connection-board?email=" +
+              encodeURIComponent(email) +
+              "&cardKey=" +
+              encodeURIComponent(card.cardKey) +
+              "&eventSlug=" +
+              encodeURIComponent(eventData.event.slug);
+
+            const statusResponse = await fetch(
+              statusUrl,
+              { cache: "no-store" }
+            );
+
+            const statusData = await statusResponse.json();
+
+            return {
+              ...card,
+              onBoard:
+                statusResponse.ok &&
+                Boolean(statusData?.onBoard),
+              boardState:
+                statusData?.state || "available",
+            };
+          } catch {
+            return {
+              ...card,
+              onBoard: false,
+              boardState: "available",
+            };
+          }
+        })
+      );
+
+      setSavedProfileResult({
+        profile: profileData.profile,
+        event: eventData.event,
+        cards: cardsWithStatus,
+      });
+    } catch (error) {
+      setSavedProfileError(
+        error instanceof Error
+          ? error.message
+          : "Unable to find your saved Connection Card."
+      );
+    } finally {
+      setSavedProfileLoading(false);
+    }
+  };
+
+  const addSavedCardToBoard = async (card) => {
+    const email = savedProfileEmail.trim().toLowerCase();
+    const eventSlug = savedProfileResult?.event?.slug;
+
+    if (!email || !card?.cardKey || !eventSlug) {
+      setSavedProfileError(
+        "The saved Connection Card could not be added."
+      );
+      return;
+    }
+
+    setSavedProfileBoardSaving(card.cardKey);
+    setSavedProfileError("");
+
+    try {
+      const response = await fetch(
+        "/api/connection-board",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            cardKey: card.cardKey,
+            eventSlug,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(
+          data?.error ||
+          "The Connection Card could not be added."
+        );
+      }
+
+      setMessage("");
+      setEntrySuccess(true);
+    } catch (error) {
+      setSavedProfileError(
+        error instanceof Error
+          ? error.message
+          : "The Connection Card could not be added."
+      );
+    } finally {
+      setSavedProfileBoardSaving("");
+    }
   };
 
   const createEntry = async () => {
@@ -8899,6 +9079,216 @@ export default function App() {
                     </button>
                   </div>
                 ) : null}
+              </div>
+            </div>
+          ) : isMobileProfileDoorway && mobileEntryStart !== "new" ? (
+            <div className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center">
+              <div className="w-full rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl md:p-8">
+                {mobileEntryStart === "choose" ? (
+                  <>
+                    <div className="text-center">
+                      <h2 className="text-3xl font-semibold tracking-tight text-slate-100">
+                        Add Yourself to the Connection Board
+                      </h2>
+                      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400">
+                        Use a saved Studio125 Profile or create a new entry for this event.
+                      </p>
+                    </div>
+
+                    <div className="mt-8 grid gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileEntryStart("saved");
+                          setSavedProfileError("");
+                        }}
+                        className="rounded-2xl bg-sky-400 px-5 py-4 text-base font-bold text-slate-950"
+                      >
+                        Use a Saved Profile
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileEntryStart("new");
+                          setSavedProfileError("");
+                        }}
+                        className="rounded-2xl border border-slate-600 bg-slate-950 px-5 py-4 text-base font-bold text-slate-100"
+                      >
+                        Create a New Entry
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileEntryStart("choose");
+                        setSavedProfileError("");
+                        setSavedProfileResult(null);
+                      }}
+                      className="text-sm font-semibold text-slate-400 hover:text-slate-100"
+                    >
+                      ← Back
+                    </button>
+
+                    <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-100">
+                      Use a Saved Profile
+                    </h2>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      Enter the email connected to your Studio125 Profile.
+                    </p>
+
+                    <div className="mt-6">
+                      <input
+                        type="email"
+                        value={savedProfileEmail}
+                        onChange={(event) => {
+                          setSavedProfileEmail(event.target.value);
+                          setSavedProfileError("");
+                          setSavedProfileResult(null);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            lookupSavedProfile();
+                          }
+                        }}
+                        placeholder="Email address"
+                        autoComplete="email"
+                        className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-4 text-base text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={lookupSavedProfile}
+                        disabled={savedProfileLoading}
+                        className="mt-3 w-full rounded-2xl bg-sky-400 px-5 py-4 text-base font-bold text-slate-950 disabled:cursor-wait disabled:opacity-60"
+                      >
+                        {savedProfileLoading
+                          ? "Finding Your Profile..."
+                          : "Find My Connection Card"}
+                      </button>
+                    </div>
+
+                    {savedProfileError ? (
+                      <div className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                        {savedProfileError}
+                      </div>
+                    ) : null}
+
+                    {savedProfileResult && !savedProfileResult.profile ? (
+                      <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-950 p-5">
+                        <h3 className="font-semibold text-slate-100">
+                          No saved profile found
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                          You can still add yourself to the Connection Board by creating a new entry.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setMobileEntryStart("new")}
+                          className="mt-4 w-full rounded-2xl bg-slate-100 px-5 py-3 font-bold text-slate-950"
+                        >
+                          Create a New Entry
+                        </button>
+                      </div>
+                    ) : null}
+
+                    {savedProfileResult?.profile && savedProfileResult.cards.length === 0 ? (
+                      <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-950 p-5">
+                        <h3 className="font-semibold text-slate-100">
+                          Profile found
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                          There is not a saved Connection Card for {savedProfileResult.event?.title || "this event"} yet.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setMobileEntryStart("new")}
+                          className="mt-4 w-full rounded-2xl bg-slate-100 px-5 py-3 font-bold text-slate-950"
+                        >
+                          Create a New Entry
+                        </button>
+                      </div>
+                    ) : null}
+
+                    {savedProfileResult?.profile && savedProfileResult.cards.length > 0 ? (
+                      <div className="mt-6 space-y-4">
+                        <div className="flex items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-4">
+                          {savedProfileResult.profile.photoUrl ? (
+                            <img
+                              src={savedProfileResult.profile.photoUrl}
+                              alt=""
+                              className="h-16 w-16 rounded-2xl object-cover"
+                            />
+                          ) : null}
+
+                          <div>
+                            <div className="text-lg font-semibold text-slate-100">
+                              {savedProfileResult.profile.displayName}
+                            </div>
+                            <div className="mt-1 text-sm text-slate-400">
+                              {savedProfileResult.event?.title || appConfig.eventName}
+                            </div>
+                          </div>
+                        </div>
+
+                        {savedProfileResult.cards.map((card) => (
+                          <div
+                            key={card.cardKey}
+                            className="rounded-2xl border border-slate-700 bg-slate-950 p-5"
+                          >
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                              Connection Card
+                            </div>
+
+                            <div className="mt-1 text-lg font-semibold text-slate-100">
+                              {savedProfileResult.event?.title || appConfig.eventName}
+                            </div>
+
+                            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                              {card.onBoard ? (
+                                <button
+                                  type="button"
+                                  disabled
+                                  className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 font-bold text-emerald-100"
+                                >
+                                  ✓ On Connection Board
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => addSavedCardToBoard(card)}
+                                  disabled={savedProfileBoardSaving === card.cardKey}
+                                  className="rounded-2xl bg-sky-400 px-4 py-3 font-bold text-slate-950 disabled:cursor-wait disabled:opacity-60"
+                                >
+                                  {savedProfileBoardSaving === card.cardKey
+                                    ? "Adding..."
+                                    : "Add to Connection Board"}
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  window.location.href =
+                                    "/profiles?email=" +
+                                    encodeURIComponent(savedProfileEmail.trim().toLowerCase());
+                                }}
+                                className="rounded-2xl border border-slate-600 bg-slate-900 px-4 py-3 font-bold text-slate-100"
+                              >
+                                Edit Card
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
+                )}
               </div>
             </div>
           ) : (
