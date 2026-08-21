@@ -9269,7 +9269,7 @@ export default function App() {
                 {!isKioskEntryMode ? (
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
                     <a
-                      href="https://kinkcollective.net/Calendar"
+                      href="https://studio125nyc.com/calendar"
                       target="_blank"
                       rel="noreferrer"
                       className="rounded-2xl bg-[#fff4c2] px-5 py-3 text-center text-sm font-bold text-slate-950 shadow-lg shadow-black/30"
