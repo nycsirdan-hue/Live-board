@@ -9083,7 +9083,7 @@ export default function App() {
             </div>
           ) : isMobileProfileDoorway && mobileEntryStart !== "new" ? (
             <div className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center">
-              <div className="w-full rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl md:p-8">
+              <div className="w-full rounded-[2rem] border border-white/10 bg-[#10141a] p-6 shadow-2xl md:p-8">
                 {mobileEntryStart === "choose" ? (
                   <>
                     <div className="text-center">
@@ -9091,7 +9091,7 @@ export default function App() {
                         Add Yourself to the Connection Board
                       </h2>
                       <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400">
-                        Use a saved Studio125 Profile or create a new entry for this event.
+                        Create a new entry, or use your saved Studio125 Profile.
                       </p>
                     </div>
 
@@ -9099,23 +9099,23 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => {
-                          setMobileEntryStart("saved");
+                          setMobileEntryStart("new");
                           setSavedProfileError("");
                         }}
-                        className="rounded-2xl bg-sky-400 px-5 py-4 text-base font-bold text-slate-950"
+                        className="rounded-full border border-white/25 bg-white/[0.07] px-5 py-4 text-base font-bold text-slate-100 transition hover:bg-white/[0.11]"
                       >
-                        Use a Saved Profile
+                        Create a New Entry
                       </button>
 
                       <button
                         type="button"
                         onClick={() => {
-                          setMobileEntryStart("new");
+                          setMobileEntryStart("saved");
                           setSavedProfileError("");
                         }}
-                        className="rounded-2xl border border-slate-600 bg-slate-950 px-5 py-4 text-base font-bold text-slate-100"
+                        className="rounded-full border border-slate-600/80 bg-transparent px-5 py-4 text-base font-bold text-slate-300 transition hover:border-slate-500 hover:bg-white/[0.04] hover:text-slate-100"
                       >
-                        Create a New Entry
+                        Use a Saved Profile
                       </button>
                     </div>
                   </>
@@ -9158,14 +9158,14 @@ export default function App() {
                         }}
                         placeholder="Email address"
                         autoComplete="email"
-                        className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-4 text-base text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                        className="w-full rounded-full border border-white/20 bg-black/30 px-5 py-4 text-base text-slate-100 outline-none placeholder:text-slate-500 focus:border-blue-400/60"
                       />
 
                       <button
                         type="button"
                         onClick={lookupSavedProfile}
                         disabled={savedProfileLoading}
-                        className="mt-3 w-full rounded-2xl bg-sky-400 px-5 py-4 text-base font-bold text-slate-950 disabled:cursor-wait disabled:opacity-60"
+                        className="mt-3 w-full rounded-full border border-blue-400/40 bg-blue-400/10 px-5 py-4 text-base font-bold text-blue-100 transition hover:bg-blue-400/15 disabled:cursor-wait disabled:opacity-60"
                       >
                         {savedProfileLoading
                           ? "Finding Your Profile..."
@@ -9217,7 +9217,7 @@ export default function App() {
 
                     {savedProfileResult?.profile && savedProfileResult.cards.length > 0 ? (
                       <div className="mt-6 space-y-4">
-                        <div className="flex items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-4">
+                        <div className="flex items-center gap-4 rounded-3xl border border-white/10 bg-black/25 p-4">
                           {savedProfileResult.profile.photoUrl ? (
                             <img
                               src={savedProfileResult.profile.photoUrl}
@@ -9239,7 +9239,7 @@ export default function App() {
                         {savedProfileResult.cards.map((card) => (
                           <div
                             key={card.cardKey}
-                            className="rounded-2xl border border-slate-700 bg-slate-950 p-5"
+                            className="rounded-3xl border border-white/10 bg-black/25 p-5"
                           >
                             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                               Connection Card
@@ -9254,7 +9254,7 @@ export default function App() {
                                 <button
                                   type="button"
                                   disabled
-                                  className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 font-bold text-emerald-100"
+                                  className="rounded-full border border-emerald-500/45 bg-emerald-500/10 px-4 py-3 font-bold text-emerald-100"
                                 >
                                   ✓ On Connection Board
                                 </button>
@@ -9263,7 +9263,7 @@ export default function App() {
                                   type="button"
                                   onClick={() => addSavedCardToBoard(card)}
                                   disabled={savedProfileBoardSaving === card.cardKey}
-                                  className="rounded-2xl bg-sky-400 px-4 py-3 font-bold text-slate-950 disabled:cursor-wait disabled:opacity-60"
+                                  className="rounded-full border border-emerald-500/45 bg-emerald-500/10 px-4 py-3 font-bold text-emerald-100 transition hover:bg-emerald-500/15 disabled:cursor-wait disabled:opacity-60"
                                 >
                                   {savedProfileBoardSaving === card.cardKey
                                     ? "Adding..."
@@ -9274,11 +9274,17 @@ export default function App() {
                               <button
                                 type="button"
                                 onClick={() => {
+                                  const email =
+                                    encodeURIComponent(
+                                      savedProfileEmail.trim().toLowerCase()
+                                    );
+
                                   window.location.href =
-                                    "/profiles?email=" +
-                                    encodeURIComponent(savedProfileEmail.trim().toLowerCase());
+                                    savedProfileResult?.event?.slug === "sting"
+                                      ? "/profiles/sting?email=" + email
+                                      : "/profiles?email=" + email;
                                 }}
-                                className="rounded-2xl border border-slate-600 bg-slate-900 px-4 py-3 font-bold text-slate-100"
+                                className="rounded-full border border-white/20 bg-transparent px-4 py-3 font-bold text-slate-100 transition hover:bg-white/[0.05]"
                               >
                                 Edit Card
                               </button>
