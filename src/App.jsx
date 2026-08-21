@@ -66,7 +66,7 @@ function getParticipantPhoto(items = []) {
 
   try {
     const photo = JSON.parse(marker.slice(PARTICIPANT_PHOTO_MARKER.length));
-    return photo?.path && photo?.url ? photo : null;
+    return photo?.url ? photo : null;
   } catch {
     return null;
   }
@@ -1135,7 +1135,7 @@ function EntryLine({
 
       {renderDisplayDetailLine("⛔", limitsText, "text-yellow-600", "mt-0.5")}
 
-      {renderDisplayDetailLine("🟠", experienceText, "text-orange-500", "mt-0.5")}
+      {renderDisplayDetailLine("%", experienceText, "text-zinc-300", "mt-0.5")}
 
       {renderDisplayDetailLine((isDM || isHost) ? "" : "👀", interestText, "text-yellow-500", "mt-0.5")}
 
@@ -1572,7 +1572,7 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
                   {renderDetail(spankingLegend ? <span className="text-red-400"><DisplayUpArrowIcon /></span> : "🔵", topGive)}
                   {renderDetail(spankingLegend ? <span className="text-emerald-400"><DisplayDownArrowIcon /></span> : "🟢", bottomReceive)}
                   {renderDetail("⛔", limits)}
-                  {renderDetail("🟠", experience)}
+                  {renderDetail("%", experience)}
                   {renderDetail("👀", interests.length ? interests : plainItems)}
                   {renderDetail("🍑🍆", sexual)}
                 </div>
@@ -9959,7 +9959,7 @@ export default function App() {
                     <div className="flex items-center gap-4"><span className="legendArrowIcon text-red-400"><DisplayUpArrowIcon /></span><span>Likes to give</span></div>
                     <div className="flex items-center gap-4"><span className="legendArrowIcon text-emerald-400"><DisplayDownArrowIcon /></span><span>Likes to receive</span></div>
                     <div className="flex items-center gap-4"><span className="text-3xl">⛔</span><span>Limits</span></div>
-                    <div className="flex items-center gap-4"><span className="text-3xl">🟠</span><span>Experience</span></div>
+                    <div className="flex items-center gap-4"><span className="text-3xl font-semibold">%</span><span>Experience</span></div>
                     <div className="flex items-center gap-4"><span className="text-3xl">👀</span><span>Interests</span></div>
                     <div className="flex items-center gap-4"><span className="whitespace-nowrap text-3xl">🍑🍆</span><span>Sexual preferences</span></div>
                   </div>
