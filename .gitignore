@@ -33,3 +33,9 @@ dist-ssr
 *.sw?
 .vercel
 .env*
+
+# Local development backups
+*.backup
+*.before-*
+*.STABLE-*
+working-backups/
