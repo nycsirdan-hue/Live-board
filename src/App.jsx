@@ -625,6 +625,134 @@ const withFormBuilderSetting = (options, configs) => [
 ];
 const withoutFormBuilderSetting = (options) => (options || []).filter((option) => !isFormBuilderSettingMarker(option));
 
+const CURRENT_FORM_DISPLAY_SECTIONS = [
+  { key: "intention", prefix: "Quick Tag: ", aliases: ["Quick Tag:"] },
+  { key: "topImplements", prefix: "Top likes to give: ", aliases: ["Top likes to give:", "Top likes to use:", "Top:", "As a top I like to use:"] },
+  { key: "bottomImplements", prefix: "Bottom likes to receive: ", aliases: ["Bottom likes to receive:", "Bottom:", "As a bottom I like to receive:"] },
+  { key: "limits", prefix: "Limits: ", aliases: ["Limits:", "Limit:"] },
+  { key: "experience", prefix: "Experience: ", aliases: ["Experience:", "Experience Level:"] },
+  { key: "sexual", prefix: "Sexual: ", aliases: ["Sexual:", "Sex:", "Sexual Preference:", "Sexual Preferences:"] },
+  { key: "interests", prefix: "Interests: ", aliases: ["Interests:", "Interest:", "Looking For:", "Looking for:"] },
+];
+
+const normalizeCurrentFormValue = (value) => {
+  const clean = String(value || "").trim().toLowerCase();
+
+  if (clean === "learn new skills") return "learning";
+
+  return clean
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+const normalizeEntryItemsToCurrentForm = (items = [], formConfig = null) => {
+  if (!formConfig || typeof formConfig !== "object") return items;
+
+  const currentOwners = new Map();
+  const configuredLabels = new Set();
+
+  CURRENT_FORM_DISPLAY_SECTIONS.forEach(({ key }) => {
+    const section = formConfig?.[key];
+
+    if (!section || !Array.isArray(section.options)) return;
+
+    section.options.forEach((option) => {
+      const label =
+        typeof option === "string"
+          ? option
+          : option?.label;
+
+      if (!String(label || "").trim()) return;
+
+      const normalizedLabel = normalizeCurrentFormValue(label);
+      configuredLabels.add(normalizedLabel);
+
+      if (section.enabled === false || option?.enabled === false) return;
+
+      const owners = currentOwners.get(normalizedLabel) || [];
+
+      if (!owners.includes(key)) {
+        owners.push(key);
+      }
+
+      currentOwners.set(normalizedLabel, owners);
+    });
+  });
+
+  const result = [];
+
+  (items || []).forEach((item) => {
+    if (typeof item !== "string") {
+      result.push(item);
+      return;
+    }
+
+    let storedSection = null;
+    let storedValue = "";
+
+    for (const section of CURRENT_FORM_DISPLAY_SECTIONS) {
+      const alias = section.aliases.find((prefix) =>
+        item.toLowerCase().startsWith(prefix.toLowerCase())
+      );
+
+      if (!alias) continue;
+
+      storedSection = section.key;
+      storedValue = item.slice(alias.length).trim();
+      break;
+    }
+
+    // Photo markers, orientation and unrelated data remain untouched.
+    if (!storedSection || !storedValue) {
+      result.push(item);
+      return;
+    }
+
+    const normalizedValue = normalizeCurrentFormValue(storedValue);
+    const owners = currentOwners.get(normalizedValue) || [];
+
+    // The current form has one clear section for this button.
+    // Move the old selection there for display.
+    if (owners.length === 1) {
+      const owner = CURRENT_FORM_DISPLAY_SECTIONS.find(
+        (section) => section.key === owners[0]
+      );
+
+      result.push(owner.prefix + storedValue);
+      return;
+    }
+
+    // If the same label intentionally appears in more than one section,
+    // keep its original location when still valid.
+    if (owners.length > 1) {
+      if (owners.includes(storedSection)) {
+        const owner = CURRENT_FORM_DISPLAY_SECTIONS.find(
+          (section) => section.key === storedSection
+        );
+
+        result.push(owner.prefix + storedValue);
+      } else {
+        result.push(item);
+      }
+
+      return;
+    }
+
+    // A known configured button that is currently disabled disappears
+    // from the public board.
+    if (configuredLabels.has(normalizedValue)) {
+      return;
+    }
+
+    // Unknown values may be attendee-entered custom text. Preserve them.
+    result.push(item);
+  });
+
+  return Array.from(new Set(result));
+};
+
 const searchAliases = {
   rope: ["Rope Bondage", "Shibari", "Suspension", "Partial Suspension"],
   flog: ["Flogging"],
@@ -3122,10 +3250,23 @@ export default function App() {
       .slice(0, 12);
   }, [hostItemInput]);
 
-  const participantEntries = useMemo(
-    () => entries.filter((entry) => (entry.entry_kind || "participant") === "participant"),
-    [entries]
-  );
+  const participantEntries = useMemo(() => {
+    const currentFormConfig = formBuilderConfigs?.[entryFormPreset] || null;
+
+    return entries
+      .filter((entry) => (entry.entry_kind || "participant") === "participant")
+      .map((entry) => ({
+        ...entry,
+        items: normalizeEntryItemsToCurrentForm(
+          entry.items || [],
+          currentFormConfig
+        ),
+        custom_items: normalizeEntryItemsToCurrentForm(
+          entry.custom_items || [],
+          currentFormConfig
+        ),
+      }));
+  }, [entries, formBuilderConfigs, entryFormPreset]);
 
   const dmEntries = useMemo(
     () => entries.filter((entry) => (entry.entry_kind || "participant") === "dm"),
