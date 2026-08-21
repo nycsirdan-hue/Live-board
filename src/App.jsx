@@ -5837,7 +5837,7 @@ export default function App() {
               <div>
                 {isEntryMode ? (
                   <>
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex min-w-max items-baseline gap-3 whitespace-nowrap md:gap-4">
                   <h1 className="text-5xl font-bold tracking-tight text-slate-100 md:text-6xl">
                     {appConfig.eventName}
@@ -10002,7 +10002,7 @@ export default function App() {
                     Scan with your phone to add yourself to the Board
                   </p>
                   <img
-                    src="/liveboard-entry-qr.png"
+                    src="/liveboard/liveboard-entry-qr.png"
                     alt="QR code to join the LiveBoard"
                     className="h-44 w-44 shrink-0 rounded-2xl bg-white p-2"
                   />
