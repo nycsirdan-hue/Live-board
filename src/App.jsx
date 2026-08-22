@@ -9955,12 +9955,12 @@ export default function App() {
                         </div>
                       ) : null}
 
-                      <div className={`${getFormBuilderSection("limits")?.enabled === false ? "hidden " : ""}rounded-2xl border border-amber-700/50 bg-amber-950/10 p-4 xl:col-span-2`}>
-                        <div className="mb-3 border-b border-amber-800/30 pb-2">
-                          <label className="block text-sm font-semibold text-amber-100">
+                      <div className={`${getFormBuilderSection("limits")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2`}>
+                        <div className="mb-3 border-b border-zinc-700/70 pb-2">
+                          <label className="block text-sm font-semibold text-zinc-100">
                             {getFormBuilderSection("limits")?.label || "My limits"}
                           </label>
-                          <p className="mt-1 text-xs leading-5 text-amber-100/60">
+                          <p className="mt-1 text-xs leading-5 text-zinc-400">
                             {getFormBuilderSection("limits")?.prompt || "Choose any limits you want visible."}
                           </p>
                         </div>
@@ -9976,8 +9976,8 @@ export default function App() {
                                 onClick={() => toggleSpankingLimitItem(item)}
                                 className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
                                   active
-                                    ? "border-amber-300 bg-amber-400/20 text-amber-50"
-                                    : "border-amber-500/45 bg-amber-500/10 text-amber-100"
+                                    ? "border-zinc-200 bg-zinc-300/20 text-zinc-50"
+                                    : "border-amber-500/45 bg-amber-500/10 text-zinc-100"
                                 }`}
                               >
                                 {item}
@@ -9986,13 +9986,13 @@ export default function App() {
                           })}
                         </div>
 
-                        {getFormBuilderSection("limits")?.customField?.enabled ? <><label className="mt-4 block text-sm font-bold text-amber-50">{getFormBuilderSection("limits")?.customField?.label}</label>
+                        {getFormBuilderSection("limits")?.customField?.enabled ? <><label className="mt-4 block text-sm font-bold text-zinc-100">{getFormBuilderSection("limits")?.customField?.label}</label>
                         <FormBuilderCustomInput
                           config={getFormBuilderSection("limits")?.customField}
                           value={spankingLimitsOther}
                           onChange={(e) => setSpankingLimitsOther(e.target.value)}
                           rows={2}
-                          className="mt-2 w-full rounded-2xl border border-amber-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-300"
+                          className="mt-2 w-full rounded-2xl border border-zinc-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-zinc-300"
                         /></> : null}
                       </div>
 
@@ -10159,20 +10159,22 @@ export default function App() {
                   ) : null}
 
                   <div className={`${getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
-                    isMenOnlyEntryForm
-                      ? "border-red-900/60 bg-red-950/20 shadow-[0_0_28px_rgba(220,38,38,0.14)]"
-                      : "border-slate-700/70 bg-slate-950/60"
+                    isMensSpankingEntryForm
+                      ? "border-blue-800/60 bg-blue-950/20 shadow-[0_0_28px_rgba(59,130,246,0.14)]"
+                      : isMenOnlyEntryForm
+                        ? "border-red-900/60 bg-red-950/20 shadow-[0_0_28px_rgba(220,38,38,0.14)]"
+                        : "border-slate-700/70 bg-slate-950/60"
                   }`}>
                     <div className={`mb-3 border-b pb-2 ${
-                      isMenOnlyEntryForm ? "border-red-900/40" : "border-slate-800"
+                      isMensSpankingEntryForm ? "border-blue-800/40" : isMenOnlyEntryForm ? "border-red-900/40" : "border-slate-800"
                     }`}>
                       <label className="block text-sm font-semibold">
-  <span className={isMenOnlyEntryForm ? "text-red-100" : "text-slate-100"}>{getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.label || (isDiaperDebaucheryEntryForm ? "Vibe Tonight" : "Intention")}</span>
+  <span className={isMensSpankingEntryForm ? "text-blue-100" : isMenOnlyEntryForm ? "text-red-100" : "text-slate-100"}>{getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.label || (isDiaperDebaucheryEntryForm ? "Vibe Tonight" : "Intention")}</span>
   <span className="mx-1 text-slate-500">|</span>
   <span className="font-normal text-slate-500">Optional</span>
 </label>
                       <p className={`mt-1 text-xs leading-5 ${
-                        isMenOnlyEntryForm ? "text-red-100/60" : "text-slate-500"
+                        isMensSpankingEntryForm ? "text-blue-100/60" : isMenOnlyEntryForm ? "text-red-100/60" : "text-slate-500"
                       }`}>
                         {getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.prompt || (isDiaperDebaucheryEntryForm ? "Choose the vibe you want people to see on the board." : "Choose all that apply.")}
                       </p>
@@ -10192,12 +10194,16 @@ export default function App() {
                             onClick={() => toggleQuickTag(tag)}
                             className={`rounded-2xl border px-3 py-3 text-sm font-semibold ${
                               active
-                                ? isMenOnlyEntryForm
-                                  ? "border-red-300 bg-red-600/30 text-red-50 shadow-[0_0_18px_rgba(239,68,68,0.22)]"
-                                  : "border-amber-400 bg-amber-400/10 text-amber-100"
-                                : isMenOnlyEntryForm
-                                  ? "border-red-950/80 bg-black/60 text-red-100"
-                                  : "border-slate-700 bg-slate-950 text-slate-200"
+                                ? isMensSpankingEntryForm
+                                  ? "border-blue-300 bg-blue-500/25 text-blue-50 shadow-[0_0_18px_rgba(59,130,246,0.22)]"
+                                  : isMenOnlyEntryForm
+                                    ? "border-red-300 bg-red-600/30 text-red-50 shadow-[0_0_18px_rgba(239,68,68,0.22)]"
+                                    : "border-amber-400 bg-amber-400/10 text-amber-100"
+                                : isMensSpankingEntryForm
+                                  ? "border-blue-500/45 bg-blue-500/10 text-blue-100"
+                                  : isMenOnlyEntryForm
+                                    ? "border-red-950/80 bg-black/60 text-red-100"
+                                    : "border-slate-700 bg-slate-950 text-slate-200"
                             }`}
                           >
                             {tag}
@@ -10330,18 +10336,18 @@ export default function App() {
                   </div>
 
                   <div className={`${getFormBuilderSection("interests")?.enabled !== false ? "" : "hidden"} rounded-2xl border p-4 ${
-                    isMenOnlyEntryForm
+                    (isMenOnlyEntryForm && !isMensSpankingEntryForm)
                       ? "border-violet-800/60 bg-violet-950/20 shadow-[0_0_28px_rgba(124,58,237,0.14)]"
                       : "border-amber-700/50 bg-amber-950/10"
                   }`}>
                     <div className={`mb-3 border-b pb-2 ${
-                      isMenOnlyEntryForm ? "border-violet-800/40" : "border-amber-800/30"
+                      (isMenOnlyEntryForm && !isMensSpankingEntryForm) ? "border-violet-800/40" : "border-amber-800/30"
                     }`}>
                       <label className={`block text-sm font-semibold ${
-                        isMenOnlyEntryForm ? "text-violet-100" : "text-amber-100"
+                        (isMenOnlyEntryForm && !isMensSpankingEntryForm) ? "text-violet-100" : "text-amber-100"
                       }`}>{getFormBuilderSection("interests")?.label || (isDiaperDebaucheryEntryForm ? "Kinks | Fetishes | Responsibilities" : "Interests")}</label>
                       <p className={`mt-1 text-xs leading-5 ${
-                        isMenOnlyEntryForm ? "text-violet-100/60" : "text-amber-100/60"
+                        (isMenOnlyEntryForm && !isMensSpankingEntryForm) ? "text-violet-100/60" : "text-amber-100/60"
                       }`}>
                         {getFormBuilderSection("interests")?.prompt || (isDiaperDebaucheryEntryForm
                           ? "Choose any that apply, then type anything else you want people to know."
@@ -10372,16 +10378,18 @@ export default function App() {
                                 }}
                                 className={`relative z-10 touch-manipulation rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
                                   active
-                                    ? isMenOnlyEntryForm
+                                    ? (isMenOnlyEntryForm && !isMensSpankingEntryForm)
                                       ? "border-violet-300 bg-violet-500/25 text-violet-50 shadow-[0_0_18px_rgba(139,92,246,0.22)]"
                                       : "border-amber-300 bg-amber-400/20 text-amber-50"
                                     : isOther
-                                      ? isMenOnlyEntryForm
+                                      ? (isMenOnlyEntryForm && !isMensSpankingEntryForm)
                                         ? "border-violet-400/40 bg-violet-500/5 text-violet-100/80"
                                         : "border-amber-400/40 bg-amber-400/5 text-amber-100/80"
-                                      : isMenOnlyEntryForm
+                                      : (isMenOnlyEntryForm && !isMensSpankingEntryForm)
                                         ? "border-violet-950/80 bg-black/60 text-violet-100"
-                                        : "border-slate-700 bg-slate-950 text-slate-200"
+                                        : isMensSpankingEntryForm
+                                          ? "border-amber-500/45 bg-amber-500/10 text-amber-100"
+                                          : "border-slate-700 bg-slate-950 text-slate-200"
                                 }`}
                               >
                                 {option}
@@ -10398,7 +10406,7 @@ export default function App() {
                             type="button"
                             onClick={() => toggleInterestItem(item)}
                             className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                              isMenOnlyEntryForm
+                              (isMenOnlyEntryForm && !isMensSpankingEntryForm)
                                 ? "border-violet-400/40 bg-violet-500/10 text-violet-100"
                                 : "border-amber-400/40 bg-amber-400/10 text-amber-100"
                             }`}
@@ -10410,7 +10418,7 @@ export default function App() {
                     ) : null}
 
                     {getFormBuilderSection("interests")?.customField?.enabled ? <><label className={`mt-4 block text-sm font-bold ${
-                      isMenOnlyEntryForm ? "text-violet-50" : "text-amber-50"
+                      (isMenOnlyEntryForm && !isMensSpankingEntryForm) ? "text-violet-50" : "text-amber-50"
                     }`}>
                       {getFormBuilderSection("interests")?.customField?.label}
                     </label>
@@ -10422,11 +10430,11 @@ export default function App() {
                       maxLength={getFormBuilderSection("interests")?.customField?.maxLength || 160}
                       rows={2}
                       className={`mt-2 w-full rounded-2xl border bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 ${
-                        isMenOnlyEntryForm
+                        (isMenOnlyEntryForm && !isMensSpankingEntryForm)
                           ? "border-violet-500/40 focus:border-violet-300"
                           : "border-amber-500/40 focus:border-amber-300"
                       }`}
-                    /> : <input id="interest-input" value={interestInput} onChange={(e) => setInterestInput(e.target.value)} placeholder={getFormBuilderSection("interests")?.customField?.placeholder || ""} maxLength={getFormBuilderSection("interests")?.customField?.maxLength || 160} className={`mt-2 w-full rounded-2xl border bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 ${isMenOnlyEntryForm ? "border-violet-500/40 focus:border-violet-300" : "border-amber-500/40 focus:border-amber-300"}`} />}</> : null}
+                    /> : <input id="interest-input" value={interestInput} onChange={(e) => setInterestInput(e.target.value)} placeholder={getFormBuilderSection("interests")?.customField?.placeholder || ""} maxLength={getFormBuilderSection("interests")?.customField?.maxLength || 160} className={`mt-2 w-full rounded-2xl border bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 ${(isMenOnlyEntryForm && !isMensSpankingEntryForm) ? "border-violet-500/40 focus:border-violet-300" : "border-amber-500/40 focus:border-amber-300"}`} />}</> : null}
                   </div>
                 </div>
 
