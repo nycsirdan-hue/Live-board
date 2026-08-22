@@ -1773,8 +1773,22 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
                 ) : null}
 
                 <div className={`${participantPhoto ? "clear-left" : ""} mt-2 min-w-0 space-y-1`}>
-                  {renderDetail(spankingLegend ? <span className="text-red-400"><DisplayUpArrowIcon /></span> : "🔵", topGive)}
-                  {renderDetail(spankingLegend ? <span className="text-emerald-400"><DisplayDownArrowIcon /></span> : "🟢", bottomReceive)}
+                  {renderDetail(
+                    spankingLegend ? (
+                      <span className="spankingDetailArrow spankingDetailArrowGive text-red-400">
+                        <DisplayUpArrowIcon />
+                      </span>
+                    ) : "🔵",
+                    topGive
+                  )}
+                  {renderDetail(
+                    spankingLegend ? (
+                      <span className="spankingDetailArrow spankingDetailArrowReceive text-emerald-400">
+                        <DisplayDownArrowIcon />
+                      </span>
+                    ) : "🟢",
+                    bottomReceive
+                  )}
                   {renderDetail("⛔", limits)}
                   {renderDetail("%", experience)}
                   {renderDetail("👀", interests.length ? interests : plainItems)}
