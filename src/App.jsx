@@ -6319,9 +6319,9 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className={`min-h-screen bg-slate-950 text-slate-100 ${isKioskEntryMode && isMensSpankingEntryForm ? "stingKioskEntryPage" : ""}`}>
       <div className={`mx-auto max-w-[2400px] ${isDisplayMode ? "p-2" : "p-5 md:p-8"}`}>
-        <div className={`mb-6 ${isDisplayMode ? "mb-8" : ""}`}>
+        <div className={`stingKioskOuterHeader mb-6 ${isDisplayMode ? "mb-8" : ""}`}>
           {isDisplayMode ? null : (
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -9651,9 +9651,9 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div className={`mx-auto max-w-[1500px] ${isKrinklesEntryForm ? "diaperGlowKiosk" : ""}`}>
+            <div className={`stingKioskFormShell mx-auto max-w-[1500px] ${isKrinklesEntryForm ? "diaperGlowKiosk" : ""}`}>
 
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6">
+              <div className="stingKioskFormCard rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6">
                 <h2 className="text-2xl font-semibold tracking-tight">
                   {isKrinklesEntryForm
                     ? "KrINKles Connection Board"
@@ -9673,8 +9673,8 @@ export default function App() {
                       : "Add your name, choose the buttons that fit, and share what you are open to tonight."}
                 </p>
 
-                <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
-                  <div>
+                <div className="stingKioskIdentityRow mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
+                  <div className="stingKioskNameField">
                     <label className="mb-2 block text-sm font-semibold">{isKrinklesEntryForm ? "Name / Scene Name" : "Display name"}</label>
                     <input
                       name="connection-board-display-name"
@@ -9691,11 +9691,11 @@ export default function App() {
                   </div>
 
                   {getFormBuilderSection("photo")?.enabled !== false ? (
-                    <div className="xl:col-span-2">
+                    <div className="stingKioskPhotoField xl:col-span-2">
                       <label className="mb-2 block text-sm font-semibold">
                         {getFormBuilderSection("photo")?.label || "Profile photo"} <span className="font-normal text-slate-400">(optional)</span>
                       </label>
-                      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-4">
+                      <div className="stingKioskPhotoControl flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-4">
                         {participantPhotoPreview ? (
                           <img
                             src={participantPhotoPreview}
@@ -9703,7 +9703,7 @@ export default function App() {
                             className="h-24 w-24 rounded-2xl border border-sky-400/40 object-cover"
                           />
                         ) : (
-                          <div className="grid h-24 w-24 place-items-center rounded-2xl border border-dashed border-slate-600 text-center text-xs text-slate-500">
+                          <div className="stingKioskPhotoPlaceholder grid h-24 w-24 place-items-center rounded-2xl border border-dashed border-slate-600 text-center text-xs text-slate-500">
                             No photo
                           </div>
                         )}
@@ -9846,7 +9846,7 @@ export default function App() {
                   ) : null}
 
                   {getFormBuilderSection("social")?.enabled !== false ? (
-                    <div>
+                    <div className="stingKioskSocialField">
                       <label className="mb-2 block text-sm font-semibold">
                         {getFormBuilderSection("social")?.label || (usesMultipleSocialHandles ? "Social Handles" : "Social handle")} <span className="font-normal text-slate-400">(optional)</span>
                       </label>
@@ -9979,8 +9979,8 @@ export default function App() {
                 </div>
 
                 {!isKrinklesEntryForm ? (
-                <div className={`mt-5 grid gap-4 ${isMenOnlyEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
-                  <div className={`${getFormBuilderSection("position")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
+                <div className={`stingKioskChoiceGrid mt-5 grid gap-4 ${isMenOnlyEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
+                  <div className={`stingKioskPositionCard ${getFormBuilderSection("position")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMenOnlyEntryForm
                       ? "border-zinc-500/60 bg-zinc-950/70 shadow-[0_0_24px_rgba(113,113,122,0.14)]"
                       : "border-slate-700/70 bg-slate-950/60"
@@ -10019,7 +10019,7 @@ export default function App() {
                   </div>
 
                   {isMensSpankingEntryForm && position ? (
-                    <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                    <div className="stingKioskSpankingDetails mt-4 grid gap-4 xl:grid-cols-2">
                       {getFormBuilderSection("topImplements")?.enabled !== false && (position === "Top" || position === "Switch") ? (
                         <div className="rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 shadow-[0_0_24px_rgba(225,29,72,0.12)]">
                           <div className="mb-3 border-b border-rose-900/40 pb-2">
@@ -10249,7 +10249,7 @@ export default function App() {
                 </div>
                 ) : null}
 
-                <div className={`mt-4 grid gap-4 ${isMenOnlyEntryForm || isKrinklesEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-[1fr_0.85fr]"}`}>
+                <div className={`stingKioskIntentionGrid mt-4 grid gap-4 ${isMenOnlyEntryForm || isKrinklesEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-[1fr_0.85fr]"}`}>
                   {!isMenOnlyEntryForm && !isKrinklesEntryForm && getFormBuilderSection("orientation")?.enabled !== false ? (
                   <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
                     <div className="mb-3 border-b border-slate-800 pb-2">
@@ -10309,7 +10309,7 @@ export default function App() {
                   </div>
                   ) : null}
 
-                  <div className={`${getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
+                  <div className={`stingKioskIntentionCard ${getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMensSpankingEntryForm
                       ? "border-blue-800/60 bg-blue-950/20 shadow-[0_0_28px_rgba(59,130,246,0.14)]"
                       : isMenOnlyEntryForm
@@ -10413,7 +10413,7 @@ export default function App() {
                   </div>
                 ) : null}
 
-                <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                <div className="stingKioskDetailsGrid mt-4 grid gap-4 xl:grid-cols-2">
                   <div className={`${getFormBuilderSection("sexual") && getFormBuilderSection("sexual")?.enabled !== false ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
                     <div className="mb-3 border-b border-red-900/30 pb-2">
                       <label className="block text-sm font-semibold text-red-100">{getFormBuilderSection("sexual")?.label || "Sexual Preferences"}</label>
@@ -10589,7 +10589,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-3">
+                <div className="stingKioskActions mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={createEntry}
                     disabled={saving}
