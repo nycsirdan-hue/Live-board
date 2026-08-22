@@ -5,55 +5,11 @@ import "./KioskStartPage.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 const supabase =
-  supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
-
-function CrownIcon() {
-  return (
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M10 48h44l4-30-15 12-11-18-11 18L6 18l4 30Z" />
-      <path d="M14 54h36" />
-      <circle cx="6" cy="18" r="3" />
-      <circle cx="32" cy="12" r="3" />
-      <circle cx="58" cy="18" r="3" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M32 6 52 14v17c0 14-8.5 24-20 29C20.5 55 12 45 12 31V14L32 6Z" />
-      <path d="M32 14v38" />
-    </svg>
-  );
-}
-
-function SparkleIcon() {
-  return (
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M32 6l5.8 17.5L56 29.5 38.5 36 32 58l-6.5-22L8 29.5l18.2-6L32 6Z" />
-      <path d="M50 8l2.5 7.5L60 18l-7.5 2.5L50 28l-2.5-7.5L40 18l7.5-2.5L50 8Z" />
-    </svg>
-  );
-}
-
-function HeartIcon() {
-  return (
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M32 55S10 42 10 24c0-8 5.5-14 13-14 4.5 0 7.5 2.4 9 5.2C33.5 12.4 36.5 10 41 10c7.5 0 13 6 13 14 0 18-22 31-22 31Z" />
-    </svg>
-  );
-}
-
-function SmallArrowIcon() {
-  return (
-    <svg className="smallArrowIcon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M5 12h14" />
-      <path d="M13 6l6 6-6 6" />
-    </svg>
-  );
-}
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 function getPresetFromStorage() {
   try {
@@ -71,12 +27,229 @@ function getEventNameFromStorage() {
   }
 }
 
+const kioskPresetConfigs = {
+  mens_spanking: {
+    theme: "sting",
+    fallbackName: "STING",
+    subtitle:
+      "Add the details you want displayed on tonight’s Connection Board.",
+    sections: [
+      {
+        label: "Position",
+        tone: "position",
+        items: ["TOP", "BOTTOM", "SWITCH"],
+      },
+      {
+        label: "As a top I like to use",
+        tone: "rose",
+        items: ["Paddles", "Straps", "Belt", "Hands"],
+      },
+      {
+        label: "As a bottom I like to receive",
+        tone: "green",
+        items: ["Paddles", "Straps", "Brushes", "Hands"],
+      },
+      {
+        label: "Intention",
+        tone: "blue",
+        items: [
+          "Open to Play",
+          "Discuss Limits",
+          "Open to Try",
+          "Watching",
+        ],
+      },
+    ],
+    more: ["LIMITS", "EXPERIENCE", "INTERESTS", "SOCIAL"],
+    profile: {
+      eyebrow: "COME HERE OFTEN?",
+      text:
+        "Create a STING profile so you can save your Connection Card and use it again at future parties.",
+      action: "SELECT CREATE NEW PROFILE",
+      hint: "instead of Create New Entry",
+    },
+  },
+
+  krinkles_social_play: {
+    theme: "krinkles-soft",
+    fallbackName: "KrINKles",
+    subtitle:
+      "Add your vibe, what you’re looking for, and how you would like to connect or play tonight.",
+    sections: [
+      {
+        label: "Vibe Tonight",
+        tone: "fuchsia",
+        items: [
+          "Little",
+          "Middle",
+          "Big",
+          "Caregiver",
+          "Shy",
+          "Social",
+          "Playful",
+        ],
+      },
+      {
+        label: "Looking For",
+        tone: "cyan",
+        items: [
+          "Friends",
+          "Chat",
+          "Cuddles",
+          "Movie Buddy",
+          "Playtime",
+          "Caregiver Connection",
+        ],
+      },
+      {
+        label: "Play & Activities",
+        tone: "violet",
+        items: [
+          "Coloring",
+          "Games",
+          "Movies",
+          "Story Time",
+          "Stuffies",
+          "Cuddling",
+          "Diaper Play",
+        ],
+      },
+    ],
+    more: [
+      "PROFILE PHOTO",
+      "SOCIAL HANDLES",
+      "ANYTHING ELSE",
+    ],
+  },
+
+  diaper_debauchery_glow: {
+    theme: "krinkles",
+    fallbackName: "KrINKles",
+    subtitle:
+      "Add your vibe, what you’re looking for, and the details you want people to see tonight.",
+    sections: [
+      {
+        label: "Vibe Tonight",
+        tone: "fuchsia",
+        items: [
+          "Little",
+          "Middle",
+          "Big",
+          "Caregiver",
+          "Kinky",
+          "Switchy",
+        ],
+      },
+      {
+        label: "Looking For",
+        tone: "cyan",
+        items: [
+          "Friends",
+          "Chat",
+          "Cuddles",
+          "Playtime",
+          "Scene Partner",
+          "Diaper Change",
+        ],
+      },
+      {
+        label: "Sexual Preferences",
+        tone: "violet",
+        items: [
+          "No Sex",
+          "Discuss Sex First",
+          "Safe Only",
+          "Buzzy Time",
+          "Diaper Sexual",
+        ],
+      },
+      {
+        label: "Kinks | Fetishes | Responsibilities",
+        tone: "gold",
+        items: [
+          "Diaper Play",
+          "Caregiver / Little",
+          "Impact",
+          "Roleplay",
+          "Service",
+        ],
+      },
+    ],
+    more: ["PROFILE PHOTO", "SOCIAL HANDLES", "MORE INTERESTS"],
+  },
+
+  men_only: {
+    theme: "men",
+    fallbackName: "Tonight’s Event",
+    subtitle:
+      "Add the details you want displayed on tonight’s Connection Board.",
+    sections: [
+      {
+        label: "Position",
+        tone: "position",
+        items: ["TOP", "BOTTOM", "SWITCH"],
+      },
+      {
+        label: "Intention",
+        tone: "blue",
+        items: [
+          "Open to Play",
+          "Watching",
+          "Conversation",
+          "Negotiation",
+        ],
+      },
+      {
+        label: "Sexual Preferences",
+        tone: "rose",
+        items: ["Share what you want visible"],
+      },
+      {
+        label: "Interests & Kinks",
+        tone: "violet",
+        items: ["Add the interests you want people to see"],
+      },
+    ],
+    more: ["SOCIAL", "LIMITS", "NOTES"],
+  },
+
+  standard: {
+    theme: "standard",
+    fallbackName: "Studio125",
+    subtitle:
+      "Add the details you want displayed on tonight’s Connection Board.",
+    sections: [
+      {
+        label: "Who You Are",
+        tone: "violet",
+        items: ["Add the identity details you want visible"],
+      },
+      {
+        label: "What You’re Seeking",
+        tone: "cyan",
+        items: ["Connection", "Conversation", "Play"],
+      },
+      {
+        label: "Interests",
+        tone: "blue",
+        items: ["Share what you’re open to discussing"],
+      },
+      {
+        label: "Boundaries & Notes",
+        tone: "gold",
+        items: ["Add anything important you want people to know"],
+      },
+    ],
+    more: ["SOCIAL", "ORIENTATION", "MORE DETAILS"],
+  },
+};
+
 export default function KioskStartPage({ onStart }) {
-  const [entryFormPreset, setEntryFormPreset] = useState(getPresetFromStorage);
-  const [eventName, setEventName] = useState(getEventNameFromStorage);
-  const isDiaperMode = entryFormPreset === "diaper_debauchery_glow";
-  const isSpankingMode = entryFormPreset === "mens_spanking";
-  const isMenMode = entryFormPreset === "men_only";
+  const [entryFormPreset, setEntryFormPreset] =
+    useState(getPresetFromStorage);
+
+  const [eventName, setEventName] =
+    useState(getEventNameFromStorage);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,21 +272,26 @@ export default function KioskStartPage({ onStart }) {
       setEventName(nextEventName);
 
       try {
-        window.localStorage.setItem("kioskEventName", nextEventName);
+        window.localStorage.setItem(
+          "kioskEventName",
+          nextEventName
+        );
       } catch {
         // Ignore localStorage issues.
       }
     }
 
     async function resolveActiveEventName(settingsRow) {
-      const activePresetId = settingsRow?.active_event_display_preset_id;
+      const activePresetId =
+        settingsRow?.active_event_display_preset_id;
 
       if (activePresetId && supabase) {
-        const { data: activePreset, error: presetError } = await supabase
-          .from("event_display_presets")
-          .select("event_name")
-          .eq("id", activePresetId)
-          .maybeSingle();
+        const { data: activePreset, error: presetError } =
+          await supabase
+            .from("event_display_presets")
+            .select("event_name")
+            .eq("id", activePresetId)
+            .maybeSingle();
 
         if (!presetError && activePreset?.event_name) {
           return activePreset.event_name;
@@ -128,7 +306,9 @@ export default function KioskStartPage({ onStart }) {
 
       const { data, error } = await supabase
         .from("board_settings")
-        .select("entry_form_preset, event_name, active_event_display_preset_id, updated_at")
+        .select(
+          "entry_form_preset, event_name, active_event_display_preset_id, updated_at"
+        )
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -137,7 +317,9 @@ export default function KioskStartPage({ onStart }) {
 
       savePreset(data.entry_form_preset);
 
-      const resolvedEventName = await resolveActiveEventName(data);
+      const resolvedEventName =
+        await resolveActiveEventName(data);
+
       if (!cancelled) {
         saveEventName(resolvedEventName);
       }
@@ -152,17 +334,23 @@ export default function KioskStartPage({ onStart }) {
           .channel("kiosk-start-entry-form-preset")
           .on(
             "postgres_changes",
-            { event: "*", schema: "public", table: "board_settings" },
+            {
+              event: "*",
+              schema: "public",
+              table: "board_settings",
+            },
             (payload) => {
               const nextSettings = payload?.new || {};
 
               savePreset(nextSettings.entry_form_preset);
 
-              resolveActiveEventName(nextSettings).then((resolvedEventName) => {
-                if (!cancelled) {
-                  saveEventName(resolvedEventName);
+              resolveActiveEventName(nextSettings).then(
+                (resolvedEventName) => {
+                  if (!cancelled) {
+                    saveEventName(resolvedEventName);
+                  }
                 }
-              });
+              );
             }
           )
           .subscribe()
@@ -178,384 +366,171 @@ export default function KioskStartPage({ onStart }) {
     };
   }, []);
 
-  if (isSpankingMode) {
-    const mobileEntryUrl = `${window.location.origin}/liveboard/mobile`;
+  const config =
+    kioskPresetConfigs[entryFormPreset] ||
+    kioskPresetConfigs.standard;
 
-    return (
-      <main
-        className="stingKioskStartPage stingKioskStartPageClickable"
-        role="button"
-        tabIndex={0}
-        aria-label="Start your Connection Board entry"
-        onClick={onStart}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            onStart();
-          }
-        }}
-      >
-        <div className="stingKioskAmbient stingKioskAmbientRed" />
-        <div className="stingKioskAmbient stingKioskAmbientBlue" />
-        <div className="stingKioskAmbient stingKioskAmbientGreen" />
+  const displayEventName =
+    eventName || config.fallbackName;
 
-        <div className="stingKioskShell">
-          <section className="stingKioskEntryPanel">
-            <header className="stingKioskHeader">
-              <div>
-                <div className="stingKioskEventName">
-                  {eventName || "STING"}
-                </div>
-
-                <h1>
-                  Connection Board
-                </h1>
-
-                <p>
-                  Add the details you want displayed on tonight&apos;s Connection Board.
-                </p>
-              </div>
-
-              <div className="stingKioskPreviewBadge">
-                ENTRY PREVIEW
-              </div>
-            </header>
-
-            <div className="stingKioskFormPreview">
-              <div className="stingPreviewField">
-                <div className="stingPreviewLabel">Name / Scene Name</div>
-                <div className="stingPreviewInput">
-                  Your name as you want it shown on the board
-                </div>
-              </div>
-
-              <div className="stingPreviewSection stingPreviewPosition">
-                <div className="stingPreviewSectionTitle">Position</div>
-
-                <div className="stingPositionGrid">
-                  <div className="stingPositionChoice stingPositionTop">
-                    TOP
-                  </div>
-
-                  <div className="stingPositionChoice stingPositionBottom">
-                    BOTTOM
-                  </div>
-
-                  <div className="stingPositionChoice stingPositionSwitch">
-                    SWITCH
-                  </div>
-                </div>
-              </div>
-
-              <div className="stingPreviewRoleGrid">
-                <div className="stingPreviewSection stingPreviewTop">
-                  <div className="stingPreviewSectionTitle">
-                    As a top I like to use
-                  </div>
-
-                  <div className="stingPreviewChips">
-                    <span>Paddles</span>
-                    <span>Straps</span>
-                    <span>Belt</span>
-                    <span>Hands</span>
-                  </div>
-                </div>
-
-                <div className="stingPreviewSection stingPreviewBottom">
-                  <div className="stingPreviewSectionTitle">
-                    As a bottom I like to receive
-                  </div>
-
-                  <div className="stingPreviewChips">
-                    <span>Paddles</span>
-                    <span>Straps</span>
-                    <span>Brushes</span>
-                    <span>Hands</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="stingPreviewSection stingPreviewIntention">
-                <div className="stingPreviewSectionTitle">
-                  Intention
-                  <span className="stingPreviewOptional">Optional</span>
-                </div>
-
-                <div className="stingPreviewChips">
-                  <span>Open to Play</span>
-                  <span>Discuss Limits</span>
-                  <span>Open to Try</span>
-                  <span>Watching</span>
-                </div>
-              </div>
-
-              <div className="stingPreviewMore">
-                <span>LIMITS</span>
-                <span>EXPERIENCE</span>
-                <span>INTERESTS</span>
-                <span>SOCIAL</span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="stingKioskStartButton"
-              onClick={(event) => {
-                event.stopPropagation();
-                onStart();
-              }}
-            >
-              <span>START YOUR ENTRY</span>
-              <small>Use this kiosk</small>
-            </button>
-          </section>
-
-          <aside className="stingKioskMobilePanel">
-            <div className="stingKioskPhoneIcon" aria-hidden="true">
-              ↗
-            </div>
-
-            <div className="stingKioskMobileEyebrow">
-              MOBILE ENTRY
-            </div>
-
-            <h2>
-              Use your phone instead
-            </h2>
-
-            <div className="stingKioskMobileSubhead">
-              &amp; upload a picture
-            </div>
-
-            <div className="stingKioskQrFrame">
-              <QRCodeSVG
-                value={mobileEntryUrl}
-                size={280}
-                level="M"
-                bgColor="#ffffff"
-                fgColor="#000000"
-                className="stingKioskQrSvg"
-              />
-            </div>
-
-            <div className="stingKioskScanText">
-              SCAN HERE
-            </div>
-
-            <p className="stingKioskMobileExplanation">
-              Complete your Connection Board entry on your phone and choose
-              the picture you want to use.
-            </p>
-
-            <div className="stingKioskProfilePrompt">
-              <div className="stingKioskProfileEyebrow">
-                COME HERE OFTEN?
-              </div>
-
-              <p>
-                Create a STING profile so you can save your Connection Card
-                and use it again at future parties.
-              </p>
-
-              <div className="stingKioskProfileLink">
-                SELECT CREATE NEW PROFILE
-              </div>
-
-              <div className="stingKioskProfileHint">
-                instead of Create New Entry
-              </div>
-            </div>
-
-            <div className="stingKioskMobileUrl">
-              studio125nyc.com/liveboard/mobile
-            </div>
-          </aside>
-        </div>
-      </main>
-    );
-  }
-
-  const pageCopy = isDiaperMode
-    ? {
-        title: "KrINKles Connection Board",
-        subtitle: "Come proud. Come playful. Come padded. Add your vibe for tonight.",
-        hostTitle: "Hosts & Helpers",
-        hostBody: "Find the people holding the room.",
-        monitorTitle: "Safety & Support",
-        monitorBody: "See who can help if you need anything.",
-        cardOneTitle: "Tonight’s Vibe",
-        cardOneBody: "Padded, playful, proud, social, shy, flirty, or fully feral.",
-        cardTwoTitle: "Open To",
-        cardTwoBody: "Connection, dancing, cuddles, play, conversation, or glow-up chaos.",
-        cardThreeTitle: "Kinks & Notes",
-        cardThreeBody: "Share what you want visible: diaper play, care energy, limits, interests, and scene details.",
-        exampleLabel: "Example Glow Entry",
-        nameLine: "Your Name / Scene Name",
-        nameSubline: "Padded, proud, playful, social, or shy",
-        seekingLeft: "My vibe tonight",
-        seekingRight: "What I’m open to",
-        orientation: "| Social handles optional",
-        intention: "Open to dancing, cuddles, diaper talk, glow play, or just hanging out",
-        interests: "Diaper play, ABDL, caregiver energy, roleplay, impact, service, pride energy",
-        button: "JOIN THE BOARD",
-        buttonSmall: "Add Yourself to Tonight’s Glow Board",
-      }
-    : isMenMode
-      ? {
-          title: `${eventName || "Corrosion"} Connection Board`,
-          subtitle: "Men’s BDSM & Sex Party. Add your position, intention, sexual interests, kinks, and notes for tonight.",
-          hostTitle: "Hosts & Support",
-          hostBody: "Find the people holding the room.",
-          monitorTitle: "Safety & Consent",
-          monitorBody: "See who can help if you need anything.",
-          cardOneTitle: "Position",
-          cardOneBody: "Top, bottom, switch, side, voyeur, service, or however you want to be read tonight.",
-          cardTwoTitle: "Intention",
-          cardTwoBody: "Share the energy you are bringing into the room.",
-          cardThreeTitle: "Sex, Kinks & Notes",
-          cardThreeBody: "List what you are open to discussing: BDSM, sex, limits, safer sex, interests, and boundaries.",
-          exampleLabel: "Example Men’s Entry",
-          nameLine: "Your Name / Scene Name",
-          nameSubline: "Position, intention, and room energy",
-          seekingLeft: "Position",
-          seekingRight: "Sexual preferences",
-          orientation: "| Kinks and notes visible",
-          intention: "Open to BDSM, sex, impact, service, watching, conversation, or negotiation",
-          interests: "Impact, rope, oral, service, safer sex notes, limits, scene interests, consent first",
-          button: "JOIN THE BOARD",
-          buttonSmall: "Add Yourself to Tonight’s Board",
-        }
-      : {
-          title: "The Sanctuary Connection Board",
-          subtitle: "A live connection board for scenes, play, and conversation.",
-          hostTitle: "Host & Co-Host",
-          hostBody: "Find the people holding the event.",
-          monitorTitle: "Dungeon Monitors",
-          monitorBody: "See who is available for safety and support.",
-          cardOneTitle: "Who You Are",
-          cardOneBody: "Add the name and identity details you want people to see.",
-          cardTwoTitle: "What You’re Seeking",
-          cardTwoBody: "Share what kind of connection, scene, or conversation you’re open to.",
-          cardThreeTitle: "Interests & Boundaries",
-          cardThreeBody: "List the kinks, interests, responsibilities, or limits you want visible.",
-          exampleLabel: "Example Entry",
-          nameLine: "Your Name",
-          nameSubline: "Real or Scene",
-          seekingLeft: "How you identify",
-          seekingRight: "What you’re seeking",
-          orientation: "| Orientation optional",
-          intention: "Tonight’s intention",
-          interests: "Your interests, kinks, fetishes, responsibilities, or boundaries",
-          button: "START",
-          buttonSmall: "Add Yourself to the Board",
-        };
+  const mobileEntryUrl =
+    `${window.location.origin}/liveboard/mobile`;
 
   return (
-    <main className={`kioskStartPage ${isDiaperMode ? "kioskStartPageDiaper" : isMenMode ? "kioskStartPageMenOnly" : "kioskStartPageStandard"}`}>
-      <section
-        className="kioskPreviewArea kioskPreviewAreaButton"
-        aria-labelledby="kiosk-start-title"
-        aria-label={`${pageCopy.button}. ${pageCopy.buttonSmall}`}
-        role="button"
-        tabIndex={0}
-        onClick={onStart}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            onStart();
-          }
-        }}
-      >
-        <div className="connectionPreview">
-          <header className="previewHeader">
-            <div className="displayStyleHeader">
-              <h1 id="kiosk-start-title">{pageCopy.title}</h1>
-              <p>{pageCopy.subtitle}</p>
+    <main
+      className={`presetKioskPage presetKioskTheme-${config.theme}`}
+      onClick={onStart}
+    >
+      <div className="presetKioskGlow presetKioskGlowOne" />
+      <div className="presetKioskGlow presetKioskGlowTwo" />
+      <div className="presetKioskGlow presetKioskGlowThree" />
+
+      <div className="presetKioskShell">
+        <section className="presetKioskEntryPanel">
+          <header className="presetKioskHeader">
+            <div>
+              <div className="presetKioskEventName">
+                {displayEventName}
+              </div>
+
+              <h1>Connection Board</h1>
+
+              <p>{config.subtitle}</p>
+            </div>
+
+            <div className="presetKioskPreviewBadge">
+              ENTRY PREVIEW
             </div>
           </header>
 
-          <div className="previewSupportRow">
-            <div className="supportCard hostCard">
-              <div className="supportIcon crownIcon">
-                <CrownIcon />
+          <div className="presetKioskFormPreview">
+            <div className="presetPreviewIdentityRow">
+              <div className="presetPreviewField">
+                <div className="presetPreviewLabel">
+                  Name / Scene Name
+                </div>
+
+                <div className="presetPreviewInput">
+                  Your name as you want it shown
+                </div>
               </div>
-              <div>
-                <h3>{pageCopy.hostTitle}</h3>
-                <p>{pageCopy.hostBody}</p>
+
+              <div className="presetPreviewField presetPreviewSocialField">
+                <div className="presetPreviewLabel">
+                  Social Handle
+                </div>
+
+                <div className="presetPreviewInput">
+                  @yourhandle
+                </div>
               </div>
             </div>
 
-            <div className="supportCard monitorCard">
-              <div className="supportIcon shieldIcon">
-                <ShieldIcon />
-              </div>
-              <div>
-                <h3>{pageCopy.monitorTitle}</h3>
-                <p>{pageCopy.monitorBody}</p>
-              </div>
-            </div>
-          </div>
+            <div className="presetPreviewSectionGrid">
+              {config.sections.map((section, index) => (
+                <div
+                  key={`${section.label}-${index}`}
+                  className={`presetPreviewSection presetPreviewTone-${section.tone}`}
+                >
+                  <div className="presetPreviewSectionTitle">
+                    {section.label}
+                  </div>
 
-          <div className="startInfoRow">
-            <div className="startInfoBox startInfoBoxOne">
-              <div className="roleIcon">
-                <SparkleIcon />
-              </div>
-              <div className="roleTextWrap">
-                <h2>{pageCopy.cardOneTitle}</h2>
-                <div className="roleSubLabel">{pageCopy.cardOneBody}</div>
-              </div>
+                  <div className="presetPreviewChips">
+                    {section.items.map((item) => (
+                      <span key={item}>{item}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="startInfoBox startInfoBoxTwo">
-              <div className="roleIcon">
-                <HeartIcon />
-              </div>
-              <div className="roleTextWrap">
-                <h2>{pageCopy.cardTwoTitle}</h2>
-                <div className="roleSubLabel">{pageCopy.cardTwoBody}</div>
-              </div>
-            </div>
-
-            <div className="startInfoBox startInfoBoxThree">
-              <div className="roleIcon">
-                <ShieldIcon />
-              </div>
-              <div className="roleTextWrap">
-                <h2>{pageCopy.cardThreeTitle}</h2>
-                <div className="roleSubLabel">{pageCopy.cardThreeBody}</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="exampleEntryBlock">
-            <div className="exampleEntryLabel">{pageCopy.exampleLabel}</div>
-
-            <div className="exampleEntryCard">
-              <div className="entryNameLine">
-                <strong>{pageCopy.nameLine}</strong>
-                <span>| {pageCopy.nameSubline}</span>
-              </div>
-
-              <div className="entryIdentityLine">
-                <span>{pageCopy.seekingLeft}</span>
-                <SmallArrowIcon />
-                <span>{pageCopy.seekingRight}</span>
-                <span className="orientationText">{pageCopy.orientation}</span>
-              </div>
-
-              <div className="entryIntention">{pageCopy.intention}</div>
-
-              <div className="entryInterests">{pageCopy.interests}</div>
+            <div className="presetPreviewMore">
+              {config.more
+                .filter(
+                  (item) =>
+                    !["PROFILE PHOTO", "SOCIAL HANDLES"].includes(item)
+                )
+                .map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
             </div>
           </div>
-        </div>
 
-        <div className="kioskStartButton" aria-hidden="true">
-          <span>{pageCopy.button}</span>
-          <small>{pageCopy.buttonSmall}</small>
-        </div>
-      </section>
+          <button
+            type="button"
+            className="presetKioskStartButton"
+            onClick={(event) => {
+              event.stopPropagation();
+              onStart();
+            }}
+          >
+            <span>START YOUR ENTRY</span>
+            <small>Use this kiosk</small>
+          </button>
+        </section>
+
+        <aside className="presetKioskMobilePanel">
+          <div
+            className="presetKioskPhoneIcon"
+            aria-hidden="true"
+          >
+            ↗
+          </div>
+
+          <div className="presetKioskMobileEyebrow">
+            MOBILE ENTRY
+          </div>
+
+          <h2>Use your phone instead</h2>
+
+          <div className="presetKioskMobileSubhead">
+            &amp; upload a picture
+          </div>
+
+          <div className="presetKioskQrFrame">
+            <QRCodeSVG
+              value={mobileEntryUrl}
+              size={280}
+              level="M"
+              bgColor="#ffffff"
+              fgColor="#000000"
+              className="presetKioskQrSvg"
+            />
+          </div>
+
+          <div className="presetKioskScanText">
+            SCAN HERE
+          </div>
+
+          <p className="presetKioskMobileExplanation">
+            Complete your Connection Board entry on your
+            phone and choose the picture you want to use.
+          </p>
+
+          {config.profile ? (
+            <div className="presetKioskProfilePrompt">
+              <div className="presetKioskProfileEyebrow">
+                {config.profile.eyebrow}
+              </div>
+
+              <p>{config.profile.text}</p>
+
+              <div className="presetKioskProfileAction">
+                {config.profile.action}
+              </div>
+
+              <div className="presetKioskProfileHint">
+                {config.profile.hint}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="presetKioskMobileUrl">
+            studio125nyc.com/liveboard/mobile
+          </div>
+        </aside>
+      </div>
     </main>
   );
 }

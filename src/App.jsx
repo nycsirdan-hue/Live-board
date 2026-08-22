@@ -522,6 +522,45 @@ const diaperDebaucherySexualPreferenceOptions = [
   "Diaper Sexual",
 ];
 
+const krinklesSocialVibeOptions = [
+  "Little",
+  "Middle",
+  "Big",
+  "Caregiver",
+  "Mommy",
+  "Daddy",
+  "Switchy",
+  "Shy",
+  "Social",
+  "Playful",
+];
+
+const krinklesSocialLookingForOptions = [
+  "Friends",
+  "Chat",
+  "Cuddles",
+  "Movie buddy",
+  "Playtime",
+  "Caregiver connection",
+  "Diaper change",
+  "Social only",
+  "Ask me first",
+];
+
+const krinklesSocialActivityOptions = [
+  "Coloring",
+  "Games",
+  "Movies",
+  "Story Time",
+  "Stuffies",
+  "Cuddling",
+  "Diaper Play",
+  "Changing",
+  "Caregiving",
+  "Roleplay",
+  "Hanging Out",
+];
+
 const handlePlatformOptions = ["FetLife", "Whappz", "Twitter", "Bluesky", "Instagram / IG", "Telegram"];
 const spankingImplementOptions = ["Paddles", "Straps", "Belt", "Brushes", "Canes", "Hands"];
 const spankingLimitOptions = ["No wood", "No leather", "Domestic implements only"];
@@ -586,6 +625,43 @@ const createDefaultFormBuilderConfigs = () => ({
     sexual: formBuilderSection("Sexual Preferences", "Selections are conversation starters, not consent.", defaultSexualPreferenceOptions, { customField: { enabled: true, label: "Type anything else about sexual preferences or safer sex.", placeholder: "Safer sex notes or specific limits", required: false, multiline: true, maxLength: 160 } }),
     interests: formBuilderSection("Interests", "Choose any that apply.", defaultInterestOptions, { customField: { enabled: true, label: "Type anything else about your interests or kinks.", placeholder: "Impact, service, scene interests", required: false, multiline: true, maxLength: 160 } }),
   },
+  krinkles_social_play: {
+    photo: formBuilderSection(
+      "Profile photo",
+      "Add an optional profile photo."
+    ),
+    social: formBuilderSection(
+      "Social Handles",
+      "Add one or more handles.",
+      handlePlatformOptions
+    ),
+    vibe: formBuilderSection(
+      "Vibe Tonight",
+      "Choose the vibe you want people to see on the board.",
+      krinklesSocialVibeOptions
+    ),
+    lookingFor: formBuilderSection(
+      "Looking For",
+      "Choose the kind of connection or company you are open to tonight.",
+      krinklesSocialLookingForOptions
+    ),
+    interests: formBuilderSection(
+      "Play & Activities",
+      "Choose the kinds of play, activities, or connection you would enjoy.",
+      krinklesSocialActivityOptions,
+      {
+        customField: {
+          enabled: true,
+          label: "Anything else?",
+          placeholder: "Anything else you'd like people to know",
+          required: false,
+          multiline: true,
+          maxLength: 160,
+        },
+      }
+    ),
+  },
+
   diaper_debauchery_glow: {
     photo: formBuilderSection("Profile photo", "Add an optional profile photo."),
     social: formBuilderSection("Social Handles", "Add one or more handles.", handlePlatformOptions),
@@ -2607,9 +2683,12 @@ export default function App() {
 
   const isMensSpankingEntryForm = entryFormPreset === "mens_spanking";
   const isMenOnlyEntryForm = entryFormPreset === "men_only" || isMensSpankingEntryForm;
-  const isDiaperDebaucheryEntryForm = entryFormPreset === "diaper_debauchery_glow";
+  const isKrinklesDebaucheryEntryForm = entryFormPreset === "diaper_debauchery_glow";
+  const isKrinklesSocialPlayEntryForm = entryFormPreset === "krinkles_social_play";
+  const isKrinklesEntryForm =
+    isKrinklesDebaucheryEntryForm || isKrinklesSocialPlayEntryForm;
 
-  const entryMenuSettings = isDiaperDebaucheryEntryForm
+  const entryMenuSettings = isKrinklesEntryForm
     ? {
         type: "abdl",
         usesMultipleSocialHandles: true,
@@ -2624,7 +2703,7 @@ export default function App() {
           usesMultipleSocialHandles: true,
         };
 
-  const displayBoardSettings = isDiaperDebaucheryEntryForm
+  const displayBoardSettings = isKrinklesEntryForm
     ? {
         type: "abdl",
         layout: "singleConnectionBoard",
@@ -4125,7 +4204,13 @@ export default function App() {
   };
 
   const updateEntryFormPreset = async (nextPreset) => {
-    const allowedPresets = ["standard", "men_only", "mens_spanking", "diaper_debauchery_glow"];
+    const allowedPresets = [
+      "standard",
+      "men_only",
+      "mens_spanking",
+      "krinkles_social_play",
+      "diaper_debauchery_glow",
+    ];
 
     if (!allowedPresets.includes(nextPreset)) return;
 
@@ -4183,9 +4268,11 @@ export default function App() {
         ? "Men Only"
         : nextPreset === "mens_spanking"
           ? "Men’s Spanking"
-          : nextPreset === "diaper_debauchery_glow"
-            ? "KrINKles"
-            : "Standard";
+          : nextPreset === "krinkles_social_play"
+            ? "KrINKles — Social & Play"
+            : nextPreset === "diaper_debauchery_glow"
+              ? "KrINKles — Debauchery"
+              : "Standard";
 
     setMessage("Entry form switched to " + label + ".");
     setTimeout(() => setMessage(""), 2500);
@@ -5652,7 +5739,7 @@ export default function App() {
       return;
     }
 
-    const finalWhoAmI = isDiaperDebaucheryEntryForm
+    const finalWhoAmI = isKrinklesEntryForm
       ? getFormBuilderSection("vibe")?.enabled === false ? "" : quickTags.join(" • ")
       : isMenOnlyEntryForm
         ? ""
@@ -5662,7 +5749,7 @@ export default function App() {
           ? identityOther.trim()
           : identityChoice;
 
-    const finalSeeking = isDiaperDebaucheryEntryForm
+    const finalSeeking = isKrinklesEntryForm
       ? getFormBuilderSection("lookingFor")?.enabled === false ? "" : lookingForItems.join(", ")
       : isMenOnlyEntryForm
         ? ""
@@ -5768,7 +5855,7 @@ export default function App() {
       finalInterestItems.length < 1 &&
       finalSpankingEntryItems.length < 1 &&
       !(isMensSpankingEntryForm && quickTags.length > 0) &&
-      !isDiaperDebaucheryEntryForm
+      !isKrinklesEntryForm
     ) {
       setMessage("Please add at least one sexual preference, interest, intention, or scene detail.");
       return;
@@ -5793,7 +5880,7 @@ export default function App() {
     const standardItems = [];
     const customItems = finalOpenToItems;
     const orientationItem = finalOrientation ? [`Orientation: ${finalOrientation}`] : [];
-    const quickTagSectionEnabled = getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.enabled !== false;
+    const quickTagSectionEnabled = getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.enabled !== false;
     const quickTagItems = (quickTagSectionEnabled ? quickTags : []).map((tag) =>
       `Quick Tag: ${tag === "Learn New Skills" ? "Learning" : tag}`
     );
@@ -7054,6 +7141,24 @@ export default function App() {
 
                       <button
                         type="button"
+                        onClick={() => updateEntryFormPreset("krinkles_social_play")}
+                        className={`rounded-2xl border px-4 py-3 text-left ${
+                          entryFormPreset === "krinkles_social_play"
+                            ? "border-cyan-300 bg-cyan-400/10 text-cyan-100"
+                            : "border-slate-700 bg-slate-950 text-slate-200"
+                        }`}
+                      >
+                        <div className="font-semibold">
+                          KrINKles — Social &amp; Play
+                        </div>
+                        <div className="mt-1 text-xs leading-5 text-slate-400">
+                          Connection-focused form with vibe, friends, cuddles,
+                          play, activities, socials, and optional photo.
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => updateEntryFormPreset("diaper_debauchery_glow")}
                         className={`rounded-2xl border px-4 py-3 text-left ${
                           entryFormPreset === "diaper_debauchery_glow"
@@ -7061,9 +7166,10 @@ export default function App() {
                             : "border-slate-700 bg-slate-950 text-slate-200"
                         }`}
                       >
-                        <div className="font-semibold">KrINKles</div>
+                        <div className="font-semibold">KrINKles — Debauchery</div>
                         <div className="mt-1 text-xs leading-5 text-slate-400">
-                          Glow-themed connection board form with vibe, looking-for, kinks, sexual preferences, and socials.
+                          Adult-play form with vibe, looking-for, kinks,
+                          sexual preferences, socials, and optional photo.
                         </div>
                       </button>
                     </div>
@@ -7211,10 +7317,10 @@ export default function App() {
                           </span>
                         </div>
 
-                        <div className={`max-h-[calc(100vh-12rem)] overflow-y-auto p-4 ${isDiaperDebaucheryEntryForm ? "bg-gradient-to-br from-fuchsia-950/25 via-slate-950 to-cyan-950/25" : "bg-slate-950"}`}>
+                        <div className={`max-h-[calc(100vh-12rem)] overflow-y-auto p-4 ${isKrinklesEntryForm ? "bg-gradient-to-br from-fuchsia-950/25 via-slate-950 to-cyan-950/25" : "bg-slate-950"}`}>
                           <div className="rounded-2xl border border-slate-700 bg-slate-900/75 p-4">
                             <div className="text-lg font-bold text-white">
-                              {isDiaperDebaucheryEntryForm ? "KrINKles Connection Board" : "Add Entry"}
+                              {isKrinklesEntryForm ? "KrINKles Connection Board" : "Add Entry"}
                             </div>
                             <div className="mt-1 text-xs leading-5 text-slate-400">This preview shows the section order, wording, buttons, and custom fields guests will see.</div>
 
@@ -9531,11 +9637,11 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div className={`mx-auto max-w-[1500px] ${isDiaperDebaucheryEntryForm ? "diaperGlowKiosk" : ""}`}>
+            <div className={`mx-auto max-w-[1500px] ${isKrinklesEntryForm ? "diaperGlowKiosk" : ""}`}>
 
               <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6">
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  {isDiaperDebaucheryEntryForm
+                  {isKrinklesEntryForm
                     ? "KrINKles Connection Board"
                     : isMensSpankingEntryForm
                       ? `${appConfig.eventName} Connection Board`
@@ -9544,8 +9650,10 @@ export default function App() {
                         : "Add Entry"}
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-400">
-                  {isDiaperDebaucheryEntryForm
-                    ? "Add yourself to the glow board so people know how to connect with you tonight."
+                  {isKrinklesEntryForm
+                    ? isKrinklesSocialPlayEntryForm
+                      ? "Add yourself so people know how you would like to connect, hang out, or play tonight."
+                      : "Add yourself to the glow board so people know how to connect with you tonight."
                     : isMensSpankingEntryForm
                       ? "Add the details you want displayed on tonight's Connection Board."
                       : "Add your name, choose the buttons that fit, and share what you are open to tonight."}
@@ -9553,7 +9661,7 @@ export default function App() {
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
                   <div>
-                    <label className="mb-2 block text-sm font-semibold">{isDiaperDebaucheryEntryForm ? "Name / Scene Name" : "Display name"}</label>
+                    <label className="mb-2 block text-sm font-semibold">{isKrinklesEntryForm ? "Name / Scene Name" : "Display name"}</label>
                     <input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -9836,7 +9944,7 @@ export default function App() {
                   ) : null}
                 </div>
 
-                {!isDiaperDebaucheryEntryForm ? (
+                {!isKrinklesEntryForm ? (
                 <div className={`mt-5 grid gap-4 ${isMenOnlyEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
                   <div className={`${getFormBuilderSection("position")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMenOnlyEntryForm
@@ -10107,8 +10215,8 @@ export default function App() {
                 </div>
                 ) : null}
 
-                <div className={`mt-4 grid gap-4 ${isMenOnlyEntryForm || isDiaperDebaucheryEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-[1fr_0.85fr]"}`}>
-                  {!isMenOnlyEntryForm && !isDiaperDebaucheryEntryForm && getFormBuilderSection("orientation")?.enabled !== false ? (
+                <div className={`mt-4 grid gap-4 ${isMenOnlyEntryForm || isKrinklesEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-[1fr_0.85fr]"}`}>
+                  {!isMenOnlyEntryForm && !isKrinklesEntryForm && getFormBuilderSection("orientation")?.enabled !== false ? (
                   <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold">
@@ -10167,7 +10275,7 @@ export default function App() {
                   </div>
                   ) : null}
 
-                  <div className={`${getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
+                  <div className={`${getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMensSpankingEntryForm
                       ? "border-blue-800/60 bg-blue-950/20 shadow-[0_0_28px_rgba(59,130,246,0.14)]"
                       : isMenOnlyEntryForm
@@ -10178,21 +10286,21 @@ export default function App() {
                       isMensSpankingEntryForm ? "border-blue-800/40" : isMenOnlyEntryForm ? "border-red-900/40" : "border-slate-800"
                     }`}>
                       <label className="block text-sm font-semibold">
-  <span className={isMensSpankingEntryForm ? "text-blue-100" : isMenOnlyEntryForm ? "text-red-100" : "text-slate-100"}>{getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.label || (isDiaperDebaucheryEntryForm ? "Vibe Tonight" : "Intention")}</span>
+  <span className={isMensSpankingEntryForm ? "text-blue-100" : isMenOnlyEntryForm ? "text-red-100" : "text-slate-100"}>{getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.label || (isKrinklesEntryForm ? "Vibe Tonight" : "Intention")}</span>
   <span className="mx-1 text-slate-500">|</span>
   <span className="font-normal text-slate-500">Optional</span>
 </label>
                       <p className={`mt-1 text-xs leading-5 ${
                         isMensSpankingEntryForm ? "text-blue-100/60" : isMenOnlyEntryForm ? "text-red-100/60" : "text-slate-500"
                       }`}>
-                        {getFormBuilderSection(isDiaperDebaucheryEntryForm ? "vibe" : "intention")?.prompt || (isDiaperDebaucheryEntryForm ? "Choose the vibe you want people to see on the board." : "Choose all that apply.")}
+                        {getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.prompt || (isKrinklesEntryForm ? "Choose the vibe you want people to see on the board." : "Choose all that apply.")}
                       </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 xl:grid-cols-3">
                       {getEnabledFormOptions(
-                        isDiaperDebaucheryEntryForm ? "vibe" : "intention",
-                        isDiaperDebaucheryEntryForm ? diaperDebaucheryVibeOptions : isMensSpankingEntryForm ? spankingIntentionOptions : quickTagOptions
+                        isKrinklesEntryForm ? "vibe" : "intention",
+                        isKrinklesEntryForm ? diaperDebaucheryVibeOptions : isMensSpankingEntryForm ? spankingIntentionOptions : quickTagOptions
                       ).map((tag) => {
                         const active = quickTags.includes(tag);
 
@@ -10224,7 +10332,7 @@ export default function App() {
                 </div>
 
 
-                {isDiaperDebaucheryEntryForm && getFormBuilderSection("lookingFor")?.enabled !== false ? (
+                {isKrinklesEntryForm && getFormBuilderSection("lookingFor")?.enabled !== false ? (
                   <div className="krinklesLookingForSection mt-4 rounded-2xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
                     <div className="krinklesLookingForHeader mb-3 border-b border-fuchsia-500/30 pb-2">
                       <label className="block text-sm font-semibold text-fuchsia-100">{getFormBuilderSection("lookingFor")?.label || "Looking For"}</label>
@@ -10272,7 +10380,7 @@ export default function App() {
                 ) : null}
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                  <div className={`${getFormBuilderSection("sexual")?.enabled !== false ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
+                  <div className={`${getFormBuilderSection("sexual") && getFormBuilderSection("sexual")?.enabled !== false ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
                     <div className="mb-3 border-b border-red-900/30 pb-2">
                       <label className="block text-sm font-semibold text-red-100">{getFormBuilderSection("sexual")?.label || "Sexual Preferences"}</label>
                       <p className="mt-1 text-xs leading-5 text-red-100/60">
@@ -10354,11 +10462,11 @@ export default function App() {
                     }`}>
                       <label className={`block text-sm font-semibold ${
                         (isMenOnlyEntryForm && !isMensSpankingEntryForm) ? "text-violet-100" : "text-amber-100"
-                      }`}>{getFormBuilderSection("interests")?.label || (isDiaperDebaucheryEntryForm ? "Kinks | Fetishes | Responsibilities" : "Interests")}</label>
+                      }`}>{getFormBuilderSection("interests")?.label || (isKrinklesEntryForm ? "Kinks | Fetishes | Responsibilities" : "Interests")}</label>
                       <p className={`mt-1 text-xs leading-5 ${
                         (isMenOnlyEntryForm && !isMensSpankingEntryForm) ? "text-violet-100/60" : "text-amber-100/60"
                       }`}>
-                        {getFormBuilderSection("interests")?.prompt || (isDiaperDebaucheryEntryForm
+                        {getFormBuilderSection("interests")?.prompt || (isKrinklesEntryForm
                           ? "Choose any that apply, then type anything else you want people to know."
                           : "Choose any that apply. These are conversation starters, not consent.")}
                       </p>
@@ -10658,10 +10766,10 @@ export default function App() {
 
             <div className="automaticFitParticipantStage">
             <div
-              className={`automaticFitWatermark ${isDiaperDebaucheryEntryForm ? "automaticFitWatermarkKrinkles" : ""}`}
+              className={`automaticFitWatermark ${isKrinklesEntryForm ? "automaticFitWatermarkKrinkles" : ""}`}
               aria-hidden="true"
             >
-              {isDiaperDebaucheryEntryForm ? (
+              {isKrinklesEntryForm ? (
                 <img className="automaticFitKrinklesLogo" src="/krinkles-badge.png" alt="" />
               ) : participantEntries.length === 0 ? (
                 <img className="automaticFitStudioLogo" src="/studio125-watermark.png" alt="" />

@@ -1,2232 +1,975 @@
-.kioskStartPage {
-  min-height: 100vh;
-  width: 100%;
-  color: #ffffff;
-  background: url("/kiosk-start-bg.jpg"), #000000;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  box-sizing: border-box;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  overflow: hidden;
-}
+/* =========================================================
+   SHARED LIVEBOARD KIOSK DOORWAY
+   One structure — preset-specific themes
+   ========================================================= */
 
-.kioskPreviewArea {
-  width: 64%;
-  height: 100vh;
-  box-sizing: border-box;
-  padding: 4.2vh 2.7vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2.2vh;
-}
-
-.kioskPreviewAreaButton {
-  cursor: pointer;
-  border-radius: 32px;
-  outline: none;
-}
-
-.kioskPreviewAreaButton:focus-visible {
-  box-shadow: 0 0 0 4px rgba(243, 212, 106, 0.85);
-}
-
-.connectionPreview {
-  width: 100%;
-  border-radius: 30px;
-  padding: clamp(18px, 2vw, 28px);
-  background:
-    radial-gradient(circle at 14% 18%, rgba(255, 0, 76, 0.16), transparent 34%),
-    radial-gradient(circle at 80% 70%, rgba(0, 112, 255, 0.14), transparent 40%),
-    rgba(2, 6, 18, 0.84);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.58);
-  backdrop-filter: blur(12px);
-}
-
-.previewHeader {
-  margin-bottom: clamp(18px, 2vw, 26px);
-}
-
-.displayStyleHeader {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.displayStyleHeader h1 {
-  margin: 0;
-  font-size: clamp(30px, 2.75vw, 48px);
-  line-height: 1;
-  letter-spacing: -0.05em;
-  font-weight: 950;
-  white-space: nowrap;
-}
-
-.displayStyleHeader p {
-  margin: 2px 0 0;
-  color: #b9c7d9;
-  font-size: clamp(14px, 1vw, 18px);
-  line-height: 1.25;
-  max-width: 700px;
-}
-
-.previewSupportRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(12px, 1vw, 16px);
-  margin-bottom: clamp(12px, 1.2vw, 18px);
-}
-
-.supportCard {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-height: 88px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.035);
-}
-
-.hostCard {
-  border: 1px solid rgba(255, 37, 87, 0.72);
-}
-
-.monitorCard {
-  border: 1px solid rgba(48, 152, 255, 0.62);
-}
-
-.supportIcon {
-  height: 58px;
-  width: 58px;
-  flex: 0 0 58px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  border: 1px solid currentColor;
-}
-
-.supportIcon svg,
-.roleIcon svg,
-.smallArrowIcon {
-  width: 68%;
-  height: 68%;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 3.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.crownIcon {
-  color: #ff245d;
-}
-
-.shieldIcon {
-  color: #2ca7ff;
-}
-
-.supportCard h3 {
-  margin: 0 0 5px;
-  font-size: clamp(15px, 1.1vw, 19px);
-}
-
-.supportCard p {
-  margin: 0;
-  color: #a9b5c6;
-  font-size: clamp(12px, 0.9vw, 15px);
-}
-
-.roleRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(10px, 1vw, 16px);
-}
-
-.roleBox {
-  min-height: 108px;
-  border-radius: 18px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  background: rgba(255,255,255,0.035);
-}
-
-.roleIcon {
-  height: 48px;
-  width: 48px;
-  flex: 0 0 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-}
-
-.roleTextWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.roleTextWrap h2 {
-  margin: 0;
-  font-size: clamp(24px, 1.95vw, 34px);
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-
-.roleSubLabel {
-  margin-top: 6px;
-  font-size: clamp(13px, 1vw, 16px);
-  line-height: 1.2;
-  font-weight: 700;
-  opacity: 0.8;
-}
-
-.topRole {
-  color: #ff386c;
-  border: 1px solid rgba(255, 38, 88, 0.72);
-  background: linear-gradient(180deg, rgba(95, 0, 35, 0.48), rgba(22, 0, 16, 0.62));
-}
-
-.bottomRole {
-  color: #00e2ae;
-  border: 1px solid rgba(0, 226, 174, 0.58);
-  background: linear-gradient(180deg, rgba(0, 82, 70, 0.38), rgba(0, 24, 25, 0.62));
-}
-
-.switchRole {
-  color: #3ca3ff;
-  border: 1px solid rgba(48, 152, 255, 0.64);
-  background: linear-gradient(180deg, rgba(0, 55, 130, 0.38), rgba(0, 13, 38, 0.62));
-}
-
-.exampleEntryBlock {
-  margin-top: 18px;
-  border-radius: 22px;
-  padding: 18px;
-  background: rgba(0, 0, 0, 0.24);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-.exampleEntryLabel {
-  color: rgba(255, 255, 255, 0.62);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 12px;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.exampleEntryCard {
-  border-radius: 18px;
-  padding: 18px 20px;
-  background:
-    linear-gradient(135deg, rgba(255, 31, 88, 0.18), rgba(0, 0, 0, 0.18)),
-    rgba(5, 8, 18, 0.92);
-  border: 1px solid rgba(255, 63, 112, 0.55);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.06) inset,
-    0 16px 34px rgba(0,0,0,0.36);
-}
-
-.entryNameLine {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.entryNameLine strong {
-  font-size: clamp(22px, 2.1vw, 34px);
-  line-height: 1;
-  letter-spacing: -0.035em;
-}
-
-.entryNameLine span {
-  color: #ff8da9;
-  font-size: clamp(14px, 1.15vw, 18px);
-  font-weight: 700;
-}
-
-.entryIdentityLine {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  color: #dce6f5;
-  font-size: clamp(14px, 1.15vw, 18px);
-  font-weight: 650;
-  margin-bottom: 12px;
-}
-
-.smallArrowIcon {
-  width: 22px;
-  height: 22px;
-  color: #ff3b70;
-  stroke-width: 2.8;
-}
-
-.orientationText {
-  color: #ff8da9;
-}
-
-.entryIntention {
-  border-top: 1px solid rgba(255,255,255,0.12);
-  padding-top: 12px;
-  margin-top: 8px;
-  color: #ffffff;
-  font-size: clamp(14px, 1.1vw, 17px);
-  font-weight: 700;
-}
-
-.entryInterests {
-  margin-top: 8px;
-  color: #aebed3;
-  font-size: clamp(13px, 1vw, 16px);
-  line-height: 1.35;
-}
-
-.kioskStartButton {
-  align-self: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  box-sizing: border-box;
-  width: min(430px, 82%);
-  border: 0;
-  border-radius: 999px;
-  padding: 20px 34px 22px;
-  color: #23180a;
-  cursor: pointer;
-  background: linear-gradient(135deg, #f3d46a, #cfa32a);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.2) inset,
-    0 18px 55px rgba(207, 163, 42, 0.42);
-  transition: transform 160ms ease, box-shadow 160ms ease;
-  touch-action: manipulation;
-  pointer-events: none;
-}
-
-.kioskStartButton:hover,
-.kioskStartButton:focus-visible,
-.kioskPreviewAreaButton:hover .kioskStartButton,
-.kioskPreviewAreaButton:focus-visible .kioskStartButton {
-  transform: translateY(-2px) scale(1.01);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.26) inset,
-    0 24px 70px rgba(207, 163, 42, 0.55);
-  outline: none;
-}
-
-.kioskStartButton span {
-  display: block;
-  font-size: clamp(34px, 3.2vw, 52px);
-  font-weight: 950;
-  line-height: 1;
-  letter-spacing: 0.08em;
-}
-
-.kioskStartButton small {
-  display: block;
-  margin-top: 5px;
-  font-size: clamp(15px, 1.2vw, 19px);
-  font-weight: 800;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .kioskStartButton {
-    transition: none;
-  }
-
-  .kioskStartButton:hover,
-  .kioskStartButton:focus-visible {
-    transform: none;
-  }
-}
-
-@media (max-width: 980px) {
-  .kioskPreviewArea {
-    width: 100%;
-    padding: 24px;
-  }
-
-  .previewSupportRow,
-  .roleRow {
-    grid-template-columns: 1fr;
-  }
-
-  .kioskStartPage {
-    overflow: auto;
-  }
-}
-
-/* Dynamic entry-form-aware kiosk start screen */
-.kioskModeBadge {
-  display: inline-flex;
-  width: fit-content;
-  align-items: center;
-  border-radius: 999px;
-  padding: 7px 11px;
-  border: 1px solid rgba(255,255,255,0.16);
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.72);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.startInfoRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(10px, 1vw, 16px);
-}
-
-.startInfoBox {
-  min-height: 126px;
-  border-radius: 18px;
-  padding: 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  background: rgba(255,255,255,0.035);
-}
-
-.startInfoBox .roleIcon {
-  margin-top: 2px;
-}
-
-.startInfoBox .roleTextWrap h2 {
-  font-size: clamp(20px, 1.55vw, 28px);
-}
-
-.startInfoBox .roleSubLabel {
-  font-size: clamp(12px, 0.82vw, 15px);
-  line-height: 1.25;
-  font-weight: 650;
-  opacity: 0.82;
-}
-
-.startInfoBoxOne {
-  color: #ff8fb9;
-  border: 1px solid rgba(255, 143, 185, 0.62);
-  background: linear-gradient(180deg, rgba(105, 30, 70, 0.34), rgba(22, 0, 16, 0.62));
-}
-
-.startInfoBoxTwo {
-  color: #89f5ff;
-  border: 1px solid rgba(137, 245, 255, 0.5);
-  background: linear-gradient(180deg, rgba(20, 80, 92, 0.32), rgba(0, 18, 28, 0.62));
-}
-
-.startInfoBoxThree {
-  color: #fff4c2;
-  border: 1px solid rgba(255, 244, 194, 0.48);
-  background: linear-gradient(180deg, rgba(110, 85, 20, 0.28), rgba(28, 20, 0, 0.56));
-}
-
-.kioskStartPageDiaper .connectionPreview {
-  background:
-    radial-gradient(circle at 12% 12%, rgba(255, 102, 204, 0.22), transparent 36%),
-    radial-gradient(circle at 80% 14%, rgba(102, 229, 255, 0.18), transparent 38%),
-    radial-gradient(circle at 60% 84%, rgba(255, 244, 194, 0.16), transparent 42%),
-    rgba(16, 8, 28, 0.86);
-  border-color: rgba(255, 180, 230, 0.28);
-}
-
-.kioskStartPageDiaper .displayStyleHeader h1 {
-  color: #fff4fb;
-  text-shadow:
-    0 0 18px rgba(255, 102, 204, 0.24),
-    0 0 30px rgba(102, 229, 255, 0.16);
-}
-
-.kioskStartPageDiaper .displayStyleHeader p {
-  color: #f8d9ff;
-}
-
-.kioskStartPageDiaper .kioskModeBadge {
-  color: #fff4c2;
-  border-color: rgba(255, 244, 194, 0.36);
-  background: rgba(255, 102, 204, 0.13);
-}
-
-.kioskStartPageDiaper .hostCard {
-  border-color: rgba(255, 143, 185, 0.72);
-  background: rgba(255, 143, 185, 0.08);
-}
-
-.kioskStartPageDiaper .monitorCard {
-  border-color: rgba(137, 245, 255, 0.58);
-  background: rgba(137, 245, 255, 0.07);
-}
-
-.kioskStartPageDiaper .crownIcon {
-  color: #ff8fb9;
-}
-
-.kioskStartPageDiaper .shieldIcon {
-  color: #89f5ff;
-}
-
-.kioskStartPageDiaper .exampleEntryCard {
-  background:
-    linear-gradient(135deg, rgba(255, 102, 204, 0.2), rgba(102, 229, 255, 0.12)),
-    rgba(18, 8, 30, 0.94);
-  border-color: rgba(255, 180, 230, 0.62);
-}
-
-.kioskStartPageDiaper .entryNameLine span {
-  color: #ffd1ef;
-}
-
-.kioskStartPageDiaper .smallArrowIcon {
-  color: #89f5ff;
-}
-
-.kioskStartPageDiaper .entryIntention {
-  border-color: rgba(255, 180, 230, 0.42);
-  background: rgba(255, 102, 204, 0.09);
-  color: #fff4fb;
-}
-
-.kioskStartPageDiaper .entryInterests {
-  border-color: rgba(137, 245, 255, 0.36);
-  background: rgba(137, 245, 255, 0.08);
-  color: #f3fbff;
-}
-
-.kioskStartPageDiaper .kioskStartButton {
-  background:
-    radial-gradient(circle at 22% 20%, rgba(255,255,255,0.42), transparent 30%),
-    linear-gradient(135deg, #ff8fd8, #89f5ff 52%, #fff4c2);
-  color: #21051d;
-  box-shadow:
-    0 18px 40px rgba(255, 102, 204, 0.24),
-    0 0 0 1px rgba(255,255,255,0.28) inset;
-}
-
-.kioskStartPageDiaper .kioskStartButton small {
-  color: rgba(33, 5, 29, 0.72);
-}
-
-@media (max-width: 1100px) {
-  .startInfoRow {
-    grid-template-columns: 1fr;
-  }
-
-  .startInfoBox {
-    min-height: auto;
-  }
-}
-
-
-/* Glow Pride override for Diaper Debauchery / Pride After Dark kiosk mode */
-.kioskStartPageDiaper {
-  background:
-    radial-gradient(circle at 74% 18%, rgba(255, 0, 40, 0.42), transparent 22%),
-    radial-gradient(circle at 86% 34%, rgba(255, 122, 0, 0.34), transparent 20%),
-    radial-gradient(circle at 90% 50%, rgba(255, 238, 0, 0.28), transparent 20%),
-    radial-gradient(circle at 84% 66%, rgba(0, 255, 122, 0.28), transparent 20%),
-    radial-gradient(circle at 72% 80%, rgba(0, 128, 255, 0.34), transparent 22%),
-    radial-gradient(circle at 58% 92%, rgba(151, 71, 255, 0.34), transparent 24%),
-    url("/kiosk-start-bg.jpg"),
-    #020202;
-  background-size: cover;
-  background-position: center;
-}
-
-.kioskStartPageDiaper .connectionPreview {
-  background:
-    linear-gradient(115deg, rgba(255, 0, 40, 0.18), transparent 23%),
-    linear-gradient(135deg, rgba(255, 128, 0, 0.12), transparent 34%),
-    linear-gradient(155deg, rgba(255, 238, 0, 0.1), transparent 44%),
-    linear-gradient(175deg, rgba(0, 255, 122, 0.1), transparent 54%),
-    linear-gradient(195deg, rgba(0, 128, 255, 0.14), transparent 68%),
-    linear-gradient(215deg, rgba(151, 71, 255, 0.15), transparent 82%),
-    rgba(2, 2, 6, 0.9);
-  border: 1px solid rgba(255, 38, 58, 0.7);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.07) inset,
-    0 0 34px rgba(255, 0, 48, 0.32),
-    0 0 72px rgba(0, 128, 255, 0.18),
-    0 28px 90px rgba(0, 0, 0, 0.72);
-}
-
-.kioskStartPageDiaper .displayStyleHeader h1 {
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: -0.06em;
-  text-shadow:
-    0 0 10px rgba(255, 255, 255, 0.5),
-    0 0 22px rgba(255, 0, 40, 0.66),
-    0 0 42px rgba(255, 0, 40, 0.42);
-}
-
-.kioskStartPageDiaper .displayStyleHeader p {
-  color: #f3f4f6;
-  font-weight: 750;
-  text-shadow:
-    0 0 10px rgba(255,255,255,0.24),
-    0 0 18px rgba(255,0,48,0.38);
-}
-
-.kioskStartPageDiaper .previewHeader {
-  position: relative;
-}
-
-.kioskStartPageDiaper .previewHeader::after {
-  content: "";
-  display: block;
-  height: 5px;
-  width: min(560px, 100%);
-  margin-top: 18px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #ff0038, #ff8a00, #ffee00, #00ff7a, #0080ff, #9747ff, #ff0038);
-  box-shadow:
-    0 0 14px rgba(255, 0, 56, 0.8),
-    0 0 24px rgba(0, 128, 255, 0.45);
-}
-
-.kioskStartPageDiaper .hostCard {
-  border-color: rgba(255, 0, 56, 0.78);
-  background:
-    linear-gradient(135deg, rgba(255, 0, 56, 0.18), rgba(0, 0, 0, 0.2)),
-    rgba(5, 5, 8, 0.72);
-  box-shadow: 0 0 20px rgba(255, 0, 56, 0.16);
-}
-
-.kioskStartPageDiaper .monitorCard {
-  border-color: rgba(0, 128, 255, 0.72);
-  background:
-    linear-gradient(135deg, rgba(0, 128, 255, 0.16), rgba(0, 0, 0, 0.22)),
-    rgba(5, 5, 8, 0.72);
-  box-shadow: 0 0 20px rgba(0, 128, 255, 0.16);
-}
-
-.kioskStartPageDiaper .crownIcon {
-  color: #ff0038;
-}
-
-.kioskStartPageDiaper .shieldIcon {
-  color: #0080ff;
-}
-
-.kioskStartPageDiaper .startInfoBoxOne {
-  color: #ff0038;
-  border-color: rgba(255, 0, 56, 0.78);
-  background:
-    linear-gradient(180deg, rgba(255, 0, 56, 0.2), rgba(0, 0, 0, 0.62));
-  box-shadow: 0 0 22px rgba(255, 0, 56, 0.18);
-}
-
-.kioskStartPageDiaper .startInfoBoxTwo {
-  color: #00ff7a;
-  border-color: rgba(0, 255, 122, 0.58);
-  background:
-    linear-gradient(180deg, rgba(0, 255, 122, 0.14), rgba(0, 0, 0, 0.62));
-  box-shadow: 0 0 22px rgba(0, 255, 122, 0.12);
-}
-
-.kioskStartPageDiaper .startInfoBoxThree {
-  color: #9747ff;
-  border-color: rgba(151, 71, 255, 0.7);
-  background:
-    linear-gradient(180deg, rgba(151, 71, 255, 0.16), rgba(0, 0, 0, 0.62));
-  box-shadow: 0 0 22px rgba(151, 71, 255, 0.14);
-}
-
-.kioskStartPageDiaper .exampleEntryBlock {
-  background:
-    linear-gradient(135deg, rgba(255, 0, 56, 0.1), rgba(0, 128, 255, 0.08)),
-    rgba(0, 0, 0, 0.34);
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
-.kioskStartPageDiaper .exampleEntryLabel {
-  color: #ffffff;
-  text-shadow: 0 0 12px rgba(255, 0, 56, 0.52);
-}
-
-.kioskStartPageDiaper .exampleEntryCard {
-  background:
-    linear-gradient(135deg, rgba(255, 0, 56, 0.22), rgba(0, 128, 255, 0.13), rgba(151, 71, 255, 0.16)),
-    rgba(0, 0, 0, 0.88);
-  border-color: rgba(255, 0, 56, 0.64);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.08) inset,
-    0 0 28px rgba(255,0,56,0.22),
-    0 16px 34px rgba(0,0,0,0.44);
-}
-
-.kioskStartPageDiaper .entryNameLine span {
-  color: #ff8a00;
-  text-shadow: 0 0 10px rgba(255, 138, 0, 0.36);
-}
-
-.kioskStartPageDiaper .smallArrowIcon {
-  color: #00ff7a;
-}
-
-.kioskStartPageDiaper .entryIntention {
-  border-color: rgba(255, 238, 0, 0.36);
-  background: rgba(255, 238, 0, 0.08);
-  color: #ffffff;
-}
-
-.kioskStartPageDiaper .entryInterests {
-  border-color: rgba(0, 128, 255, 0.42);
-  background: rgba(0, 128, 255, 0.09);
-  color: #ffffff;
-}
-
-.kioskStartPageDiaper .kioskStartButton {
-  background:
-    linear-gradient(90deg, #ff0038, #ff8a00, #ffee00, #00ff7a, #0080ff, #9747ff, #ff0038);
-  color: #050505;
-  border: 1px solid rgba(255,255,255,0.36);
-  box-shadow:
-    0 0 18px rgba(255, 0, 56, 0.55),
-    0 0 32px rgba(0, 128, 255, 0.42),
-    0 18px 42px rgba(0, 0, 0, 0.5);
-}
-
-.kioskStartPageDiaper .kioskStartButton span {
-  color: #050505;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.28);
-}
-
-.kioskStartPageDiaper .kioskStartButton small {
-  color: rgba(5, 5, 5, 0.78);
-  font-weight: 900;
-}
-
-
-/* Restore kiosk payment/check-in background visibility */
-.kioskStartPageDiaper {
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.04) 48%, rgba(0, 0, 0, 0) 100%),
-    url("/kiosk-start-bg.jpg"),
-    #000000;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-}
-
-.kioskStartPageDiaper .kioskPreviewArea {
-  width: 56%;
-  padding-left: 2.3vw;
-  padding-right: 1.5vw;
-}
-
-.kioskStartPageDiaper .connectionPreview {
-  background:
-    linear-gradient(115deg, rgba(255, 0, 40, 0.18), transparent 28%),
-    linear-gradient(160deg, rgba(0, 128, 255, 0.12), transparent 68%),
-    rgba(0, 0, 0, 0.78);
-  border: 1px solid rgba(255, 38, 58, 0.64);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.06) inset,
-    0 0 28px rgba(255, 0, 48, 0.24),
-    0 0 52px rgba(0, 128, 255, 0.14),
-    0 24px 70px rgba(0, 0, 0, 0.68);
-}
-
-.kioskStartPageDiaper .displayStyleHeader h1 {
-  font-size: clamp(30px, 2.45vw, 44px);
-  white-space: normal;
-}
-
-.kioskStartPageDiaper .previewHeader::after {
-  width: min(500px, 100%);
-}
-
-.kioskStartPageDiaper .startInfoBox {
-  min-height: 112px;
-}
-
-.kioskStartPageDiaper .exampleEntryBlock {
-  margin-top: 14px;
-}
-
-.kioskStartPageDiaper .kioskStartButton {
-  max-width: 560px;
-}
-
-/* Keep right-side check-in/payment image open on wide kiosk screens */
-@media (min-width: 1200px) {
-  .kioskStartPageDiaper .kioskPreviewArea {
-    max-width: 980px;
-  }
-}
-
-
-/* Tighter left-side kiosk layout */
-.kioskStartPageDiaper .kioskPreviewArea {
-  width: 54%;
-  max-width: 900px;
-  padding-left: 2vw;
-  padding-right: 1.2vw;
-}
-
-.kioskStartPageDiaper .connectionPreview {
-  padding: 22px 22px 18px;
-}
-
-.kioskStartPageDiaper .displayStyleHeader h1 {
-  font-size: clamp(28px, 2.1vw, 40px);
-  line-height: 0.98;
-}
-
-.kioskStartPageDiaper .displayStyleHeader p {
-  font-size: clamp(14px, 0.95vw, 18px);
-  line-height: 1.2;
-}
-
-.kioskStartPageDiaper .previewHeader::after {
-  margin-top: 14px;
-}
-
-.kioskStartPageDiaper .previewSupportRow {
-  gap: 12px;
-}
-
-.kioskStartPageDiaper .supportCard {
-  padding: 14px 16px;
-}
-
-.kioskStartPageDiaper .startInfoRow {
-  gap: 12px;
-}
-
-.kioskStartPageDiaper .startInfoBox {
-  min-height: 98px;
-  padding: 13px 14px;
-  gap: 10px;
-}
-
-.kioskStartPageDiaper .startInfoBox .roleTextWrap h2 {
-  font-size: clamp(17px, 1.25vw, 23px);
-  line-height: 1.05;
-}
-
-.kioskStartPageDiaper .startInfoBox .roleSubLabel {
-  font-size: clamp(11px, 0.78vw, 14px);
-  line-height: 1.22;
-}
-
-.kioskStartPageDiaper .exampleEntryBlock {
-  margin-top: 12px;
-  padding: 14px 16px 16px;
-}
-
-.kioskStartPageDiaper .exampleEntryCard {
-  padding: 16px;
-}
-
-.kioskStartPageDiaper .entryNameLine {
-  gap: 10px;
-}
-
-.kioskStartPageDiaper .entryNameLine strong {
-  font-size: clamp(20px, 1.7vw, 32px);
-  line-height: 1.02;
-}
-
-.kioskStartPageDiaper .entryIdentityLine {
-  font-size: clamp(11px, 0.82vw, 15px);
-  gap: 7px;
-  flex-wrap: wrap;
-}
-
-.kioskStartPageDiaper .entryIntention,
-.kioskStartPageDiaper .entryInterests {
-  font-size: clamp(11px, 0.82vw, 15px);
-  line-height: 1.18;
-}
-
-.kioskStartPageDiaper .kioskStartButton {
-  max-width: 470px;
-  width: min(470px, 92%);
-  margin-top: 18px;
-  padding: 18px 22px;
-}
-
-.kioskStartPageDiaper .kioskStartButton span {
-  display: block;
-  white-space: nowrap;
-  font-size: clamp(18px, 1.75vw, 30px);
-  line-height: 1;
-}
-
-.kioskStartPageDiaper .kioskStartButton small {
-  display: none;
-}
-
-/* iPad kiosk fit refinement: larger left board, smaller right payment image */
-.kioskStartPageDiaper {
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.02) 48%, rgba(0, 0, 0, 0) 100%),
-    url("/kiosk-start-bg.jpg"),
-    #000000;
-  background-size: auto 92vh;
-  background-position: right center;
-  background-repeat: no-repeat;
-}
-
-.kioskStartPageDiaper .kioskPreviewArea {
-  width: 59%;
-  max-width: none;
-  padding: 3.1vh 2vw 2.2vh 2vw;
-  gap: 1.6vh;
-}
-
-.kioskStartPageDiaper .connectionPreview {
-  padding: 24px;
-  border-radius: 26px;
-}
-
-.kioskStartPageDiaper .displayStyleHeader h1 {
-  font-size: clamp(31px, 2.45vw, 46px);
-  white-space: nowrap;
-}
-
-.kioskStartPageDiaper .displayStyleHeader p {
-  font-size: clamp(15px, 1.05vw, 19px);
-}
-
-.kioskStartPageDiaper .previewHeader {
-  margin-bottom: 18px;
-}
-
-.kioskStartPageDiaper .previewHeader::after {
-  margin-top: 14px;
-  width: 88%;
-}
-
-.kioskStartPageDiaper .previewSupportRow {
-  gap: 14px;
-  margin-bottom: 14px;
-}
-
-.kioskStartPageDiaper .supportCard {
-  min-height: 84px;
-  padding: 14px 16px;
-}
-
-.kioskStartPageDiaper .startInfoRow {
-  gap: 14px;
-}
-
-.kioskStartPageDiaper .startInfoBox {
-  min-height: 116px;
-  padding: 15px;
-}
-
-.kioskStartPageDiaper .startInfoBox .roleTextWrap h2 {
-  font-size: clamp(19px, 1.45vw, 27px);
-}
-
-.kioskStartPageDiaper .startInfoBox .roleSubLabel {
-  font-size: clamp(12px, 0.9vw, 15px);
-}
-
-.kioskStartPageDiaper .exampleEntryBlock {
-  margin-top: 14px;
-  padding: 16px;
-}
-
-.kioskStartPageDiaper .exampleEntryCard {
-  padding: 18px 20px;
-}
-
-.kioskStartPageDiaper .entryNameLine strong {
-  font-size: clamp(23px, 1.95vw, 35px);
-}
-
-.kioskStartPageDiaper .entryIdentityLine,
-.kioskStartPageDiaper .entryIntention,
-.kioskStartPageDiaper .entryInterests {
-  font-size: clamp(13px, 0.95vw, 17px);
-}
-
-.kioskStartPageDiaper .kioskStartButton {
-  width: min(520px, 78%);
-  max-width: 520px;
-  margin-top: 16px;
-  padding: 18px 28px;
-}
-
-.kioskStartPageDiaper .kioskStartButton span {
-  white-space: nowrap;
-  font-size: clamp(21px, 1.95vw, 34px);
-}
-
-/* iPad landscape specific tuning */
-@media (min-width: 1000px) and (max-width: 1400px) and (orientation: landscape) {
-  .kioskStartPageDiaper {
-    background-size: auto 88vh;
-    background-position: right center;
-  }
-
-  .kioskStartPageDiaper .kioskPreviewArea {
-    width: 60.5%;
-    padding-top: 2.6vh;
-    padding-bottom: 1.8vh;
-  }
-
-  .kioskStartPageDiaper .connectionPreview {
-    transform: scale(1.02);
-    transform-origin: left center;
-  }
-}
-
-/* Fine tune iPad kiosk balance: slightly smaller left panel, slightly larger right image */
-.kioskStartPageDiaper {
-  background-size: auto 95vh;
-  background-position: right center;
-}
-
-.kioskStartPageDiaper .kioskPreviewArea {
-  width: 57.5%;
-  padding-left: 1.8vw;
-  padding-right: 1vw;
-}
-
-.kioskStartPageDiaper .connectionPreview {
-  transform: scale(0.98);
-  transform-origin: left center;
-}
-
-/* iPad landscape fine tune */
-@media (min-width: 1000px) and (max-width: 1400px) and (orientation: landscape) {
-  .kioskStartPageDiaper {
-    background-size: auto 92vh;
-    background-position: right center;
-  }
-
-  .kioskStartPageDiaper .kioskPreviewArea {
-    width: 58.5%;
-    padding-top: 2.7vh;
-    padding-bottom: 1.8vh;
-  }
-
-  .kioskStartPageDiaper .connectionPreview {
-    transform: scale(0.99);
-    transform-origin: left center;
-  }
-}
-
-/* Final iPad landscape placement: full left panel visible, right payment image centered in its side */
-@media (min-width: 1000px) and (max-width: 1400px) and (orientation: landscape) {
-  .kioskStartPageDiaper {
-    background-size: auto 84vh;
-    background-position: 84% center;
-    background-repeat: no-repeat;
-  }
-
-  .kioskStartPageDiaper .kioskPreviewArea {
-    width: 56%;
-    padding-top: 6.2vh;
-    padding-bottom: 4.8vh;
-    padding-left: 2vw;
-    padding-right: 1vw;
-    justify-content: center;
-    gap: 1.35vh;
-  }
-
-  .kioskStartPageDiaper .connectionPreview {
-    transform: scale(0.93);
-    transform-origin: left center;
-    padding: 22px;
-  }
-
-  .kioskStartPageDiaper .displayStyleHeader h1 {
-    font-size: clamp(28px, 2.15vw, 40px);
-    line-height: 1;
-  }
-
-  .kioskStartPageDiaper .displayStyleHeader p {
-    font-size: clamp(13px, 0.95vw, 17px);
-    line-height: 1.18;
-  }
-
-  .kioskStartPageDiaper .previewHeader {
-    margin-bottom: 14px;
-  }
-
-  .kioskStartPageDiaper .previewHeader::after {
-    margin-top: 12px;
-  }
-
-  .kioskStartPageDiaper .previewSupportRow {
-    margin-bottom: 12px;
-  }
-
-  .kioskStartPageDiaper .supportCard {
-    min-height: 76px;
-    padding: 12px 14px;
-  }
-
-  .kioskStartPageDiaper .supportIcon {
-    height: 50px;
-    width: 50px;
-    flex-basis: 50px;
-  }
-
-  .kioskStartPageDiaper .startInfoBox {
-    min-height: 98px;
-    padding: 12px;
-  }
-
-  .kioskStartPageDiaper .roleIcon {
-    height: 42px;
-    width: 42px;
-    flex-basis: 42px;
-  }
-
-  .kioskStartPageDiaper .startInfoBox .roleTextWrap h2 {
-    font-size: clamp(17px, 1.25vw, 23px);
-  }
-
-  .kioskStartPageDiaper .startInfoBox .roleSubLabel {
-    font-size: clamp(11px, 0.78vw, 14px);
-    line-height: 1.18;
-  }
-
-  .kioskStartPageDiaper .exampleEntryBlock {
-    margin-top: 12px;
-    padding: 14px;
-  }
-
-  .kioskStartPageDiaper .exampleEntryCard {
-    padding: 14px 16px;
-  }
-
-  .kioskStartPageDiaper .entryNameLine strong {
-    font-size: clamp(20px, 1.6vw, 30px);
-  }
-
-  .kioskStartPageDiaper .entryNameLine span,
-  .kioskStartPageDiaper .entryIdentityLine,
-  .kioskStartPageDiaper .entryIntention,
-  .kioskStartPageDiaper .entryInterests {
-    font-size: clamp(11px, 0.8vw, 15px);
-  }
-
-  .kioskStartPageDiaper .kioskStartButton {
-    width: min(500px, 74%);
-    max-width: 500px;
-    margin-top: 0.8vh;
-    padding: 15px 24px;
-    transform: translateY(-0.8vh);
-  }
-
-  .kioskStartPageDiaper .kioskStartButton span {
-    font-size: clamp(19px, 1.65vw, 30px);
-  }
-}
-
-/* Final iPad landscape placement: full left panel visible, right payment image centered in its side */
-@media (min-width: 1000px) and (max-width: 1400px) and (orientation: landscape) {
-  .kioskStartPageDiaper {
-    background-size: auto 84vh;
-    background-position: 84% center;
-    background-repeat: no-repeat;
-  }
-
-  .kioskStartPageDiaper .kioskPreviewArea {
-    width: 56%;
-    padding-top: 6.2vh;
-    padding-bottom: 4.8vh;
-    padding-left: 2vw;
-    padding-right: 1vw;
-    justify-content: center;
-    gap: 1.35vh;
-  }
-
-  .kioskStartPageDiaper .connectionPreview {
-    transform: scale(0.93);
-    transform-origin: left center;
-    padding: 22px;
-  }
-
-  .kioskStartPageDiaper .displayStyleHeader h1 {
-    font-size: clamp(28px, 2.15vw, 40px);
-    line-height: 1;
-  }
-
-  .kioskStartPageDiaper .displayStyleHeader p {
-    font-size: clamp(13px, 0.95vw, 17px);
-    line-height: 1.18;
-  }
-
-  .kioskStartPageDiaper .previewHeader {
-    margin-bottom: 14px;
-  }
-
-  .kioskStartPageDiaper .previewHeader::after {
-    margin-top: 12px;
-  }
-
-  .kioskStartPageDiaper .previewSupportRow {
-    margin-bottom: 12px;
-  }
-
-  .kioskStartPageDiaper .supportCard {
-    min-height: 76px;
-    padding: 12px 14px;
-  }
-
-  .kioskStartPageDiaper .supportIcon {
-    height: 50px;
-    width: 50px;
-    flex-basis: 50px;
-  }
-
-  .kioskStartPageDiaper .startInfoBox {
-    min-height: 98px;
-    padding: 12px;
-  }
-
-  .kioskStartPageDiaper .roleIcon {
-    height: 42px;
-    width: 42px;
-    flex-basis: 42px;
-  }
-
-  .kioskStartPageDiaper .startInfoBox .roleTextWrap h2 {
-    font-size: clamp(17px, 1.25vw, 23px);
-  }
-
-  .kioskStartPageDiaper .startInfoBox .roleSubLabel {
-    font-size: clamp(11px, 0.78vw, 14px);
-    line-height: 1.18;
-  }
-
-  .kioskStartPageDiaper .exampleEntryBlock {
-    margin-top: 12px;
-    padding: 14px;
-  }
-
-  .kioskStartPageDiaper .exampleEntryCard {
-    padding: 14px 16px;
-  }
-
-  .kioskStartPageDiaper .entryNameLine strong {
-    font-size: clamp(20px, 1.6vw, 30px);
-  }
-
-  .kioskStartPageDiaper .entryNameLine span,
-  .kioskStartPageDiaper .entryIdentityLine,
-  .kioskStartPageDiaper .entryIntention,
-  .kioskStartPageDiaper .entryInterests {
-    font-size: clamp(11px, 0.8vw, 15px);
-  }
-
-  .kioskStartPageDiaper .kioskStartButton {
-    width: min(500px, 74%);
-    max-width: 500px;
-    margin-top: 0.8vh;
-    padding: 15px 24px;
-    transform: translateY(-0.8vh);
-  }
-
-  .kioskStartPageDiaper .kioskStartButton span {
-    font-size: clamp(19px, 1.65vw, 30px);
-  }
-}
-
-/* FORCE iPad kiosk placement override */
-.kioskStartPageDiaper {
-  background-size: auto 88vh !important;
-  background-position: 76% center !important;
-  background-repeat: no-repeat !important;
-}
-
-.kioskStartPageDiaper .kioskPreviewArea {
-  width: 56.5% !important;
-  padding-top: 3.5vh !important;
-  padding-bottom: 3vh !important;
-  justify-content: center !important;
-}
-
-.kioskStartPageDiaper .connectionPreview {
-  transform: scale(0.94) translateY(0.6vh) !important;
-  transform-origin: left center !important;
-}
-
-.kioskStartPageDiaper .kioskStartButton {
-  margin-top: -4.5vh !important;
-  transform: translateY(-4.5vh) !important;
-  width: min(500px, 74%) !important;
-  max-width: 500px !important;
-  padding: 16px 24px !important;
-}
-
-.kioskStartPageDiaper .kioskStartButton span {
-  white-space: nowrap !important;
-}
-
-/* Stronger iPad/Safari landscape override */
-@media (orientation: landscape) {
-  .kioskStartPageDiaper {
-    background-size: auto 88vh !important;
-    background-position: 74% center !important;
-  }
-
-  .kioskStartPageDiaper .kioskStartButton {
-    margin-top: -5.5vh !important;
-    transform: translateY(-5.5vh) !important;
-  }
-}
-
-/* Correct kiosk CTA placement: button directly under the left board, not overlapping */
-.kioskStartPageDiaper .kioskPreviewArea {
-  justify-content: center !important;
-  gap: 1.4vh !important;
-}
-
-.kioskStartPageDiaper .connectionPreview {
-  transform: scale(0.94) !important;
-  transform-origin: left center !important;
-  margin-bottom: 0 !important;
-}
-
-.kioskStartPageDiaper .kioskStartButton {
-  margin-top: -1vh !important;
-  transform: none !important;
-  align-self: center !important;
-  width: min(500px, 74%) !important;
-  max-width: 500px !important;
-  padding: 16px 24px !important;
-}
-
-.kioskStartPageDiaper .kioskStartButton span {
-  white-space: nowrap !important;
-}
-
-/* Keep right payment/check-in image pulled inward, but do not affect button */
-.kioskStartPageDiaper {
-  background-size: auto 88vh !important;
-  background-position: 74% center !important;
-  background-repeat: no-repeat !important;
-}
-
-@media (orientation: landscape) {
-  .kioskStartPageDiaper .kioskStartButton {
-    margin-top: -1vh !important;
-    transform: none !important;
-  }
-
-  .kioskStartPageDiaper {
-    background-size: auto 88vh !important;
-    background-position: 74% center !important;
-  }
-}
-
-/* Move right-side check-in/payment image more toward center */
-.kioskStartPageDiaper {
-  background-size: auto 88vh !important;
-  background-position: 66% center !important;
-  background-repeat: no-repeat !important;
-}
-
-@media (orientation: landscape) {
-  .kioskStartPageDiaper {
-    background-size: auto 88vh !important;
-    background-position: 66% center !important;
-    background-repeat: no-repeat !important;
-  }
-}
-
-/* Move right-side check-in/payment image more toward center */
-.kioskStartPageDiaper {
-  background-size: auto 88vh !important;
-  background-position: 66% center !important;
-  background-repeat: no-repeat !important;
-}
-
-@media (orientation: landscape) {
-  .kioskStartPageDiaper {
-    background-size: auto 88vh !important;
-    background-position: 66% center !important;
-    background-repeat: no-repeat !important;
-  }
-}
-
-/* Slightly enlarge right-side kiosk background image */
-.kioskStartPageDiaper {
-  background-size: auto 90vh !important;
-}
-
-@media (orientation: landscape) {
-  .kioskStartPageDiaper {
-    background-size: auto 90vh !important;
-  }
-}
-
-/* Reduce gap between left board and right payment image */
-.kioskStartPageDiaper .kioskPreviewArea {
-  width: 60.5% !important;
-  max-width: none !important;
-}
-
-.kioskStartPageDiaper {
-  background-position: 64% center !important;
-}
-
-/* iPad landscape tuning */
-@media (orientation: landscape) {
-  .kioskStartPageDiaper .kioskPreviewArea {
-    width: 60.5% !important;
-  }
-
-  .kioskStartPageDiaper {
-    background-position: 64% center !important;
-  }
-}
-
-/* Enlarge right-side kiosk image and bias it toward top-right */
-.kioskStartPageDiaper {
-  background-size: auto 94vh !important;
-  background-position: 66% 42% !important;
-  background-repeat: no-repeat !important;
-}
-
-@media (orientation: landscape) {
-  .kioskStartPageDiaper {
-    background-size: auto 94vh !important;
-    background-position: 66% 42% !important;
-    background-repeat: no-repeat !important;
-  }
-}
-
-/* Men-only BDSM / Sex party kiosk start screen */
-.kioskStartPageMenOnly {
-  background:
-    radial-gradient(circle at 78% 20%, rgba(127, 29, 29, 0.5), transparent 36%),
-    radial-gradient(circle at 18% 78%, rgba(63, 63, 70, 0.52), transparent 34%),
-    linear-gradient(135deg, #050505 0%, #09090b 38%, #170606 72%, #030303 100%) !important;
-  color: #f8fafc;
-}
-
-.kioskStartPageMenOnly .connectionPreview {
-  background:
-    linear-gradient(145deg, rgba(127, 29, 29, 0.18), rgba(0, 0, 0, 0.72)),
-    rgba(5, 5, 5, 0.9) !important;
-  border: 1px solid rgba(220, 38, 38, 0.46) !important;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.05) inset,
-    0 0 34px rgba(220, 38, 38, 0.2),
-    0 0 52px rgba(113, 113, 122, 0.12),
-    0 28px 80px rgba(0, 0, 0, 0.78) !important;
-}
-
-.kioskStartPageMenOnly .displayStyleHeader h1 {
-  color: #ffffff !important;
-  text-shadow:
-    0 0 10px rgba(255,255,255,0.22),
-    0 0 24px rgba(220, 38, 38, 0.48),
-    0 0 42px rgba(127, 29, 29, 0.35) !important;
-}
-
-.kioskStartPageMenOnly .displayStyleHeader p {
-  color: rgba(244, 244, 245, 0.78) !important;
-}
-
-.kioskStartPageMenOnly .previewHeader::after {
-  background: linear-gradient(90deg, #7f1d1d, #dc2626, #a1a1aa, #7c3aed, #450a0a) !important;
-  box-shadow:
-    0 0 14px rgba(220, 38, 38, 0.58),
-    0 0 24px rgba(124, 58, 237, 0.24) !important;
-}
-
-.kioskStartPageMenOnly .hostCard {
-  border-color: rgba(161, 161, 170, 0.32) !important;
-  background: rgba(24, 24, 27, 0.72) !important;
-}
-
-.kioskStartPageMenOnly .monitorCard {
-  border-color: rgba(220, 38, 38, 0.34) !important;
-  background: rgba(69, 10, 10, 0.34) !important;
-}
-
-.kioskStartPageMenOnly .crownIcon {
-  color: #d4d4d8 !important;
-}
-
-.kioskStartPageMenOnly .shieldIcon {
-  color: #fca5a5 !important;
-}
-
-.kioskStartPageMenOnly .startInfoBoxOne {
-  border-color: rgba(161, 161, 170, 0.34) !important;
-  background: linear-gradient(135deg, rgba(113, 113, 122, 0.18), rgba(0,0,0,0.38)) !important;
-}
-
-.kioskStartPageMenOnly .startInfoBoxTwo {
-  border-color: rgba(220, 38, 38, 0.42) !important;
-  background: linear-gradient(135deg, rgba(127, 29, 29, 0.34), rgba(0,0,0,0.38)) !important;
-}
-
-.kioskStartPageMenOnly .startInfoBoxThree {
-  border-color: rgba(124, 58, 237, 0.38) !important;
-  background: linear-gradient(135deg, rgba(76, 29, 149, 0.28), rgba(0,0,0,0.38)) !important;
-}
-
-.kioskStartPageMenOnly .startInfoBox .roleTextWrap h2 {
-  color: #ffffff !important;
-}
-
-.kioskStartPageMenOnly .startInfoBoxOne .roleSubLabel {
-  color: rgba(228, 228, 231, 0.78) !important;
-}
-
-.kioskStartPageMenOnly .startInfoBoxTwo .roleSubLabel {
-  color: rgba(254, 202, 202, 0.76) !important;
-}
-
-.kioskStartPageMenOnly .startInfoBoxThree .roleSubLabel {
-  color: rgba(221, 214, 254, 0.76) !important;
-}
-
-.kioskStartPageMenOnly .exampleEntryLabel {
-  color: rgba(244, 244, 245, 0.76) !important;
-}
-
-.kioskStartPageMenOnly .exampleEntryCard {
-  border-color: rgba(220, 38, 38, 0.36) !important;
-  background:
-    linear-gradient(135deg, rgba(127, 29, 29, 0.22), rgba(24, 24, 27, 0.84)),
-    rgba(0, 0, 0, 0.82) !important;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.04) inset,
-    0 0 24px rgba(220, 38, 38, 0.16) !important;
-}
-
-.kioskStartPageMenOnly .entryNameLine strong {
-  color: #ffffff !important;
-}
-
-.kioskStartPageMenOnly .entryNameLine span,
-.kioskStartPageMenOnly .entryIdentityLine {
-  color: rgba(212, 212, 216, 0.78) !important;
-}
-
-.kioskStartPageMenOnly .entryIntention {
-  color: #fecaca !important;
-}
-
-.kioskStartPageMenOnly .entryInterests {
-  color: #ddd6fe !important;
-}
-
-.kioskStartPageMenOnly .smallArrowIcon {
-  color: #ef4444 !important;
-}
-
-.kioskStartPageMenOnly .kioskStartButton {
-  background:
-    linear-gradient(135deg, #7f1d1d, #dc2626 48%, #18181b 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(248, 250, 252, 0.34) !important;
-  box-shadow:
-    0 0 18px rgba(220, 38, 38, 0.44),
-    0 0 32px rgba(127, 29, 29, 0.3),
-    0 18px 42px rgba(0, 0, 0, 0.62) !important;
-}
-
-.kioskStartPageMenOnly .kioskStartButton span {
-  color: #ffffff !important;
-  text-shadow: 0 0 10px rgba(255,255,255,0.22);
-}
-
-.kioskStartPageMenOnly .kioskStartButton small {
-  color: rgba(254, 226, 226, 0.76) !important;
-}
-
-/* FINAL OVERRIDE: restore right-side check-in image on men-only kiosk screen */
-.kioskStartPageMenOnly {
-  background-image:
-    linear-gradient(
-      90deg,
-      rgba(3, 3, 3, 0.99) 0%,
-      rgba(9, 9, 11, 0.98) 43%,
-      rgba(23, 6, 6, 0.72) 55%,
-      rgba(0, 0, 0, 0.12) 72%
-    ),
-    radial-gradient(circle at 25% 20%, rgba(127, 29, 29, 0.38), transparent 34%),
-    radial-gradient(circle at 31% 82%, rgba(63, 63, 70, 0.34), transparent 32%),
-    url("/kiosk-start-bg.jpg") !important;
-
-  background-size:
-    cover,
-    cover,
-    cover,
-    auto 94vh !important;
-
-  background-position:
-    center,
-    center,
-    center,
-    66% 42% !important;
-
-  background-repeat:
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat !important;
-}
-
-/* Keep the left board from covering too much of the image */
-.kioskStartPageMenOnly .kioskPreviewArea {
-  width: 60.5% !important;
-  max-width: none !important;
-}
-
-/* Make any extra page background around kiosk screens black */
 html,
 body,
 #root {
-  background: #000 !important;
+  margin: 0;
+  min-height: 100%;
+  background: #000;
 }
 
-/* Ensure kiosk page itself is fully black behind the layout */
-.kioskStartPage,
-.kioskStartPageStandard,
-.kioskStartPageDiaper,
-.kioskStartPageMenOnly {
-  background-color: #000 !important;
-}
+.presetKioskPage {
+  --accent-one: 59, 130, 246;
+  --accent-two: 124, 58, 237;
+  --accent-three: 16, 185, 129;
 
-/* URGENT EVENT FIX: keep right-side kiosk instruction/payment image fully visible */
-.kioskStartPage,
-.kioskStartPageStandard,
-.kioskStartPageDiaper {
-  background-size: auto 78vh !important;
-  background-position: 72% center !important;
-  background-repeat: no-repeat !important;
-}
-
-/* URGENT EVENT FIX: keep right-side kiosk instruction/payment image fully visible */
-.kioskStartPage,
-.kioskStartPageStandard,
-.kioskStartPageDiaper {
-  background-size: auto 78vh !important;
-  background-position: 72% center !important;
-  background-repeat: no-repeat !important;
-}
-
-/* URGENT EVENT TUNE: right-side kiosk image bigger, but still fitting screen */
-.kioskStartPage,
-.kioskStartPageStandard,
-.kioskStartPageDiaper {
-  background-size: auto 86vh !important;
-  background-position: 71% center !important;
-  background-repeat: no-repeat !important;
-}
-
-/* URGENT EVENT TUNE: make right-side kiosk image larger while still mostly fitting */
-.kioskStartPage,
-.kioskStartPageStandard,
-.kioskStartPageDiaper {
-  background-size: auto 91vh !important;
-  background-position: 70% center !important;
-  background-repeat: no-repeat !important;
-}
-
-/* FINAL KrINKles theme override — keep the spectrum understated and consistent. */
-.kioskStartPageDiaper .connectionPreview {
-  border-color: rgba(250, 204, 21, 0.46) !important;
-  background:
-    radial-gradient(circle at 7% 8%, rgba(248, 113, 113, 0.19), transparent 30%),
-    radial-gradient(circle at 36% 0%, rgba(251, 191, 36, 0.16), transparent 30%),
-    radial-gradient(circle at 68% 4%, rgba(74, 222, 128, 0.14), transparent 30%),
-    radial-gradient(circle at 96% 8%, rgba(167, 139, 250, 0.18), transparent 32%),
-    rgba(4, 7, 16, 0.94) !important;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.035),
-    -14px 0 36px rgba(248, 113, 113, 0.06),
-    14px 0 36px rgba(74, 222, 128, 0.05),
-    0 18px 48px rgba(0,0,0,0.42) !important;
-}
-
-.kioskStartPageDiaper .displayStyleHeader h1 {
-  color: transparent !important;
-  background: linear-gradient(90deg, #fecaca, #fed7aa, #fef08a, #bbf7d0, #bfdbfe, #ddd6fe) !important;
-  background-clip: text !important;
-  -webkit-background-clip: text !important;
-  text-shadow: 0 0 18px rgba(250, 204, 21, 0.12) !important;
-}
-
-.kioskStartPageDiaper .previewHeader::after {
-  background: linear-gradient(90deg, #f87171, #fbbf24, #4ade80, #60a5fa, #a78bfa) !important;
-  height: 5px !important;
-  opacity: 0.92 !important;
-}
-
-.kioskStartPageDiaper .supportCard,
-.kioskStartPageDiaper .startInfoBox,
-.kioskStartPageDiaper .exampleEntryCard {
-  border-color: rgba(255,255,255,0.14) !important;
-  background:
-    linear-gradient(105deg, rgba(248,113,113,0.035), rgba(251,191,36,0.03), rgba(74,222,128,0.026), rgba(167,139,250,0.035)),
-    rgba(8, 11, 22, 0.84) !important;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.24) !important;
-}
-
-.kioskStartPageDiaper .kioskStartButton {
-  border-color: rgba(255,255,255,0.30) !important;
-  background: linear-gradient(110deg, #b91c1c, #b45309 28%, #15803d 57%, #6d28d9 100%) !important;
-  box-shadow: 0 14px 38px rgba(0,0,0,0.46), 0 0 24px rgba(250,204,21,0.10) !important;
-}
-
-/* ============================================================
-   STING / MEN'S SPANKING KIOSK
-   Dedicated doorway for entry_form_preset = mens_spanking
-   ============================================================ */
-
-.stingKioskStartPage {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  overflow: hidden;
   box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
+
+  color: #fff;
+
   background:
-    linear-gradient(135deg, #050608 0%, #080a0d 48%, #050609 100%);
-  color: #ffffff;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    linear-gradient(
+      135deg,
+      #050608 0%,
+      #080a0d 48%,
+      #050609 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
-.stingKioskAmbient {
+/* ---------- THEMES ---------- */
+
+.presetKioskTheme-sting {
+  --accent-one: 225, 29, 72;
+  --accent-two: 37, 99, 235;
+  --accent-three: 16, 185, 129;
+}
+
+.presetKioskTheme-krinkles {
+  --accent-one: 236, 72, 153;
+  --accent-two: 34, 211, 238;
+  --accent-three: 168, 85, 247;
+
+  background:
+    linear-gradient(
+      145deg,
+      #08050d 0%,
+      #090611 44%,
+      #041014 100%
+    );
+}
+
+.presetKioskTheme-krinkles-soft {
+  --accent-one: 244, 114, 182;
+  --accent-two: 103, 232, 249;
+  --accent-three: 196, 181, 253;
+
+  background:
+    linear-gradient(
+      145deg,
+      #0b0710 0%,
+      #090b13 46%,
+      #061216 100%
+    );
+}
+
+.presetKioskTheme-men {
+  --accent-one: 220, 38, 38;
+  --accent-two: 59, 130, 246;
+  --accent-three: 113, 113, 122;
+}
+
+.presetKioskTheme-standard {
+  --accent-one: 124, 58, 237;
+  --accent-two: 34, 211, 238;
+  --accent-three: 16, 185, 129;
+}
+
+/* ---------- BACKGROUND GLOW ---------- */
+
+.presetKioskGlow {
   position: fixed;
   pointer-events: none;
   border-radius: 999px;
-  filter: blur(110px);
-  opacity: 0.24;
+  filter: blur(115px);
+  opacity: 0.22;
 }
 
-.stingKioskAmbientRed {
+.presetKioskGlowOne {
   width: 520px;
   height: 520px;
-  left: -220px;
-  top: -180px;
-  background: rgba(225, 29, 72, 0.42);
+  left: -230px;
+  top: -190px;
+  background: rgba(var(--accent-one), 0.52);
 }
 
-.stingKioskAmbientBlue {
-  width: 500px;
-  height: 500px;
-  right: 12%;
-  top: -260px;
-  background: rgba(37, 99, 235, 0.30);
-}
-
-.stingKioskAmbientGreen {
+.presetKioskGlowTwo {
   width: 520px;
   height: 520px;
+  right: 7%;
+  top: -290px;
+  background: rgba(var(--accent-two), 0.40);
+}
+
+.presetKioskGlowThree {
+  width: 540px;
+  height: 540px;
   left: 38%;
-  bottom: -360px;
-  background: rgba(16, 185, 129, 0.20);
+  bottom: -380px;
+  background: rgba(var(--accent-three), 0.30);
 }
 
-.stingKioskShell {
+/* ---------- MAIN LAYOUT ---------- */
+
+.presetKioskShell {
   position: relative;
   z-index: 1;
-  box-sizing: border-box;
+
   width: 100%;
   min-height: 100vh;
+  box-sizing: border-box;
+
   padding: clamp(22px, 2.2vw, 42px);
+
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(330px, 0.65fr);
+  grid-template-columns:
+    minmax(0, 1.55fr)
+    minmax(330px, 0.65fr);
+
   gap: clamp(18px, 1.6vw, 30px);
-  align-items: stretch;
 }
 
-.stingKioskEntryPanel,
-.stingKioskMobilePanel {
+.presetKioskEntryPanel,
+.presetKioskMobilePanel {
+  box-sizing: border-box;
+
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 30px;
-  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.48);
+
+  box-shadow:
+    0 26px 80px rgba(0, 0, 0, 0.48);
+
   backdrop-filter: blur(14px);
 }
 
-.stingKioskEntryPanel {
+/* ---------- LEFT PANEL ---------- */
+
+.presetKioskEntryPanel {
   padding: clamp(24px, 2.3vw, 40px);
+
   background:
-    linear-gradient(145deg, rgba(18, 20, 24, 0.97), rgba(7, 8, 10, 0.97));
+    linear-gradient(
+      145deg,
+      rgba(18, 20, 24, 0.97),
+      rgba(7, 8, 10, 0.97)
+    );
+
   display: flex;
   flex-direction: column;
 }
 
-.stingKioskHeader {
+.presetKioskHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 24px;
 }
 
-.stingKioskEventName {
-  color: rgba(161, 161, 170, 0.78);
+.presetKioskEventName {
+  color: rgba(212, 212, 216, 0.70);
+
   font-size: clamp(11px, 0.8vw, 14px);
   line-height: 1;
+
   font-weight: 900;
   letter-spacing: 0.23em;
   text-transform: uppercase;
 }
 
-.stingKioskHeader h1 {
+.presetKioskHeader h1 {
   margin: 8px 0 0;
-  color: #ffffff;
+
+  color: #fff;
+
   font-size: clamp(40px, 4vw, 68px);
   line-height: 0.95;
+
   letter-spacing: -0.055em;
   font-weight: 950;
 }
 
-.stingKioskHeader p {
+.presetKioskHeader p {
   max-width: 760px;
+
   margin: 16px 0 0;
+
   color: #a1a1aa;
+
   font-size: clamp(14px, 1.05vw, 18px);
   line-height: 1.55;
 }
 
-.stingKioskPreviewBadge {
+.presetKioskPreviewBadge {
   flex: 0 0 auto;
-  border: 1px solid rgba(113, 113, 122, 0.68);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.34);
+
   padding: 9px 14px;
+
+  border:
+    1px solid
+    rgba(var(--accent-one), 0.32);
+
+  border-radius: 999px;
+
+  background:
+    rgba(var(--accent-one), 0.06);
+
   color: #a1a1aa;
+
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.18em;
 }
 
-.stingKioskFormPreview {
+/* ---------- FORM PREVIEW ---------- */
+
+.presetKioskFormPreview {
   margin-top: clamp(22px, 2vh, 30px);
+
   display: grid;
   gap: clamp(10px, 1vh, 15px);
 }
 
-.stingPreviewField,
-.stingPreviewSection {
-  box-sizing: border-box;
-  border-radius: 20px;
+.presetPreviewField {
   padding: clamp(14px, 1.15vw, 18px);
+
+  border:
+    1px solid rgba(82, 82, 91, 0.74);
+
+  border-radius: 20px;
+
+  background:
+    rgba(0, 0, 0, 0.35);
 }
 
-.stingPreviewField {
-  border: 1px solid rgba(82, 82, 91, 0.74);
-  background: rgba(0, 0, 0, 0.35);
-}
-
-.stingPreviewLabel,
-.stingPreviewSectionTitle {
-  color: #e4e4e7;
-  font-size: clamp(12px, 0.9vw, 15px);
-  font-weight: 800;
-}
-
-.stingPreviewLabel {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+.presetPreviewLabel {
   color: #71717a;
+
+  font-size: clamp(11px, 0.8vw, 13px);
+
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.stingPreviewInput {
+.presetPreviewInput {
   margin-top: 8px;
-  border: 1px solid rgba(63, 63, 70, 0.9);
-  border-radius: 14px;
-  background: #050608;
+
   padding: 11px 14px;
+
+  border:
+    1px solid rgba(63, 63, 70, 0.9);
+
+  border-radius: 14px;
+
+  background: #050608;
+
   color: #52525b;
+
   font-size: clamp(12px, 0.9vw, 15px);
 }
 
-.stingPreviewPosition {
-  border: 1px solid rgba(82, 82, 91, 0.72);
-  background: rgba(9, 9, 11, 0.74);
-}
-
-.stingPositionGrid {
-  margin-top: 11px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 9px;
-}
-
-.stingPositionChoice {
-  border-radius: 14px;
-  padding: 11px 8px;
-  text-align: center;
-  font-size: clamp(11px, 0.9vw, 14px);
-  font-weight: 950;
-  letter-spacing: 0.08em;
-}
-
-.stingPositionTop {
-  color: #fecdd3;
-  border: 1px solid rgba(244, 63, 94, 0.48);
-  background: rgba(244, 63, 94, 0.10);
-}
-
-.stingPositionBottom {
-  color: #a7f3d0;
-  border: 1px solid rgba(16, 185, 129, 0.48);
-  background: rgba(16, 185, 129, 0.10);
-}
-
-.stingPositionSwitch {
-  color: #bfdbfe;
-  border: 1px solid rgba(59, 130, 246, 0.48);
-  background: rgba(59, 130, 246, 0.10);
-}
-
-.stingPreviewRoleGrid {
+.presetPreviewSectionGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+
   gap: clamp(10px, 1vw, 14px);
 }
 
-.stingPreviewTop {
-  border: 1px solid rgba(190, 24, 93, 0.52);
-  background: rgba(76, 5, 25, 0.22);
+.presetPreviewSection {
+  box-sizing: border-box;
+
+  min-height: 108px;
+
+  padding: clamp(14px, 1.15vw, 18px);
+
+  border-radius: 20px;
 }
 
-.stingPreviewTop .stingPreviewSectionTitle {
-  color: #fecdd3;
+.presetPreviewSectionTitle {
+  color: #e4e4e7;
+
+  font-size: clamp(12px, 0.9vw, 15px);
+  font-weight: 850;
 }
 
-.stingPreviewBottom {
-  border: 1px solid rgba(5, 150, 105, 0.52);
-  background: rgba(2, 44, 34, 0.25);
-}
-
-.stingPreviewBottom .stingPreviewSectionTitle {
-  color: #a7f3d0;
-}
-
-.stingPreviewIntention {
-  border: 1px solid rgba(37, 99, 235, 0.50);
-  background: rgba(23, 37, 84, 0.24);
-}
-
-.stingPreviewIntention .stingPreviewSectionTitle {
-  color: #bfdbfe;
-}
-
-.stingPreviewOptional {
-  margin-left: 8px;
-  color: #52525b;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.stingPreviewChips {
+.presetPreviewChips {
   margin-top: 11px;
+
   display: flex;
   flex-wrap: wrap;
+
   gap: 7px;
 }
 
-.stingPreviewChips span {
-  border-radius: 12px;
+.presetPreviewChips span {
   padding: 7px 10px;
+
+  border-radius: 12px;
+
   font-size: clamp(10px, 0.72vw, 12px);
-  font-weight: 750;
+  font-weight: 800;
 }
 
-.stingPreviewTop .stingPreviewChips span {
+/* ---------- PREVIEW TONES ---------- */
+
+.presetPreviewTone-position {
+  border:
+    1px solid rgba(113, 113, 122, 0.56);
+
+  background:
+    rgba(9, 9, 11, 0.74);
+}
+
+.presetPreviewTone-position .presetPreviewChips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.presetPreviewTone-position .presetPreviewChips span {
+  text-align: center;
+
+  color: #fff;
+
+  border:
+    1px solid rgba(113, 113, 122, 0.45);
+
+  background:
+    rgba(255, 255, 255, 0.035);
+}
+
+.presetPreviewTone-rose {
+  border:
+    1px solid rgba(244, 63, 94, 0.45);
+
+  background:
+    rgba(76, 5, 25, 0.22);
+}
+
+.presetPreviewTone-rose .presetPreviewChips span {
   color: #fecdd3;
-  border: 1px solid rgba(244, 63, 94, 0.38);
-  background: rgba(244, 63, 94, 0.08);
+
+  border:
+    1px solid rgba(244, 63, 94, 0.36);
+
+  background:
+    rgba(244, 63, 94, 0.08);
 }
 
-.stingPreviewBottom .stingPreviewChips span {
+.presetPreviewTone-green {
+  border:
+    1px solid rgba(16, 185, 129, 0.45);
+
+  background:
+    rgba(2, 44, 34, 0.25);
+}
+
+.presetPreviewTone-green .presetPreviewChips span {
   color: #a7f3d0;
-  border: 1px solid rgba(16, 185, 129, 0.38);
-  background: rgba(16, 185, 129, 0.08);
+
+  border:
+    1px solid rgba(16, 185, 129, 0.36);
+
+  background:
+    rgba(16, 185, 129, 0.08);
 }
 
-.stingPreviewIntention .stingPreviewChips span {
+.presetPreviewTone-blue {
+  border:
+    1px solid rgba(59, 130, 246, 0.45);
+
+  background:
+    rgba(23, 37, 84, 0.24);
+}
+
+.presetPreviewTone-blue .presetPreviewChips span {
   color: #bfdbfe;
-  border: 1px solid rgba(59, 130, 246, 0.38);
-  background: rgba(59, 130, 246, 0.08);
+
+  border:
+    1px solid rgba(59, 130, 246, 0.36);
+
+  background:
+    rgba(59, 130, 246, 0.08);
 }
 
-.stingPreviewMore {
-  padding: 2px 4px 0;
+.presetPreviewTone-fuchsia {
+  border:
+    1px solid rgba(236, 72, 153, 0.46);
+
+  background:
+    rgba(80, 7, 48, 0.24);
+}
+
+.presetPreviewTone-fuchsia .presetPreviewChips span {
+  color: #fbcfe8;
+
+  border:
+    1px solid rgba(236, 72, 153, 0.38);
+
+  background:
+    rgba(236, 72, 153, 0.09);
+}
+
+.presetPreviewTone-cyan {
+  border:
+    1px solid rgba(34, 211, 238, 0.42);
+
+  background:
+    rgba(6, 48, 58, 0.22);
+}
+
+.presetPreviewTone-cyan .presetPreviewChips span {
+  color: #a5f3fc;
+
+  border:
+    1px solid rgba(34, 211, 238, 0.34);
+
+  background:
+    rgba(34, 211, 238, 0.08);
+}
+
+.presetPreviewTone-violet {
+  border:
+    1px solid rgba(168, 85, 247, 0.43);
+
+  background:
+    rgba(46, 16, 101, 0.22);
+}
+
+.presetPreviewTone-violet .presetPreviewChips span {
+  color: #ddd6fe;
+
+  border:
+    1px solid rgba(168, 85, 247, 0.34);
+
+  background:
+    rgba(168, 85, 247, 0.08);
+}
+
+.presetPreviewTone-gold {
+  border:
+    1px solid rgba(245, 158, 11, 0.40);
+
+  background:
+    rgba(69, 26, 3, 0.20);
+}
+
+.presetPreviewTone-gold .presetPreviewChips span {
+  color: #fde68a;
+
+  border:
+    1px solid rgba(245, 158, 11, 0.32);
+
+  background:
+    rgba(245, 158, 11, 0.07);
+}
+
+.presetPreviewMore {
+  padding: 3px 4px 0;
+
   display: flex;
   flex-wrap: wrap;
+
   gap: 16px;
+
   color: #52525b;
+
   font-size: 10px;
+
   font-weight: 900;
   letter-spacing: 0.13em;
 }
 
-.stingKioskStartButton {
+/* ---------- START BUTTON ---------- */
+
+.presetKioskStartButton {
   width: 100%;
+
   margin-top: auto;
+
   padding: 17px 24px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.16);
+
   border-radius: 18px;
+
   background: #f4f4f5;
   color: #09090b;
+
   cursor: pointer;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38);
-  transition: transform 140ms ease, background 140ms ease;
+
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.38);
+
+  transition:
+    transform 140ms ease,
+    background 140ms ease;
 }
 
-.stingKioskStartButton:hover {
-  background: #ffffff;
+.presetKioskStartButton:hover {
+  background: #fff;
   transform: translateY(-1px);
 }
 
-.stingKioskStartButton:active {
-  transform: scale(0.995);
-}
-
-.stingKioskStartButton span {
+.presetKioskStartButton span {
   display: block;
+
   font-size: clamp(17px, 1.35vw, 22px);
+
   line-height: 1;
+
   font-weight: 950;
   letter-spacing: 0.12em;
 }
 
-.stingKioskStartButton small {
+.presetKioskStartButton small {
   display: block;
+
   margin-top: 7px;
+
   color: #71717a;
+
   font-size: 11px;
+
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.stingKioskMobilePanel {
+/* ---------- MOBILE PANEL ---------- */
+
+.presetKioskMobilePanel {
   padding: clamp(24px, 2.2vw, 38px);
+
   background:
-    radial-gradient(circle at 50% 4%, rgba(37, 99, 235, 0.18), transparent 33%),
-    linear-gradient(180deg, rgba(11, 16, 27, 0.98), rgba(5, 7, 11, 0.98));
-  border-color: rgba(30, 64, 175, 0.38);
+    radial-gradient(
+      circle at 50% 4%,
+      rgba(var(--accent-two), 0.18),
+      transparent 33%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(11, 16, 27, 0.98),
+      rgba(5, 7, 11, 0.98)
+    );
+
+  border-color:
+    rgba(var(--accent-two), 0.32);
+
   display: flex;
   flex-direction: column;
   align-items: center;
+
   text-align: center;
 }
 
-.stingKioskPhoneIcon {
+.presetKioskPhoneIcon {
   width: 48px;
   height: 48px;
+
   display: grid;
   place-items: center;
-  border: 1px solid rgba(59, 130, 246, 0.34);
+
+  border:
+    1px solid rgba(var(--accent-two), 0.34);
+
   border-radius: 999px;
-  background: rgba(59, 130, 246, 0.08);
-  color: #93c5fd;
+
+  background:
+    rgba(var(--accent-two), 0.08);
+
+  color: #dbeafe;
+
   font-size: 20px;
 }
 
-.stingKioskMobileEyebrow {
+.presetKioskMobileEyebrow {
   margin-top: 18px;
-  color: rgba(147, 197, 253, 0.72);
+
+  color:
+    rgba(var(--accent-two), 0.92);
+
   font-size: 10px;
+
   font-weight: 950;
   letter-spacing: 0.22em;
 }
 
-.stingKioskMobilePanel h2 {
-  max-width: 420px;
-  margin: 11px 0 0;
-  color: #ffffff;
-  font-size: clamp(27px, 2.25vw, 40px);
-  line-height: 1.03;
-  letter-spacing: -0.035em;
+.presetKioskMobilePanel h2 {
+  max-width: 430px;
+
+  margin: 12px 0 0;
+
+  color: #fff;
+
+  font-size: clamp(34px, 2.8vw, 50px);
+  line-height: 0.96;
+
+  letter-spacing: -0.045em;
   font-weight: 950;
+
+  text-transform: uppercase;
 }
 
-.stingKioskMobileLead {
-  margin: 9px 0 0;
-  color: #a1a1aa;
-  font-size: clamp(14px, 1vw, 18px);
+.presetKioskMobileSubhead {
+  margin-top: 10px;
+
+  color: #e4e4e7;
+
+  font-size: clamp(18px, 1.35vw, 24px);
+  line-height: 1.1;
+
+  font-weight: 850;
+  letter-spacing: -0.02em;
+
+  text-transform: uppercase;
 }
 
-.stingKioskQrFrame {
+.presetKioskQrFrame {
   width: min(84%, 310px);
   aspect-ratio: 1;
+
   box-sizing: border-box;
+
   margin-top: clamp(20px, 2.2vh, 30px);
+
   padding: clamp(14px, 1.25vw, 20px);
+
   border-radius: 24px;
-  background: #ffffff;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.48);
+
+  background: #fff;
+
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.48);
 }
 
-.stingKioskQrSvg {
+.presetKioskQrSvg {
   width: 100%;
   height: 100%;
+
   display: block;
 }
 
-.stingKioskScanText {
+.presetKioskScanText {
   margin-top: 20px;
-  color: #ffffff;
+
+  color: #fff;
+
   font-size: clamp(17px, 1.3vw, 22px);
   line-height: 1;
+
   font-weight: 950;
   letter-spacing: 0.15em;
 }
 
-.stingKioskMobileExplanation {
+.presetKioskMobileExplanation {
   max-width: 360px;
+
   margin: 12px 0 0;
-  color: #a1a1aa;
+
+  color: #d4d4d8;
+
   font-size: clamp(12px, 0.9vw, 15px);
   line-height: 1.5;
 }
 
-.stingKioskMobileUrl {
+/* ---------- PROFILE PROMPT ---------- */
+
+.presetKioskProfilePrompt {
   width: 100%;
+
   box-sizing: border-box;
+
+  margin-top: 24px;
+
+  padding: 17px 18px;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.10);
+
+  border-radius: 18px;
+
+  background:
+    rgba(255, 255, 255, 0.035);
+
+  text-align: left;
+}
+
+.presetKioskProfileEyebrow {
+  color: #fff;
+
+  font-size: 14px;
+
+  font-weight: 950;
+  letter-spacing: 0.18em;
+}
+
+.presetKioskProfilePrompt p {
+  margin: 10px 0 0;
+
+  color: #e4e4e7;
+
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.presetKioskProfileAction {
+  display: inline-block;
+
+  margin-top: 14px;
+
+  color: #bfdbfe;
+
+  font-size: 16px;
+
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+
+.presetKioskProfileHint {
+  margin-top: 7px;
+
+  color: #d4d4d8;
+
+  font-size: 14px;
+
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.presetKioskMobileUrl {
+  width: 100%;
+
+  box-sizing: border-box;
+
   margin-top: auto;
-  border: 1px solid rgba(59, 130, 246, 0.18);
-  border-radius: 14px;
-  background: rgba(59, 130, 246, 0.05);
+
   padding: 11px 10px;
-  color: rgba(191, 219, 254, 0.65);
+
+  border:
+    1px solid
+    rgba(var(--accent-two), 0.18);
+
+  border-radius: 14px;
+
+  background:
+    rgba(var(--accent-two), 0.05);
+
+  color: #a1a1aa;
+
   font-size: clamp(9px, 0.68vw, 12px);
+
   font-weight: 700;
 }
 
+/* ---------- KRINKLES DETAIL ---------- */
+
+.presetKioskTheme-krinkles
+.presetKioskStartButton,
+.presetKioskTheme-krinkles-soft
+.presetKioskStartButton {
+  background:
+    linear-gradient(
+      110deg,
+      #f9a8d4 0%,
+      #c4b5fd 47%,
+      #a5f3fc 100%
+    );
+
+  border-color:
+    rgba(255, 255, 255, 0.35);
+
+  color: #111018;
+}
+
+.presetKioskTheme-krinkles
+.presetKioskPreviewBadge,
+.presetKioskTheme-krinkles-soft
+.presetKioskPreviewBadge {
+  color: #f5d0fe;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
 @media (max-width: 1000px) {
-  .stingKioskStartPage {
+  .presetKioskPage {
     overflow: auto;
   }
 
-  .stingKioskShell {
+  .presetKioskShell {
     grid-template-columns: 1fr;
   }
 
-  .stingKioskMobilePanel {
+  .presetKioskMobilePanel {
     min-height: 620px;
   }
 }
 
 @media (max-width: 650px) {
-  .stingKioskShell {
+  .presetKioskShell {
     padding: 14px;
   }
 
-  .stingKioskHeader {
+  .presetKioskHeader {
     flex-direction: column;
   }
 
-  .stingPreviewRoleGrid {
+  .presetPreviewSectionGrid {
     grid-template-columns: 1fr;
   }
 
-  .stingKioskPreviewBadge {
+  .presetKioskPreviewBadge {
     display: none;
   }
 }
 
-/* STING mobile panel hierarchy refinement */
+/* Shared preview support row for all kiosk presets */
 
-.stingKioskMobilePanel h2 {
-  max-width: 430px;
-  font-size: clamp(34px, 3vw, 54px);
-  line-height: 0.96;
-  text-transform: uppercase;
-  letter-spacing: -0.045em;
+.presetPreviewSupportGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 1vw, 14px);
 }
 
-.stingKioskMobileLead {
-  margin-top: 14px;
-  color: #d4d4d8;
-  font-size: clamp(17px, 1.25vw, 22px);
+.presetPreviewSupportCard {
+  min-height: 108px;
+  box-sizing: border-box;
+  padding: clamp(14px, 1.15vw, 18px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+}
+
+.presetPreviewSupportPhoto {
+  border-color: rgba(var(--accent-three), 0.34);
+  background: rgba(var(--accent-three), 0.08);
+}
+
+.presetPreviewSupportSocial {
+  border-color: rgba(var(--accent-two), 0.34);
+  background: rgba(var(--accent-two), 0.08);
+}
+
+.presetPreviewPhotoRow {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.presetPreviewPhotoAvatar {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255,255,255,0.18) 0 11px, transparent 12px),
+    radial-gradient(circle at 50% 78%, rgba(255,255,255,0.12) 0 18px, transparent 19px),
+    rgba(0,0,0,0.28);
+}
+
+.presetPreviewPhotoText strong {
+  display: block;
+  color: #f4f4f5;
+  font-size: clamp(12px, 0.9vw, 15px);
   font-weight: 800;
 }
 
-.stingKioskProfilePrompt {
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 24px;
-  padding: 17px 18px;
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 18px;
-  background: rgba(255,255,255,0.035);
-  text-align: left;
+.presetPreviewPhotoText span {
+  display: block;
+  margin-top: 4px;
+  color: #d4d4d8;
+  font-size: clamp(11px, 0.82vw, 13px);
+  line-height: 1.4;
 }
 
-.stingKioskProfileEyebrow {
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 950;
-  letter-spacing: 0.18em;
-}
-
-.stingKioskProfilePrompt p {
-  margin: 8px 0 0;
-  color: #a1a1aa;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.stingKioskProfileLink {
-  display: inline-block;
-  margin-top: 11px;
-  color: #93c5fd;
-  font-size: 12px;
-  font-weight: 950;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-}
-
-.stingKioskProfileHint {
-  margin-top: 6px;
-  color: #71717a;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.35;
-}
-
-/* STING doorway — full-screen one-click entry */
-
-.stingKioskStartPageClickable {
-  cursor: pointer;
-  outline: none;
-}
-
-.stingKioskStartPageClickable:focus-visible {
-  box-shadow: inset 0 0 0 3px rgba(147, 197, 253, 0.55);
-}
-
-/* Keep main message dominant; photo message is supporting copy */
-
-.stingKioskMobilePanel h2 {
-  max-width: 430px;
+.presetPreviewSocialList {
   margin-top: 12px;
-  font-size: clamp(34px, 2.8vw, 50px);
-  line-height: 0.96;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.stingKioskMobileSubhead {
-  margin-top: 10px;
+.presetPreviewSocialList span {
+  padding: 7px 10px;
+  border-radius: 12px;
   color: #e4e4e7;
-  font-size: clamp(18px, 1.35vw, 24px);
-  line-height: 1.1;
-  font-weight: 850;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
+  font-size: clamp(10px, 0.72vw, 12px);
+  font-weight: 800;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+}
+
+@media (max-width: 650px) {
+  .presetPreviewSupportGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   KIOSK PREVIEW — CLEAN STRIP LAYOUT
+   ========================================================= */
+
+.presetPreviewIdentityRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 1vw, 14px);
+}
+
+.presetPreviewIdentityRow .presetPreviewField {
+  margin: 0;
+}
+
+/* All preset sections now read as long horizontal strips */
+
+.presetPreviewSectionGrid {
+  display: grid;
+  grid-template-columns: 1fr !important;
+  gap: clamp(10px, 1vh, 14px);
+}
+
+.presetPreviewSection {
+  width: 100%;
+  min-height: 0;
+  padding: clamp(15px, 1.15vw, 19px);
+}
+
+.presetPreviewChips {
+  margin-top: 11px;
+}
+
+/* Position still lays its choices horizontally inside the strip */
+
+.presetPreviewTone-position .presetPreviewChips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Retire the old support-card layout */
+
+.presetPreviewSupportGrid {
+  display: none !important;
+}
+
+@media (max-width: 650px) {
+  .presetPreviewIdentityRow {
+    grid-template-columns: 1fr;
+  }
 }
