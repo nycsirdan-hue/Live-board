@@ -3024,8 +3024,9 @@ body:has(.displayBoardSurface) #root {
 
   .stingKioskEntryPage .stingKioskFormCard {
     display: grid;
-    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
-    column-gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 10px;
+    min-height: calc(100vh - 20px);
     padding: 12px 14px !important;
     border-radius: 18px;
   }
@@ -3043,11 +3044,11 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskIdentityRow {
-    grid-column: 1 / -1;
-    grid-template-columns: minmax(280px, 1.1fr) minmax(210px, 0.6fr) minmax(460px, 1.5fr) !important;
+    grid-column: 1;
+    grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.6fr) !important;
     align-items: end;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 2px;
   }
 
   .stingKioskEntryPage .stingKioskPhotoField {
@@ -3098,7 +3099,11 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskSocialField > label {
-    display: none;
+    display: block;
+  }
+
+  .stingKioskEntryPage .stingKioskSocialField {
+    grid-column: 1 / -1;
   }
 
   .stingKioskEntryPage .stingKioskSocialField .krinklesSocialSection {
@@ -3129,7 +3134,7 @@ body:has(.displayBoardSurface) #root {
     grid-template-columns: minmax(0, 1fr) !important;
     align-items: start;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 0;
   }
 
   .stingKioskEntryPage .stingKioskChoiceGrid > div {
@@ -3147,9 +3152,9 @@ body:has(.displayBoardSurface) #root {
 
   .stingKioskEntryPage .stingKioskChoiceGrid button,
   .stingKioskEntryPage .stingKioskDetailsGrid button {
-    min-height: 40px;
-    padding-top: 7px;
-    padding-bottom: 7px;
+    min-height: 48px;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   .stingKioskEntryPage .stingKioskSpankingDetails {
@@ -3158,20 +3163,18 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskIntentionGrid {
-    grid-column: 2;
-    align-self: start;
-    gap: 10px;
-    margin-top: 10px;
+    display: none;
   }
 
   .stingKioskEntryPage .stingKioskDetailsGrid {
-    grid-column: 1 / -1;
+    grid-column: 1;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 0;
   }
 
   .stingKioskEntryPage .stingKioskDetailsGrid > div {
-    padding: 9px;
+    padding: 12px;
   }
 
   .stingKioskEntryPage .stingKioskDetailsGrid > div > div:first-child {
@@ -3196,8 +3199,8 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskActions {
-    grid-column: 1 / -1;
-    margin-top: 9px;
+    grid-column: 1;
+    margin-top: 0;
   }
 
   .stingKioskEntryPage .stingKioskActions button {
