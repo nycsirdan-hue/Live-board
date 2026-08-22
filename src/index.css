@@ -3024,7 +3024,7 @@ body:has(.displayBoardSurface) #root {
 
   .stingKioskEntryPage .stingKioskFormCard {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     row-gap: 10px;
     min-height: calc(100vh - 20px);
     padding: 12px 14px !important;
@@ -3044,19 +3044,32 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskIdentityRow {
-    grid-column: 1;
-    grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.6fr) !important;
-    align-items: end;
-    gap: 10px;
-    margin-top: 2px;
+    display: contents;
   }
 
   .stingKioskEntryPage .stingKioskPhotoField {
-    grid-column: auto;
+    display: none;
   }
 
   .stingKioskEntryPage .stingKioskIdentityRow label {
     margin-bottom: 4px;
+  }
+
+  .stingKioskEntryPage .stingKioskNameField,
+  .stingKioskEntryPage .stingKioskSocialField {
+    height: 116px;
+    min-height: 116px;
+    border-radius: 16px;
+    padding: 10px;
+  }
+
+  .stingKioskEntryPage .stingKioskNameField {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid rgba(113, 113, 122, 0.7);
+    background: rgba(9, 9, 11, 0.7);
   }
 
   .stingKioskEntryPage .stingKioskIdentityRow input {
@@ -3103,11 +3116,21 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskSocialField {
-    grid-column: 1 / -1;
+    grid-column: 2;
+    grid-row: span 2;
+    height: auto;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    border: 1px solid rgba(217, 70, 239, 0.35);
+    background: rgba(74, 4, 78, 0.12);
   }
 
   .stingKioskEntryPage .stingKioskSocialField .krinklesSocialSection {
-    padding: 6px 8px;
+    border: 0;
+    background: transparent;
+    padding: 0;
   }
 
   .stingKioskEntryPage .stingKioskSocialField .krinklesSocialSection > p {
@@ -3115,9 +3138,13 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskSocialField .krinklesSocialSection > div:first-of-type {
-    grid-template-columns: minmax(210px, 0.9fr) minmax(180px, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     align-items: end;
-    gap: 7px;
+    gap: 12px;
+  }
+
+  .stingKioskEntryPage .stingKioskSocialField .krinklesSocialSection > div:first-of-type > div:first-child > div:last-child {
+    flex-wrap: wrap;
   }
 
   .stingKioskEntryPage .stingKioskSocialField .krinklesSocialSection > p:last-child {
@@ -3130,11 +3157,18 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskChoiceGrid {
+    display: contents;
+  }
+
+  .stingKioskEntryPage .stingKioskPositionCard {
     grid-column: 1;
-    grid-template-columns: minmax(0, 1fr) !important;
-    align-items: start;
-    gap: 10px;
-    margin-top: 0;
+    width: auto;
+  }
+
+  .stingKioskEntryPage .stingKioskSpankingDetails,
+  .stingKioskEntryPage .stingKioskBottomDetails,
+  .stingKioskEntryPage .stingKioskActions {
+    grid-column: 1 / -1;
   }
 
   .stingKioskEntryPage .stingKioskChoiceGrid > div {
@@ -3159,7 +3193,21 @@ body:has(.displayBoardSurface) #root {
 
   .stingKioskEntryPage .stingKioskSpankingDetails {
     grid-column: 1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
     margin-top: 0;
+  }
+
+  .stingKioskEntryPage .stingKioskSpankingDetails > div {
+    grid-column: auto !important;
+  }
+
+  .stingKioskEntryPage .stingKioskExperienceCard > div:nth-child(2) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .stingKioskEntryPage .stingKioskExperienceCard > div:nth-child(2) button {
+    min-height: 74px;
+    font-size: 1rem;
   }
 
   .stingKioskEntryPage .stingKioskIntentionGrid {
@@ -3168,7 +3216,7 @@ body:has(.displayBoardSurface) #root {
 
   .stingKioskEntryPage .stingKioskDetailsGrid {
     grid-column: 1;
-    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
     gap: 10px;
     margin-top: 0;
   }

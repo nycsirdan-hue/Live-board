@@ -10018,7 +10018,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {isMensSpankingEntryForm && position ? (
+                  {isMensSpankingEntryForm ? (
                     <div className="stingKioskSpankingDetails mt-4 grid gap-4 xl:grid-cols-2">
                       {getFormBuilderSection("topImplements")?.enabled !== false && (position === "Top" || position === "Switch") ? (
                         <div className="rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 shadow-[0_0_24px_rgba(225,29,72,0.12)]">
@@ -10106,7 +10106,7 @@ export default function App() {
                         </div>
                       ) : null}
 
-                      <div className={`${getFormBuilderSection("limits")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2`}>
+                      <div className={`stingKioskLimitsCard ${getFormBuilderSection("limits")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2`}>
                         <div className="mb-3 border-b border-zinc-700/70 pb-2">
                           <label className="block text-sm font-semibold text-zinc-100">
                             {getFormBuilderSection("limits")?.label || "My limits"}
@@ -10147,7 +10147,7 @@ export default function App() {
                         /></> : null}
                       </div>
 
-                      <div className={`${getFormBuilderSection("experience")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2`}>
+                      <div className={`stingKioskExperienceCard ${getFormBuilderSection("experience")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2`}>
                         <div className="mb-3 border-b border-zinc-700/70 pb-2">
                           <label className="block text-sm font-semibold text-zinc-100">
                             {getFormBuilderSection("experience")?.label || "Experience Level"}
