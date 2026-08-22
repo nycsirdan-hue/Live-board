@@ -1789,10 +1789,10 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
                     ) : "🟢",
                     bottomReceive
                   )}
-                  {renderDetail("⛔", limits)}
-                  {renderDetail("%", experience)}
-                  {renderDetail("👀", interests.length ? interests : plainItems)}
-                  {renderDetail("🍑🍆", sexual)}
+                  {renderDetail(spankingLegend ? <span className="spankingDetailIcon">⛔</span> : "⛔", limits)}
+                  {renderDetail(spankingLegend ? <span className="spankingDetailIcon spankingDetailIconText">%</span> : "%", experience)}
+                  {renderDetail(spankingLegend ? <span className="spankingDetailIcon">👀</span> : "👀", interests.length ? interests : plainItems)}
+                  {renderDetail(spankingLegend ? <span className="spankingDetailIcon spankingDetailIconPair">🍑🍆</span> : "🍑🍆", sexual)}
                 </div>
 
                 {entry.social_handle ? (
@@ -10746,10 +10746,10 @@ export default function App() {
                   <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-2xl font-bold leading-tight">
                     <div className="flex items-center gap-4"><span className="legendArrowIcon text-red-400"><DisplayUpArrowIcon /></span><span>Likes to give</span></div>
                     <div className="flex items-center gap-4"><span className="legendArrowIcon text-emerald-400"><DisplayDownArrowIcon /></span><span>Likes to receive</span></div>
-                    <div className="flex items-center gap-4"><span className="text-3xl">⛔</span><span>Limits</span></div>
-                    <div className="flex items-center gap-4"><span className="text-3xl font-semibold">%</span><span>Experience</span></div>
-                    <div className="flex items-center gap-4"><span className="text-3xl">👀</span><span>Interests</span></div>
-                    <div className="flex items-center gap-4"><span className="whitespace-nowrap text-3xl">🍑🍆</span><span>Sexual preferences</span></div>
+                    <div className="flex items-center gap-4"><span className="legendDetailIcon">⛔</span><span>Limits</span></div>
+                    <div className="flex items-center gap-4"><span className="legendDetailIcon legendDetailIconText">%</span><span>Experience</span></div>
+                    <div className="flex items-center gap-4"><span className="legendDetailIcon">👀</span><span>Interests</span></div>
+                    <div className="flex items-center gap-4"><span className="legendDetailIcon legendDetailIconPair">🍑🍆</span><span>Sexual preferences</span></div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-[1.45fr_1fr] gap-x-5 text-lg font-bold leading-tight">
