@@ -3192,7 +3192,7 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskSpankingDetails {
-    grid-column: 1;
+    grid-column: 1 / -1;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
     margin-top: 0;
   }
@@ -3215,7 +3215,7 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskDetailsGrid {
-    grid-column: 1;
+    grid-column: 1 / -1;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
     gap: 10px;
     margin-top: 0;
@@ -3247,7 +3247,7 @@ body:has(.displayBoardSurface) #root {
   }
 
   .stingKioskEntryPage .stingKioskActions {
-    grid-column: 1;
+    grid-column: 1 / -1;
     margin-top: 0;
   }
 
