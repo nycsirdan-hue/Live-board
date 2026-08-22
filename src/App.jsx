@@ -9677,9 +9677,15 @@ export default function App() {
                   <div>
                     <label className="mb-2 block text-sm font-semibold">{isKrinklesEntryForm ? "Name / Scene Name" : "Display name"}</label>
                     <input
+                      name="connection-board-display-name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder='Example: "Real Name or Scene Name"'
+                      autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      data-1p-ignore
+                      data-lpignore="true"
                       className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
                     />
                   </div>
@@ -9876,6 +9882,7 @@ export default function App() {
                                 Handle
                               </div>
                               <input
+                                name="connection-board-social-handle"
                                 value={socialHandleDraftValue}
                                 onChange={(e) => setSocialHandleDraftValue(e.target.value)}
                                 onKeyDown={(e) => {
@@ -9891,6 +9898,12 @@ export default function App() {
                                       ? "@name"
                                       : "@name"
                                 }
+                                autoComplete="off"
+                                autoCorrect="off"
+                                autoCapitalize="none"
+                                spellCheck={false}
+                                data-1p-ignore
+                                data-lpignore="true"
                                 className="w-full rounded-2xl border border-fuchsia-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-fuchsia-300"
                               />
                             </div>
@@ -9928,9 +9941,16 @@ export default function App() {
                       ) : (
                         <>
                           <input
+                            name="connection-board-social-handle"
                             value={socialHandle}
                             onChange={(e) => setSocialHandle(e.target.value)}
                             placeholder='Example: "Your handle name on Fetlife"'
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            data-1p-ignore
+                            data-lpignore="true"
                             className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
                           />
 
