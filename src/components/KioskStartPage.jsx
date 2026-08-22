@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { QRCodeSVG } from "qrcode.react";
 import "./KioskStartPage.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -74,7 +75,8 @@ export default function KioskStartPage({ onStart }) {
   const [entryFormPreset, setEntryFormPreset] = useState(getPresetFromStorage);
   const [eventName, setEventName] = useState(getEventNameFromStorage);
   const isDiaperMode = entryFormPreset === "diaper_debauchery_glow";
-  const isMenMode = entryFormPreset === "men_only" || entryFormPreset === "mens_spanking";
+  const isSpankingMode = entryFormPreset === "mens_spanking";
+  const isMenMode = entryFormPreset === "men_only";
 
   useEffect(() => {
     let cancelled = false;
@@ -175,6 +177,203 @@ export default function KioskStartPage({ onStart }) {
       }
     };
   }, []);
+
+  if (isSpankingMode) {
+    const mobileEntryUrl = `${window.location.origin}/liveboard/mobile`;
+
+    return (
+      <main
+        className="stingKioskStartPage stingKioskStartPageClickable"
+        role="button"
+        tabIndex={0}
+        aria-label="Start your Connection Board entry"
+        onClick={onStart}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onStart();
+          }
+        }}
+      >
+        <div className="stingKioskAmbient stingKioskAmbientRed" />
+        <div className="stingKioskAmbient stingKioskAmbientBlue" />
+        <div className="stingKioskAmbient stingKioskAmbientGreen" />
+
+        <div className="stingKioskShell">
+          <section className="stingKioskEntryPanel">
+            <header className="stingKioskHeader">
+              <div>
+                <div className="stingKioskEventName">
+                  {eventName || "STING"}
+                </div>
+
+                <h1>
+                  Connection Board
+                </h1>
+
+                <p>
+                  Add the details you want displayed on tonight&apos;s Connection Board.
+                </p>
+              </div>
+
+              <div className="stingKioskPreviewBadge">
+                ENTRY PREVIEW
+              </div>
+            </header>
+
+            <div className="stingKioskFormPreview">
+              <div className="stingPreviewField">
+                <div className="stingPreviewLabel">Name / Scene Name</div>
+                <div className="stingPreviewInput">
+                  Your name as you want it shown on the board
+                </div>
+              </div>
+
+              <div className="stingPreviewSection stingPreviewPosition">
+                <div className="stingPreviewSectionTitle">Position</div>
+
+                <div className="stingPositionGrid">
+                  <div className="stingPositionChoice stingPositionTop">
+                    TOP
+                  </div>
+
+                  <div className="stingPositionChoice stingPositionBottom">
+                    BOTTOM
+                  </div>
+
+                  <div className="stingPositionChoice stingPositionSwitch">
+                    SWITCH
+                  </div>
+                </div>
+              </div>
+
+              <div className="stingPreviewRoleGrid">
+                <div className="stingPreviewSection stingPreviewTop">
+                  <div className="stingPreviewSectionTitle">
+                    As a top I like to use
+                  </div>
+
+                  <div className="stingPreviewChips">
+                    <span>Paddles</span>
+                    <span>Straps</span>
+                    <span>Belt</span>
+                    <span>Hands</span>
+                  </div>
+                </div>
+
+                <div className="stingPreviewSection stingPreviewBottom">
+                  <div className="stingPreviewSectionTitle">
+                    As a bottom I like to receive
+                  </div>
+
+                  <div className="stingPreviewChips">
+                    <span>Paddles</span>
+                    <span>Straps</span>
+                    <span>Brushes</span>
+                    <span>Hands</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="stingPreviewSection stingPreviewIntention">
+                <div className="stingPreviewSectionTitle">
+                  Intention
+                  <span className="stingPreviewOptional">Optional</span>
+                </div>
+
+                <div className="stingPreviewChips">
+                  <span>Open to Play</span>
+                  <span>Discuss Limits</span>
+                  <span>Open to Try</span>
+                  <span>Watching</span>
+                </div>
+              </div>
+
+              <div className="stingPreviewMore">
+                <span>LIMITS</span>
+                <span>EXPERIENCE</span>
+                <span>INTERESTS</span>
+                <span>SOCIAL</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="stingKioskStartButton"
+              onClick={(event) => {
+                event.stopPropagation();
+                onStart();
+              }}
+            >
+              <span>START YOUR ENTRY</span>
+              <small>Use this kiosk</small>
+            </button>
+          </section>
+
+          <aside className="stingKioskMobilePanel">
+            <div className="stingKioskPhoneIcon" aria-hidden="true">
+              ↗
+            </div>
+
+            <div className="stingKioskMobileEyebrow">
+              MOBILE ENTRY
+            </div>
+
+            <h2>
+              Use your phone instead
+            </h2>
+
+            <div className="stingKioskMobileSubhead">
+              &amp; upload a picture
+            </div>
+
+            <div className="stingKioskQrFrame">
+              <QRCodeSVG
+                value={mobileEntryUrl}
+                size={280}
+                level="M"
+                bgColor="#ffffff"
+                fgColor="#000000"
+                className="stingKioskQrSvg"
+              />
+            </div>
+
+            <div className="stingKioskScanText">
+              SCAN HERE
+            </div>
+
+            <p className="stingKioskMobileExplanation">
+              Complete your Connection Board entry on your phone and choose
+              the picture you want to use.
+            </p>
+
+            <div className="stingKioskProfilePrompt">
+              <div className="stingKioskProfileEyebrow">
+                COME HERE OFTEN?
+              </div>
+
+              <p>
+                Create a STING profile so you can save your Connection Card
+                and use it again at future parties.
+              </p>
+
+              <div className="stingKioskProfileLink">
+                SELECT CREATE NEW PROFILE
+              </div>
+
+              <div className="stingKioskProfileHint">
+                instead of Create New Entry
+              </div>
+            </div>
+
+            <div className="stingKioskMobileUrl">
+              studio125nyc.com/liveboard/mobile
+            </div>
+          </aside>
+        </div>
+      </main>
+    );
+  }
 
   const pageCopy = isDiaperMode
     ? {

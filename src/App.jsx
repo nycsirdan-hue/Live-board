@@ -9532,14 +9532,23 @@ export default function App() {
             </div>
           ) : (
             <div className={`mx-auto max-w-[1500px] ${isDiaperDebaucheryEntryForm ? "diaperGlowKiosk" : ""}`}>
+
               <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6">
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  {isDiaperDebaucheryEntryForm ? "KrINKles Connection Board" : isMenOnlyEntryForm ? appConfig.eventName : "Add Entry"}
+                  {isDiaperDebaucheryEntryForm
+                    ? "KrINKles Connection Board"
+                    : isMensSpankingEntryForm
+                      ? `${appConfig.eventName} Connection Board`
+                      : isMenOnlyEntryForm
+                        ? appConfig.eventName
+                        : "Add Entry"}
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-400">
                   {isDiaperDebaucheryEntryForm
                     ? "Add yourself to the glow board so people know how to connect with you tonight."
-                    : "Add your name, choose the buttons that fit, and share what you are open to tonight."}
+                    : isMensSpankingEntryForm
+                      ? "Add the details you want displayed on tonight's Connection Board."
+                      : "Add your name, choose the buttons that fit, and share what you are open to tonight."}
                 </p>
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
