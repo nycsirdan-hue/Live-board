@@ -425,6 +425,16 @@ const isParticipantColumnsSettingMarker = (option) =>
 const clampParticipantColumns = (value) => Math.min(6, Math.max(2, Number(value) || 4));
 const MIN_BOARD_ENTRY_TEXT_SIZE = -15;
 const clampBoardEntryTextSize = (value) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, Math.min(30, Number(value) || 0));
+const getAutomaticBoardTextFloor = (entryCount) => {
+  if (entryCount <= 2) return 18;
+  if (entryCount <= 6) return 6;
+  if (entryCount <= 12) return -2;
+  return -8;
+};
+
+const getAutomaticBoardMaxColumns = (entryCount) => (
+  Math.min(6, Math.max(2, Number(entryCount) || 0))
+);
 const clampStaffTextSize = (value) => Math.max(-20, Math.min(10, Number(value) || 0));
 const getParticipantColumnsSetting = (options) => {
   const marker = (options || []).find(isParticipantColumnsSettingMarker);
@@ -1432,6 +1442,8 @@ function getDisplaySectionMeta(title) {
 function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, setAutomaticFitting = null, fillDirection = "row", textSizeStep = 0, spankingLegend = false }) {
   const maxLineLength = 40;
   const listRef = useRef(null);
+  const automaticTextFloor = getAutomaticBoardTextFloor(entries.length);
+  const automaticMaxColumns = getAutomaticBoardMaxColumns(entries.length);
 
   useEffect(() => {
     if (!automaticColumns || !setAutomaticColumns || !setAutomaticTextSize || !setAutomaticFitting) return undefined;
@@ -1447,17 +1459,15 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
         ? list.scrollWidth > list.clientWidth + 2
         : list.scrollHeight > list.clientHeight + 2;
 
-      if (cardContentOverflows && textSizeStep > MIN_BOARD_ENTRY_TEXT_SIZE) {
-        setAutomaticTextSize((current) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, current - 1));
-        setAutomaticColumns(2);
+      if (cardContentOverflows && textSizeStep > automaticTextFloor) {
+        setAutomaticTextSize((current) => Math.max(automaticTextFloor, current - 1));
       } else if (cardContentOverflows) {
         setAutomaticFitting(false);
       } else if (layoutOverflows) {
-        if (columns < 6) {
-          setAutomaticColumns((current) => Math.min(6, Math.max(current, columns + 1)));
-        } else if (textSizeStep > MIN_BOARD_ENTRY_TEXT_SIZE) {
-          setAutomaticTextSize((current) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, current - 1));
-          setAutomaticColumns(2);
+        if (columns < automaticMaxColumns) {
+          setAutomaticColumns((current) => Math.min(automaticMaxColumns, Math.max(current, columns + 1)));
+        } else if (textSizeStep > automaticTextFloor) {
+          setAutomaticTextSize((current) => Math.max(automaticTextFloor, current - 1));
         } else {
           setAutomaticFitting(false);
         }
@@ -1467,7 +1477,7 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [automaticColumns, columns, entries, fillDirection, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
+  }, [automaticColumns, automaticMaxColumns, automaticTextFloor, columns, entries, fillDirection, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
 
   const getPositionRank = (entry) => {
     if (entry.position === "Top") return 0;
@@ -2048,6 +2058,8 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
   const sectionMeta = getDisplaySectionMeta(title);
   const showInlineRoleSubtitle = ["Top", "Bottom", "Switch"].includes(title);
   const connectionColumnEntries = Array.from({ length: gridCols }, () => []);
+  const automaticTextFloor = getAutomaticBoardTextFloor(entries.length);
+  const automaticMaxColumns = getAutomaticBoardMaxColumns(entries.length);
 
   if (connectionBoard) {
     const columnWeights = Array.from({ length: gridCols }, () => 0);
@@ -2086,15 +2098,13 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
         availableBounds.top
       );
       const layoutOverflows =
-        lowestCardBottom > availableBounds.bottom - 12 ||
-        section.scrollHeight > availableStage.clientHeight + 2;
+        lowestCardBottom > availableBounds.bottom - 12;
 
       if (layoutOverflows) {
-        if (gridCols < 6) {
-          setAutomaticColumns((current) => Math.min(6, Math.max(current, gridCols + 1)));
-        } else if (textSizeStep > MIN_BOARD_ENTRY_TEXT_SIZE) {
-          setAutomaticTextSize((current) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, current - 1));
-          setAutomaticColumns(2);
+        if (gridCols < automaticMaxColumns) {
+          setAutomaticColumns((current) => Math.min(automaticMaxColumns, Math.max(current, gridCols + 1)));
+        } else if (textSizeStep > automaticTextFloor) {
+          setAutomaticTextSize((current) => Math.max(automaticTextFloor, current - 1));
         } else {
           setAutomaticFitting(false);
         }
@@ -2104,7 +2114,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [automaticColumns, entries, gridCols, connectionBoard, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
+  }, [automaticColumns, automaticMaxColumns, automaticTextFloor, entries, gridCols, connectionBoard, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
 
   const renderParticipantEntry = (entry, index, useGridPlacement = true) => {
     const mergedItems = sortDisplayItemsByConfiguredOrder([
