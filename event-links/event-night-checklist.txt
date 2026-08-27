@@ -1,16 +1,16 @@
 LIVEBOARD EVENT NIGHT CHECKLIST
 
 Entry / QR phone version:
-https://live-board-topaz.vercel.app/?mode=entry
+https://studio125nyc.com/liveboard/mobile
 
 Kiosk / shared tablet version:
-https://live-board-topaz.vercel.app/?mode=entry&kiosk=1
+https://studio125nyc.com/liveboard/kiosk
 
 Display:
-https://live-board-topaz.vercel.app/?mode=display
+https://studio125nyc.com/liveboard/display
 
 Private Setup:
-https://live-board-topaz.vercel.app/?mode=setup&key=TKC2026
+https://studio125nyc.com/liveboard/admin?key=TKC2026
 
 Setup Code:
 TKC2026
@@ -23,3 +23,14 @@ EVENT NIGHT FLOW
 4. Keep Setup private for staff only.
 5. Kiosk should refresh after 10 seconds.
 6. Regular Entry should stay on the success screen.
+
+POST-EVENT REVIEW — USE AFTER ANY EVENT WITH A DISPLAY CHANGE
+
+1. Did every entry remain fully visible throughout the event?
+2. Was the smallest text still comfortably readable from across the room?
+3. Did the board choose an effective number of columns as entries were added and removed?
+4. Did the layout behave correctly for the screen and event orientation?
+5. Were any names, handles, photos, or long descriptions clipped or awkwardly wrapped?
+6. What worked especially well and should become the standard everywhere?
+7. What needs to be changed before the next event?
+8. Is the lesson universal, or genuinely specific to this event or orientation?

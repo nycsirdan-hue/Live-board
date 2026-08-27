@@ -424,13 +424,8 @@ const isParticipantColumnsSettingMarker = (option) =>
   String(option || "").startsWith(PARTICIPANT_COLUMNS_SETTING_PREFIX);
 const clampParticipantColumns = (value) => Math.min(6, Math.max(2, Number(value) || 4));
 const MIN_BOARD_ENTRY_TEXT_SIZE = -15;
+const MIN_AUTOMATIC_BOARD_ENTRY_TEXT_SIZE = -8;
 const clampBoardEntryTextSize = (value) => Math.max(MIN_BOARD_ENTRY_TEXT_SIZE, Math.min(30, Number(value) || 0));
-const getAutomaticBoardTextFloor = (entryCount) => {
-  if (entryCount <= 2) return 18;
-  if (entryCount <= 6) return 6;
-  if (entryCount <= 12) return -2;
-  return -8;
-};
 
 const getAutomaticBoardMaxColumns = (entryCount) => (
   Math.min(6, Math.max(2, Number(entryCount) || 0))
@@ -452,9 +447,9 @@ const isDisplaySizingModeSettingMarker = (option) =>
   String(option || "").startsWith(DISPLAY_SIZING_MODE_SETTING_PREFIX);
 const getDisplaySizingModeSetting = (options) => {
   const marker = (options || []).find(isDisplaySizingModeSettingMarker);
-  return marker?.slice(DISPLAY_SIZING_MODE_SETTING_PREFIX.length) === "automatic"
-    ? "automatic"
-    : "manual";
+  return marker?.slice(DISPLAY_SIZING_MODE_SETTING_PREFIX.length) === "manual"
+    ? "manual"
+    : "automatic";
 };
 const withDisplaySizingModeSetting = (options, mode) => [
   ...(options || []).filter((option) => !isDisplaySizingModeSettingMarker(option)),
@@ -1439,45 +1434,8 @@ function getDisplaySectionMeta(title) {
   return { icon: null, subtitle: "" };
 }
 
-function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, setAutomaticFitting = null, fillDirection = "row", textSizeStep = 0, spankingLegend = false }) {
+function ParticipantListDisplay({ entries = [], columns = 4, fillDirection = "row", textSizeStep = 0, spankingLegend = false }) {
   const maxLineLength = 40;
-  const listRef = useRef(null);
-  const automaticTextFloor = getAutomaticBoardTextFloor(entries.length);
-  const automaticMaxColumns = getAutomaticBoardMaxColumns(entries.length);
-
-  useEffect(() => {
-    if (!automaticColumns || !setAutomaticColumns || !setAutomaticTextSize || !setAutomaticFitting) return undefined;
-
-    const frameId = window.requestAnimationFrame(() => {
-      const list = listRef.current;
-      if (!list) return;
-
-      const cardContentOverflows = Array.from(list.children).some(
-        (card) => card.scrollWidth > card.clientWidth + 2
-      );
-      const layoutOverflows = fillDirection === "column"
-        ? list.scrollWidth > list.clientWidth + 2
-        : list.scrollHeight > list.clientHeight + 2;
-
-      if (cardContentOverflows && textSizeStep > automaticTextFloor) {
-        setAutomaticTextSize((current) => Math.max(automaticTextFloor, current - 1));
-      } else if (cardContentOverflows) {
-        setAutomaticFitting(false);
-      } else if (layoutOverflows) {
-        if (columns < automaticMaxColumns) {
-          setAutomaticColumns((current) => Math.min(automaticMaxColumns, Math.max(current, columns + 1)));
-        } else if (textSizeStep > automaticTextFloor) {
-          setAutomaticTextSize((current) => Math.max(automaticTextFloor, current - 1));
-        } else {
-          setAutomaticFitting(false);
-        }
-      } else {
-        setAutomaticFitting(false);
-      }
-    });
-
-    return () => window.cancelAnimationFrame(frameId);
-  }, [automaticColumns, automaticMaxColumns, automaticTextFloor, columns, entries, fillDirection, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
 
   const getPositionRank = (entry) => {
     if (entry.position === "Top") return 0;
@@ -1631,8 +1589,7 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
   return (
     <section className="h-full w-full overflow-hidden">
       <div
-        ref={listRef}
-        className="w-full"
+        className="universalParticipantGrid w-full"
         style={{
           height: "100%",
           display: fillDirection === "column" ? "flex" : "grid",
@@ -1720,7 +1677,8 @@ function ParticipantListDisplay({ entries = [], columns = 4, automaticColumns = 
           return (
             <div
               key={entry.id}
-              className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+              data-participant-entry="true"
+              className="displayParticipantEntry relative overflow-hidden rounded-2xl border border-white/15 bg-black/25 px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
               style={{
                 fontSize: "var(--participant-list-detail-size, 1rem)",
                 width: fillDirection === "column"
@@ -2050,16 +2008,13 @@ function DisplayRotationOverlay({ eventDisplay }) {
   );
 }
 
-function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false, connectionBoard = false, automaticColumns = false, setAutomaticColumns = null, setAutomaticTextSize = null, setAutomaticFitting = null, textSizeStep = 0 }) {
-  const sectionRef = useRef(null);
+function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false, connectionBoard = false }) {
   const { rows, cols } = getSectionGrid(entries.length, maxRows, maxCols);
   const gridCols = connectionBoard ? Math.max(1, Number(maxCols) || 4) : cols;
   const compact = rows >= 4 || gridCols >= 3 || entries.length > 8;
   const sectionMeta = getDisplaySectionMeta(title);
   const showInlineRoleSubtitle = ["Top", "Bottom", "Switch"].includes(title);
   const connectionColumnEntries = Array.from({ length: gridCols }, () => []);
-  const automaticTextFloor = getAutomaticBoardTextFloor(entries.length);
-  const automaticMaxColumns = getAutomaticBoardMaxColumns(entries.length);
 
   if (connectionBoard) {
     const columnWeights = Array.from({ length: gridCols }, () => 0);
@@ -2083,39 +2038,6 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
     });
   }
 
-  useEffect(() => {
-    if (!connectionBoard || !automaticColumns || !setAutomaticColumns || !setAutomaticTextSize || !setAutomaticFitting) return undefined;
-
-    const frameId = window.requestAnimationFrame(() => {
-      const section = sectionRef.current;
-      const availableStage = section?.parentElement;
-      if (!section || !availableStage) return;
-
-      const cards = section.querySelectorAll(".displayConnectionEntry");
-      const availableBounds = availableStage.getBoundingClientRect();
-      const lowestCardBottom = Array.from(cards).reduce(
-        (lowest, card) => Math.max(lowest, card.getBoundingClientRect().bottom),
-        availableBounds.top
-      );
-      const layoutOverflows =
-        lowestCardBottom > availableBounds.bottom - 12;
-
-      if (layoutOverflows) {
-        if (gridCols < automaticMaxColumns) {
-          setAutomaticColumns((current) => Math.min(automaticMaxColumns, Math.max(current, gridCols + 1)));
-        } else if (textSizeStep > automaticTextFloor) {
-          setAutomaticTextSize((current) => Math.max(automaticTextFloor, current - 1));
-        } else {
-          setAutomaticFitting(false);
-        }
-      } else {
-        setAutomaticFitting(false);
-      }
-    });
-
-    return () => window.cancelAnimationFrame(frameId);
-  }, [automaticColumns, automaticMaxColumns, automaticTextFloor, entries, gridCols, connectionBoard, setAutomaticColumns, setAutomaticFitting, setAutomaticTextSize, textSizeStep]);
-
   const renderParticipantEntry = (entry, index, useGridPlacement = true) => {
     const mergedItems = sortDisplayItemsByConfiguredOrder([
       ...(entry.items || []),
@@ -2125,10 +2047,11 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
     return (
       <div
         key={entry.id}
+        data-participant-entry="true"
         style={useGridPlacement ? gridPlacement(index, gridCols) : undefined}
         className={connectionBoard
-          ? "displayConnectionEntry min-h-0 self-start"
-          : "min-h-0 self-start border-b border-slate-700/40 last:border-b-0"}
+          ? "displayParticipantEntry displayConnectionEntry min-h-0 self-start"
+          : "displayParticipantEntry min-h-0 self-start border-b border-slate-700/40 last:border-b-0"}
       >
         <EntryLine
           name={entry.name}
@@ -2150,7 +2073,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
   };
 
   return (
-    <section ref={sectionRef} className={`displaySectionCard self-start rounded-2xl border px-2.5 pt-2.5 pb-1 shadow-2xl min-h-[120px] ${theme.section}`}>
+    <section className={`displaySectionCard self-start rounded-2xl border px-2.5 pt-2.5 pb-1 shadow-2xl min-h-[120px] ${theme.section}`}>
       <div className={title ? "displaySectionHeader mb-2" : "mb-0"}>
         {sectionMeta.icon ? (
           <div className={`displaySectionIcon ${theme.title}`}>
@@ -2240,7 +2163,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
         <div className={`displaySectionEntries rounded-2xl border p-5 md:p-6 h-full ${connectionBoard ? "displayConnectionEntries" : ""} ${theme.inner}`}>
           {connectionBoard ? (
             <div
-              className="displayConnectionEntriesGrid grid items-start"
+              className="universalParticipantGrid displayConnectionEntriesGrid grid items-start"
               style={{
                 gridTemplateColumns: `repeat(${Math.max(1, gridCols)}, minmax(0, 1fr))`,
                 width: "100%",
@@ -2254,7 +2177,7 @@ function DisplaySection({ title, entries, theme, maxRows, maxCols, isDM = false,
             </div>
           ) : (
             <div
-              className="grid items-start content-start gap-x-4 gap-y-1"
+              className="universalParticipantGrid grid items-start content-start gap-x-4 gap-y-1"
               style={{
                 gridTemplateColumns: `repeat(${Math.max(1, gridCols)}, minmax(0, 1fr))`,
                 gridTemplateRows: `repeat(${Math.max(1, rows)}, minmax(0, auto))`,
@@ -2570,7 +2493,8 @@ export default function App() {
   const [automaticBoardEntryTextSize, setAutomaticBoardEntryTextSize] = useState(30);
   const [automaticFitting, setAutomaticFitting] = useState(false);
   const [automaticFitReady, setAutomaticFitReady] = useState(false);
-  const [displaySizingMode, setDisplaySizingMode] = useState("manual");
+  const [displaySizingMode, setDisplaySizingMode] = useState("automatic");
+  const automaticFitStageRef = useRef(null);
   const [displayViewport, setDisplayViewport] = useState(() => ({
     width: window.innerWidth || 1920,
     height: window.innerHeight || 1080,
@@ -3431,7 +3355,7 @@ export default function App() {
   const previousRaffleDraws = useMemo(() => raffleDraws.slice(1, 9), [raffleDraws]);
   const isRaffleDisplayActive = settings?.display_mode === "raffle";
   const participantDisplayLayout = settings?.participant_display_layout === "list" ? "list" : "tiles";
-  const automaticSizingActive = displaySizingMode === "automatic" && (participantDisplayLayout === "list" || usesSingleConnectionBoard);
+  const automaticSizingActive = displaySizingMode === "automatic";
   const effectiveParticipantColumns = automaticSizingActive
     ? automaticParticipantColumns
     : participantDisplayColumns;
@@ -3469,6 +3393,57 @@ export default function App() {
     displayViewport.height,
     displayViewport.width,
     entryFillDirection,
+  ]);
+
+  useEffect(() => {
+    if (!automaticSizingActive || !automaticFitReady || !automaticFitting) return undefined;
+
+    const frameId = window.requestAnimationFrame(() => {
+      const stage = automaticFitStageRef.current;
+      if (!stage) return;
+
+      const cards = Array.from(stage.querySelectorAll('[data-participant-entry="true"]'));
+      if (cards.length === 0) {
+        setAutomaticFitting(false);
+        return;
+      }
+
+      const stageBounds = stage.getBoundingClientRect();
+      const cardContentOverflows = cards.some(
+        (card) => card.scrollWidth > card.clientWidth + 2 || card.scrollHeight > card.clientHeight + 2
+      );
+      const layoutOverflows = cards.some((card) => {
+        const bounds = card.getBoundingClientRect();
+        return (
+          bounds.left < stageBounds.left - 2 ||
+          bounds.right > stageBounds.right + 2 ||
+          bounds.top < stageBounds.top - 2 ||
+          bounds.bottom > stageBounds.bottom - 12
+        );
+      });
+      const automaticMaxColumns = getAutomaticBoardMaxColumns(participantEntries.length);
+
+      if (cardContentOverflows && automaticBoardEntryTextSize > MIN_AUTOMATIC_BOARD_ENTRY_TEXT_SIZE) {
+        setAutomaticBoardEntryTextSize((current) => Math.max(MIN_AUTOMATIC_BOARD_ENTRY_TEXT_SIZE, current - 1));
+      } else if (layoutOverflows && automaticParticipantColumns < automaticMaxColumns) {
+        setAutomaticParticipantColumns((current) => Math.min(automaticMaxColumns, current + 1));
+      } else if (layoutOverflows && automaticBoardEntryTextSize > MIN_AUTOMATIC_BOARD_ENTRY_TEXT_SIZE) {
+        setAutomaticBoardEntryTextSize((current) => Math.max(MIN_AUTOMATIC_BOARD_ENTRY_TEXT_SIZE, current - 1));
+      } else {
+        setAutomaticFitting(false);
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [
+    automaticBoardEntryTextSize,
+    automaticFitReady,
+    automaticFitting,
+    automaticParticipantColumns,
+    automaticSizingActive,
+    participantDisplayLayout,
+    participantEntries.length,
+    usesSingleConnectionBoard,
   ]);
 
   const getRaffleStatusLabel = (status) => {
@@ -6991,8 +6966,7 @@ export default function App() {
 
                     {displaySizingMode === "automatic" ? (
                       <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
-                        The live display measures the actual cards and screen space, testing text from +30 down to a hard minimum of −15 and using 2–6 columns.
-                        {participantDisplayLayout !== "list" && !usesSingleConnectionBoard ? " · Switch to List View to apply automatic sizing." : ""}
+                        One universal sizing engine measures the actual cards and screen space for every form and display layout, using 2–6 columns and the largest readable text that fits.
                       </div>
                     ) : null}
                   </div>
@@ -7032,7 +7006,7 @@ export default function App() {
                           </button>
                         </div>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                          {displaySizingMode === "automatic" ? "Automatically selects the largest size that fits, never below −15." : "Controls participant names, handles, intentions, and open-to text. Range: −15 to +30."}
+                          {displaySizingMode === "automatic" ? "Automatically selects the largest readable size that fits every active display layout." : "Controls participant names, handles, intentions, and open-to text. Range: −15 to +30."}
                         </p>
                       </div>
 
@@ -10808,7 +10782,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="automaticFitParticipantStage">
+            <div ref={automaticFitStageRef} className="automaticFitParticipantStage">
             <div
               className={`automaticFitWatermark ${isKrinklesEntryForm ? "automaticFitWatermarkKrinkles" : ""}`}
               aria-hidden="true"
@@ -10830,11 +10804,6 @@ export default function App() {
                   maxRows={8}
                   maxCols={effectiveParticipantColumns}
                   connectionBoard
-                  automaticColumns={automaticSizingActive && automaticFitReady}
-                  setAutomaticColumns={setAutomaticParticipantColumns}
-                  setAutomaticTextSize={setAutomaticBoardEntryTextSize}
-                  setAutomaticFitting={setAutomaticFitting}
-                  textSizeStep={effectiveBoardEntryTextSize}
                 />
               </div>
             ) : participantDisplayLayout === "list" ? (
@@ -10843,10 +10812,6 @@ export default function App() {
                   entries={[...topEntries, ...bottomEntries, ...switchEntries]}
                   columns={effectiveParticipantColumns}
                   spankingLegend={legendPreset === "mens_spanking" || (legendPreset === "automatic" && isMensSpankingEntryForm)}
-                  automaticColumns={automaticSizingActive && automaticFitReady}
-                  setAutomaticColumns={setAutomaticParticipantColumns}
-                  setAutomaticTextSize={setAutomaticBoardEntryTextSize}
-                  setAutomaticFitting={setAutomaticFitting}
                   fillDirection={entryFillDirection}
                   textSizeStep={effectiveBoardEntryTextSize}
                 />
