@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { eventDisplayPresets } from "./eventDisplayPresets";
 import { createClient } from "@supabase/supabase-js";
+import EventSystemV2 from "./components/EventSystemV2";
+import { eventConfigToLegacyFormConfig, parseEventV2, serializeEventV2, stripEventV2 } from "./eventSystemV2";
 
 import { getLiveboardPathMode, isLiveboardKioskPath } from "./liveboardRoutes";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -235,7 +237,7 @@ function slugifyEventDisplay(value) {
 }
 
 function mapEventDisplayPresetRow(row) {
-  const schedule = parseEventScheduleDescription(row.event_description);
+  const schedule = parseEventScheduleDescription(stripEventV2(row.event_description));
 
   return {
     id: row.id,
@@ -250,6 +252,7 @@ function mapEventDisplayPresetRow(row) {
     source: "supabase",
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    eventConfig: parseEventV2(row.event_description),
   };
 }
 
@@ -483,11 +486,11 @@ const isLegendPresetSettingMarker = (option) => String(option || "").startsWith(
 const getLegendPresetSetting = (options) => {
   const marker = (options || []).find(isLegendPresetSettingMarker);
   const value = marker?.slice(LEGEND_PRESET_SETTING_PREFIX.length);
-  return ["automatic", "standard", "mens_spanking"].includes(value) ? value : "automatic";
+  return ["automatic", "standard", "mens_spanking", "event_v2"].includes(value) ? value : "automatic";
 };
 const withLegendPresetSetting = (options, preset) => [
   ...(options || []).filter((option) => !isLegendPresetSettingMarker(option)),
-  LEGEND_PRESET_SETTING_PREFIX + (["standard", "mens_spanking"].includes(preset) ? preset : "automatic"),
+  LEGEND_PRESET_SETTING_PREFIX + (["standard", "mens_spanking", "event_v2"].includes(preset) ? preset : "automatic"),
 ];
 const withoutLegendPresetSetting = (options) => (options || []).filter((option) => !isLegendPresetSettingMarker(option));
 
@@ -2681,7 +2684,8 @@ export default function App() {
     baseOptions = customInterestOptions,
     configs = formBuilderConfigs,
     columns = participantDisplayColumns,
-    sizingMode = displaySizingMode
+    sizingMode = displaySizingMode,
+    savedLegendPreset = legendPreset
   ) => withLegendPresetSetting(withFormBuilderSetting(
     withEntryFillSetting(
       withDisplayRulesSetting(
@@ -2700,7 +2704,7 @@ export default function App() {
       entryFillDirection
     ),
     configs
-  ), legendPreset);
+  ), savedLegendPreset);
 
   const allSexualPreferenceOptions = useMemo(() => {
     const removedOptions = new Set(
@@ -2773,6 +2777,7 @@ export default function App() {
     eventDisplayOptions.find((eventDisplay) => eventDisplay.id === activeEventDisplayId) ||
     eventDisplayOptions[0] ||
     null;
+  const activeEventLegendItems = activeEventDisplay?.eventConfig?.legend?.items || [];
 
   const [pendingEventDisplayId, setPendingEventDisplayId] = useState("");
 
@@ -4786,6 +4791,83 @@ export default function App() {
     return compressed;
   };
 
+  const saveEventV2 = async (eventConfig, existingId = "") => {
+    if (!supabase) {
+      setMessage("Supabase connection is missing.");
+      return null;
+    }
+
+    setSettingsSaving(true);
+    const existing = savedEventDisplays.find((event) => event.id === existingId);
+    let cleanConfig = {
+      ...eventConfig,
+      version: 2,
+      slug: eventConfig.slug || slugifyEventDisplay(eventConfig.name),
+      updatedAt: new Date().toISOString(),
+    };
+    const preparedSlides = await compressDisplayImages(cleanConfig.media?.slides || []);
+    let uploadedSlides;
+    try {
+      uploadedSlides = await uploadEventDisplayImagesToSupabase(
+        preparedSlides.map((slide, index) => ({
+          ...slide,
+          id: slide.id || `${cleanConfig.slug}-media-${index + 1}`,
+          durationSeconds: Number(cleanConfig.media?.mediaDurationSeconds) || 60,
+        })),
+        cleanConfig.name
+      );
+    } catch (error) {
+      setSettingsSaving(false);
+      setMessage("Could not upload event media: " + error.message);
+      return null;
+    }
+    cleanConfig = {
+      ...cleanConfig,
+      display: { ...cleanConfig.display, sizingMode: "automatic" },
+      media: { ...cleanConfig.media, slides: uploadedSlides },
+    };
+    const eventDescription = serializeEventV2(
+      serializeEventScheduleDescription(
+        existing?.eventDescription || cleanConfig.timing?.notes || "",
+        cleanConfig.timing?.startTime || "",
+        cleanConfig.timing?.endTime || "",
+        cleanConfig.media?.slidesEnabled === true
+      ),
+      cleanConfig
+    );
+    const payload = {
+      event_name: cleanConfig.name.trim(),
+      event_description: eventDescription,
+      liveboard_duration_seconds: Number(cleanConfig.media?.liveboardDurationSeconds) || 300,
+      transition_seconds: Number(cleanConfig.media?.transitionSeconds) || 0.5,
+      images: uploadedSlides,
+      active: cleanConfig.active !== false,
+      updated_at: new Date().toISOString(),
+    };
+    const query = existingId
+      ? supabase.from("event_display_presets").update(payload).eq("id", existingId)
+      : supabase.from("event_display_presets").insert(payload);
+    const { data, error } = await query
+      .select("id, event_name, event_description, liveboard_duration_seconds, transition_seconds, images, active, created_at, updated_at")
+      .single();
+    setSettingsSaving(false);
+
+    if (error) {
+      setMessage("Could not save event: " + error.message);
+      return null;
+    }
+
+    const saved = mapEventDisplayPresetRow(data);
+    setSavedEventDisplays((current) => existingId
+      ? current.map((event) => event.id === existingId ? saved : event)
+      : [saved, ...current]
+    );
+    setPendingEventDisplayId(saved.id);
+    setMessage(existingId ? "Event definition updated." : "Event created.");
+    setTimeout(() => setMessage(""), 2500);
+    return saved;
+  };
+
   const updateActiveEventDisplayPreset = async (presetId) => {
     const selectedEventDisplay =
       eventDisplayOptions.find((eventDisplay) => eventDisplay.id === presetId) ||
@@ -4802,6 +4884,27 @@ export default function App() {
       selectedEventDisplay?.event_description ||
       setupVenueName ||
       defaultConfig.venueName;
+
+    const eventV2 = selectedEventDisplay?.eventConfig?.version === 2
+      ? selectedEventDisplay.eventConfig
+      : null;
+    const nextEntryPreset = eventV2?.display?.entryFormPreset || entryFormPreset;
+    const nextFormBuilderConfigs = eventV2
+      ? { ...formBuilderConfigs, [nextEntryPreset]: eventConfigToLegacyFormConfig(eventV2) }
+      : formBuilderConfigs;
+    const nextLayoutSettings = eventV2?.display?.sizing
+      ? { ...layoutSettings, ...eventV2.display.sizing }
+      : layoutSettings;
+
+    if (eventV2) {
+      setEntryFormPreset(nextEntryPreset);
+      setFormBuilderConfigs(nextFormBuilderConfigs);
+      setParticipantDisplayColumns(clampParticipantColumns(eventV2.display?.columns || participantDisplayColumns));
+      setDisplaySizingMode(eventV2.display?.sizingMode || displaySizingMode);
+      setEntryFillDirection(eventV2.display?.entryFillDirection || entryFillDirection);
+      setLayoutSettings(nextLayoutSettings);
+      setLegendPreset("event_v2");
+    }
 
     setActiveEventDisplayId(presetId);
     setSetupEventName(selectedEventName);
@@ -4833,12 +4936,19 @@ export default function App() {
       allow_twitter: allowTwitter,
       allow_bluesky: allowBluesky,
       allow_other_platform: allowOtherPlatform,
-      entry_form_preset: entryFormPreset,
+      entry_form_preset: nextEntryPreset,
       visible_sexual_preference_options: visibleSexualPreferenceOptions,
       custom_sexual_preference_options: customSexualPreferenceOptions,
       visible_interest_options: visibleInterestOptions,
-      custom_interest_options: buildSettingsCustomInterestOptions(),
+      custom_interest_options: buildSettingsCustomInterestOptions(
+        customInterestOptions,
+        nextFormBuilderConfigs,
+        eventV2?.display?.columns || participantDisplayColumns,
+        eventV2?.display?.sizingMode || displaySizingMode,
+        eventV2 ? "event_v2" : legendPreset
+      ),
       active_event_display_preset_id: presetId || null,
+      participant_display_layout: eventV2?.display?.participantLayout || participantDisplayLayout,
       updated_at: new Date().toISOString(),
     };
 
@@ -6425,6 +6535,20 @@ export default function App() {
 
               {activeSetupTab === "Events" ? (
                 <div className="mt-5 space-y-5">
+                  <EventSystemV2
+                    events={eventDisplayOptions}
+                    selectedId={activeEventDisplayId}
+                    busy={settingsSaving}
+                    onSave={saveEventV2}
+                    onActivate={(event) => updateActiveEventDisplayPreset(event.id)}
+                  />
+
+                  <details className="rounded-2xl border border-slate-800 bg-slate-900/40">
+                    <summary className="cursor-pointer list-none px-5 py-4 text-sm font-bold text-slate-300">
+                      Existing event display presets and slide controls
+                      <span className="ml-2 text-xs font-normal text-slate-500">Preserved for compatibility</span>
+                    </summary>
+                    <div className="space-y-5 border-t border-slate-800 p-5">
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                     <h3 className="text-2xl font-semibold tracking-tight text-slate-100">
                       Events
@@ -6818,6 +6942,8 @@ export default function App() {
                       ) : null}
                     </div>
                   </div>
+</div>
+</details>
 </div>
               ) : activeSetupTab === "Display Sizing" ? (
                 <div className="mt-5 space-y-5">
@@ -10726,7 +10852,16 @@ export default function App() {
                 className="displayIconLegend flex h-full w-[36rem] shrink-0 self-stretch flex-col justify-center px-2 py-4 text-white"
                 aria-label="Board icon guide"
               >
-                {(legendPreset === "mens_spanking" || (legendPreset === "automatic" && isMensSpankingEntryForm)) ? (
+                {legendPreset === "event_v2" && activeEventLegendItems.length ? (
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-5 text-xl font-bold leading-tight">
+                    {activeEventLegendItems.map((item) => (
+                      <div key={item.id || item.key || item.label} className="flex items-center gap-4">
+                        <span className="legendDetailIcon">{item.icon || "•"}</span>
+                        <span>{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (legendPreset === "mens_spanking" || (legendPreset === "automatic" && isMensSpankingEntryForm)) ? (
                   <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-2xl font-bold leading-tight">
                     <div className="flex items-center gap-4"><span className="legendArrowIcon text-red-400"><DisplayUpArrowIcon /></span><span>Likes to give</span></div>
                     <div className="flex items-center gap-4"><span className="legendArrowIcon text-emerald-400"><DisplayDownArrowIcon /></span><span>Likes to receive</span></div>
