@@ -62,7 +62,7 @@ export function createEventField(type = "select") {
     id: crypto.randomUUID(), type, label: typeLabel, helperText: "", required: type === "name",
     visible: true, answerStyle: type === "select" || type === "multi-select" ? "buttons" : "input",
     options: type === "select" || type === "multi-select" ? ["Option 1", "Option 2"] : [],
-    displayBehavior: "card",
+    displayBehavior: "card", color: "cyan",
   };
 }
 

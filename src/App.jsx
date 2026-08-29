@@ -2363,6 +2363,7 @@ export default function App() {
 
   const setupTabOptions = ["Events", "Hosts & DMs", "Entry Form", "Display Sizing", "Entries", "Raffle"];
   const [activeSetupTab, setActiveSetupTab] = useState("Events");
+  const [eventBuilderOpen, setEventBuilderOpen] = useState(false);
   const entryUrlParams = new URLSearchParams(window.location.search);
   const isKioskEntryMode =
     isEntryMode &&
@@ -6491,7 +6492,7 @@ export default function App() {
         )}
 
         {isSetupTabsMode ? (
-          <div className="mx-auto grid max-w-[2200px] items-start gap-6 xl:grid-cols-2">
+          <div className={`mx-auto grid max-w-[2200px] items-start gap-6 ${eventBuilderOpen ? "grid-cols-1" : "xl:grid-cols-2"}`}>
           <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl">
             <div>
               <div>
@@ -6512,7 +6513,10 @@ export default function App() {
                   <button
                     key={tab}
                     type="button"
-                    onClick={() => setActiveSetupTab(tab)}
+                    onClick={() => {
+                      setActiveSetupTab(tab);
+                      if (tab !== "Events") setEventBuilderOpen(false);
+                    }}
                     className={`rounded-2xl border px-4 py-4 text-left font-semibold transition ${
                       active
                         ? "border-sky-300 bg-sky-400 text-slate-950"
@@ -6541,6 +6545,7 @@ export default function App() {
                     busy={settingsSaving}
                     onSave={saveEventV2}
                     onActivate={(event) => updateActiveEventDisplayPreset(event.id)}
+                    onEditingChange={setEventBuilderOpen}
                   />
 
                   <details className="rounded-2xl border border-slate-800 bg-slate-900/40">
@@ -8401,7 +8406,7 @@ export default function App() {
               </div>
             </div>
           </div>
-          {(["Events", "Hosts & DMs", "Entry Form", "Display Sizing"].includes(activeSetupTab)) ? (
+          {(["Events", "Hosts & DMs", "Entry Form", "Display Sizing"].includes(activeSetupTab) && !eventBuilderOpen) ? (
             <aside className="xl:sticky xl:top-6">
               <div className="rounded-3xl border border-violet-400/30 bg-slate-900/80 p-5 shadow-2xl">
                 <div className="mb-4">
