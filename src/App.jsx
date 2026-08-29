@@ -5583,7 +5583,15 @@ export default function App() {
   };
 
   const stopParticipantCamera = () => {
-    participantCameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    const stream = participantCameraStreamRef.current;
+    stream?.getTracks().forEach((track) => {
+      track.stop();
+      track.enabled = false;
+    });
+    if (participantCameraVideoRef.current) {
+      participantCameraVideoRef.current.pause();
+      participantCameraVideoRef.current.srcObject = null;
+    }
     participantCameraStreamRef.current = null;
     setParticipantCameraOpen(false);
   };
@@ -5595,6 +5603,7 @@ export default function App() {
     }
 
     try {
+      stopParticipantCamera();
       setMessage("Requesting camera access...");
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 1280 } },
@@ -5619,6 +5628,11 @@ export default function App() {
 
   useEffect(() => () => {
     participantCameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    if (participantCameraVideoRef.current) {
+      participantCameraVideoRef.current.pause();
+      participantCameraVideoRef.current.srcObject = null;
+    }
+    participantCameraStreamRef.current = null;
   }, []);
 
   const captureParticipantPhoto = async () => {
@@ -5634,6 +5648,10 @@ export default function App() {
     canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 
+    // Release the hardware immediately after copying the frame. JPEG encoding and
+    // crop setup happen after the camera light has already been turned off.
+    stopParticipantCamera();
+
     const photo = await new Promise((resolve) =>
       canvas.toBlob(resolve, "image/jpeg", 0.78)
     );
@@ -5643,7 +5661,6 @@ export default function App() {
       return;
     }
 
-    stopParticipantCamera();
     openParticipantCropper(photo);
     setMessage("");
   };
