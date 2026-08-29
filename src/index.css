@@ -6,6 +6,38 @@ body,
   margin: 0;
   min-height: 100%;
 }
+
+@media (min-width: 1280px) {
+  .eventV2RuntimeLayout {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .eventV2RuntimeLayout > h2,
+  .eventV2RuntimeLayout > p {
+    grid-column: 1 / -1;
+    order: -20;
+  }
+
+  .eventV2RuntimeLayout > .stingKioskIdentityRow,
+  .eventV2RuntimeLayout > .stingKioskChoiceGrid,
+  .eventV2RuntimeLayout > .stingKioskIntentionGrid,
+  .eventV2RuntimeLayout > .stingKioskDetailsGrid {
+    display: contents;
+  }
+
+  .eventV2RuntimeLayout > .krinklesLookingForSection {
+    grid-column: 1 / -1;
+  }
+
+  .eventV2RuntimeLayout > .stingKioskActions,
+  .eventV2RuntimeLayout > div[role="alert"] {
+    grid-column: 1 / -1;
+    order: 1000;
+    margin-top: 0;
+  }
+}
 /* TV DISPLAY — Sanctuary Connection Board visual theme */
 .displayBoardSurface {
   min-height: 100vh;

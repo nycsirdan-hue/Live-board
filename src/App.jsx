@@ -2681,6 +2681,26 @@ export default function App() {
   const activeFormBuilderConfig = runtimeEventConfig?.version === 2
     ? eventConfigToLegacyFormConfig(runtimeEventConfig)
     : formBuilderConfigs[runtimeEntryFormPreset] || createDefaultFormBuilderConfigs()[runtimeEntryFormPreset];
+  const getRuntimeFieldLayoutStyle = (fieldKey) => {
+    if (runtimeEventConfig?.version !== 2) return undefined;
+    const rows = runtimeEventConfig.entryForm?.rows || [];
+    const spanMap = {
+      "100": [12],
+      "50-50": [6, 6],
+      "60-40": [7, 5],
+      "40-60": [5, 7],
+      thirds: [4, 4, 4],
+    };
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+      const fields = rows[rowIndex].fields || [];
+      const fieldIndex = fields.findIndex((field) => (field.legacyKey || field.type) === fieldKey);
+      if (fieldIndex >= 0) {
+        const spans = spanMap[rows[rowIndex].layout] || [12];
+        return { gridColumn: `span ${spans[fieldIndex] || 12} / span ${spans[fieldIndex] || 12}`, order: rowIndex * 10 + fieldIndex };
+      }
+    }
+    return undefined;
+  };
   const getFormBuilderSection = (key) => activeFormBuilderConfig?.[key] || null;
   const getEnabledFormOptions = (key, fallback = []) => {
     const section = getFormBuilderSection(key);
@@ -9887,7 +9907,7 @@ export default function App() {
           ) : (
             <div className={`stingKioskFormShell mx-auto max-w-[1500px] ${isKrinklesEntryForm ? "diaperGlowKiosk" : ""}`}>
 
-              <div className="stingKioskFormCard rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6">
+              <div className={`stingKioskFormCard ${runtimeEventConfig?.version === 2 ? "eventV2RuntimeLayout" : ""} rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6`}>
                 <h2 className="text-2xl font-semibold tracking-tight">
                   {isKrinklesEntryForm
                     ? "KrINKles Connection Board"
@@ -9908,7 +9928,7 @@ export default function App() {
                 </p>
 
                 <div className="stingKioskIdentityRow mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
-                  <div className="stingKioskNameField">
+                  <div className="stingKioskNameField" style={getRuntimeFieldLayoutStyle("name")}>
                     <label className="mb-2 block text-sm font-semibold">{isKrinklesEntryForm ? "Name / Scene Name" : "Display name"}</label>
                     <input
                       name="connection-board-display-name"
@@ -9925,7 +9945,7 @@ export default function App() {
                   </div>
 
                   {getFormBuilderSection("photo")?.enabled !== false ? (
-                    <div className="stingKioskPhotoField xl:col-span-2">
+                    <div className="stingKioskPhotoField xl:col-span-2" style={getRuntimeFieldLayoutStyle("photo")}>
                       <label className="mb-2 block text-sm font-semibold">
                         {getFormBuilderSection("photo")?.label || "Profile photo"} <span className="font-normal text-slate-400">(optional)</span>
                       </label>
@@ -10080,7 +10100,7 @@ export default function App() {
                   ) : null}
 
                   {getFormBuilderSection("social")?.enabled !== false ? (
-                    <div className="stingKioskSocialField">
+                    <div className="stingKioskSocialField" style={getRuntimeFieldLayoutStyle("social")}>
                       <label className="mb-2 block text-sm font-semibold">
                         {getFormBuilderSection("social")?.label || (usesMultipleSocialHandles ? "Social Handles" : "Social handle")} <span className="font-normal text-slate-400">(optional)</span>
                       </label>
@@ -10214,7 +10234,7 @@ export default function App() {
 
                 {!isKrinklesEntryForm ? (
                 <div className={`stingKioskChoiceGrid mt-5 grid gap-4 ${isMenOnlyEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
-                  <div className={`stingKioskPositionCard ${getFormBuilderSection("position")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
+                  <div style={getRuntimeFieldLayoutStyle("position")} className={`stingKioskPositionCard ${getFormBuilderSection("position")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMenOnlyEntryForm
                       ? "border-zinc-500/60 bg-zinc-950/70 shadow-[0_0_24px_rgba(113,113,122,0.14)]"
                       : "border-slate-700/70 bg-slate-950/60"
@@ -10543,7 +10563,7 @@ export default function App() {
                   </div>
                   ) : null}
 
-                  <div className={`stingKioskIntentionCard ${getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
+                  <div style={getRuntimeFieldLayoutStyle(isKrinklesEntryForm ? "vibe" : "intention")} className={`stingKioskIntentionCard ${getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMensSpankingEntryForm
                       ? "border-blue-800/60 bg-blue-950/20 shadow-[0_0_28px_rgba(59,130,246,0.14)]"
                       : isMenOnlyEntryForm
@@ -10648,7 +10668,7 @@ export default function App() {
                 ) : null}
 
                 <div className="stingKioskDetailsGrid mt-4 grid gap-4 xl:grid-cols-2">
-                  <div className={`${getFormBuilderSection("sexual") && getFormBuilderSection("sexual")?.enabled !== false ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
+                  <div style={getRuntimeFieldLayoutStyle("sexual")} className={`${getFormBuilderSection("sexual") && getFormBuilderSection("sexual")?.enabled !== false ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
                     <div className="mb-3 border-b border-red-900/30 pb-2">
                       <label className="block text-sm font-semibold text-red-100">{getFormBuilderSection("sexual")?.label || "Sexual Preferences"}</label>
                       <p className="mt-1 text-xs leading-5 text-red-100/60">
@@ -10720,7 +10740,7 @@ export default function App() {
                     /> : <input id="sexual-preference-input" value={sexualPreferenceInput} onChange={(e) => setSexualPreferenceInput(e.target.value)} placeholder={getFormBuilderSection("sexual")?.customField?.placeholder || ""} maxLength={getFormBuilderSection("sexual")?.customField?.maxLength || 160} className="mt-2 w-full rounded-2xl border border-red-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-red-300" />}</> : null}
                   </div>
 
-                  <div className={`${getFormBuilderSection("interests")?.enabled !== false ? "" : "hidden"} rounded-2xl border p-4 ${
+                  <div style={getRuntimeFieldLayoutStyle("interests")} className={`${getFormBuilderSection("interests")?.enabled !== false ? "" : "hidden"} rounded-2xl border p-4 ${
                     (isMenOnlyEntryForm && !isMensSpankingEntryForm)
                       ? "border-violet-800/60 bg-violet-950/20 shadow-[0_0_28px_rgba(124,58,237,0.14)]"
                       : "border-amber-700/50 bg-amber-950/10"
