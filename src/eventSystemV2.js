@@ -55,7 +55,7 @@ const attendeeCustom = (label, placeholder, multiline = true) => ({ customEntry:
 
 export function createEventFormFromPreset(presetKey = "standard") {
   const namePhoto = presetRow("50-50", [presetField("name", "name", "Name / display name", "Required"), presetField("photo", "photo", "Profile photo", "Add an optional profile photo.")]);
-  const social = presetRow("100", [presetField("social", "social", "Social Handles", "Select the platforms attendees may add.", SOCIAL_PLATFORM_OPTIONS)]);
+  const social = presetRow("100", [presetField("social", "social", "Social Handles", "Select the platforms attendees may add.", SOCIAL_PLATFORM_OPTIONS, attendeeCustom("Other social platform / handle", "Platform and handle", false))]);
   const position = presetRow("100", [presetField("position", "position", "Position", "Choose how you want to be listed.", formPresetOptions.position)]);
   const standardConnection = presetRow("thirds", [
     presetField("identity", "select", "I am a", "Choose one, or use Other.", formPresetOptions.identity, attendeeCustom("Type identity", "Type identity", false)),
@@ -91,6 +91,16 @@ export function createEventFormFromPreset(presetKey = "standard") {
     selectRow("interests", "Kinks | Fetishes | Responsibilities", "Choose any that apply, then type anything else you want people to know.", formPresetOptions.interests, attendeeCustom("Kinks, fetishes, responsibilities, or scene interests", "Diaper play, impact, service, rope, caregiver energy"))];
 
   return { title: EVENT_FORM_PRESETS.find((preset) => preset.key === presetKey)?.label || "Event Entry Form", rows };
+}
+
+export function createEventBlockLibrary() {
+  return EVENT_FORM_PRESETS.flatMap((preset) => createEventFormFromPreset(preset.key).rows.flatMap((row) => row.fields.map((field) => ({
+    key: `${preset.key}:${field.legacyKey || field.type}`,
+    presetKey: preset.key,
+    presetLabel: preset.label,
+    label: field.label,
+    field,
+  }))));
 }
 
 export const LEGEND_LIBRARY = [
@@ -130,7 +140,7 @@ export function createEventDefinition() {
       ...createEventFormFromPreset("standard"),
     },
     legend: { items: [], columns: 2, size: 0, rowSpacing: 0, columnSpacing: 0 },
-    display: { entryFormPreset: "standard", participantLayout: "tiles", sizingMode: "automatic", columns: 4, entryFillDirection: "row", sizing: {} },
+    display: { entryFormPreset: "standard", backgroundTheme: "red_blue", participantLayout: "tiles", sizingMode: "automatic", columns: 4, entryFillDirection: "row", sizing: {} },
   };
 }
 

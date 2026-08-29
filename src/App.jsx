@@ -2361,7 +2361,7 @@ export default function App() {
   const isSetupMode = mode === "setup";
   const isSetupTabsMode = isSetupMode;
 
-  const setupTabOptions = ["Events", "Hosts & DMs", "Entry Form", "Display Sizing", "Entries", "Raffle"];
+  const setupTabOptions = ["Events", "Hosts & DMs", "Display Sizing", "Entries", "Raffle"];
   const [activeSetupTab, setActiveSetupTab] = useState("Events");
   const [eventBuilderOpen, setEventBuilderOpen] = useState(false);
   const entryUrlParams = new URLSearchParams(window.location.search);
@@ -2784,6 +2784,7 @@ export default function App() {
   const activeEventLegendSize = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.size);
   const activeEventLegendRowSpacing = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.rowSpacing);
   const activeEventLegendColumnSpacing = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.columnSpacing);
+  const activeEventBackgroundTheme = activeEventDisplay?.eventConfig?.display?.backgroundTheme || "red_blue";
 
   const [pendingEventDisplayId, setPendingEventDisplayId] = useState("");
 
@@ -3215,6 +3216,24 @@ export default function App() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  useEffect(() => {
+    if (!supabase || !activeEventDisplayId || eventDisplayOptions.some((preset) => preset.id === activeEventDisplayId)) return;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(activeEventDisplayId)) return;
+
+    let cancelled = false;
+    supabase.from("event_display_presets")
+      .select("id, event_name, event_description, liveboard_duration_seconds, transition_seconds, images, active, created_at, updated_at")
+      .eq("id", activeEventDisplayId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const preset = mapEventDisplayPresetRow(data);
+        setSavedEventDisplays((current) => current.some((item) => item.id === preset.id) ? current : [preset, ...current]);
+      });
+
+    return () => { cancelled = true; };
+  }, [activeEventDisplayId, eventDisplayOptions]);
 
   const appConfig = {
     ...defaultConfig,
@@ -4959,6 +4978,23 @@ export default function App() {
     };
 
     if (settings?.id) {
+      const { error: activationError } = await supabase
+        .from("board_settings")
+        .update({
+          active_event_display_preset_id: presetId || null,
+          event_name: selectedEventName,
+          venue_name: selectedEventDescription,
+          entry_form_preset: nextEntryPreset,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", settings.id);
+
+      if (activationError) {
+        setMessage(`Could not activate event: ${activationError.message}`);
+        return;
+      }
+
+      setMessage("Event activated. Syncing remaining settings…");
       const { data, error } = await supabase
         .from("board_settings")
         .update(payload)
@@ -10736,7 +10772,7 @@ export default function App() {
           )
         ) : (
           <div
-            className={`displayBoardSurface ${usesSingleConnectionBoard ? "diaperGlowDisplayBoard" : ""} ${participantEntries.length > 0 ? "displayBoardHasParticipants" : ""} ${automaticSizingActive && automaticFitting ? "automaticFitTransitioning" : ""}`}
+            className={`displayBoardSurface eventBackground-${activeEventBackgroundTheme} ${usesSingleConnectionBoard ? "diaperGlowDisplayBoard" : ""} ${participantEntries.length > 0 ? "displayBoardHasParticipants" : ""} ${automaticSizingActive && automaticFitting ? "automaticFitTransitioning" : ""}`}
             style={{
               "--board-entry-detail-size": `${1.535 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.045}rem`,
               "--board-entry-name-size": `${2.23 + clampBoardEntryTextSize(effectiveBoardEntryTextSize) * 0.07}rem`,

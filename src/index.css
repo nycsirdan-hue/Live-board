@@ -31,6 +31,18 @@ body,
     #02050d;
 }
 
+.displayBoardSurface.eventBackground-red_blue::before {
+  background: radial-gradient(circle at 8% 18%, rgba(255, 36, 93, 0.38), transparent 34%), radial-gradient(circle at 92% 18%, rgba(44, 167, 255, 0.38), transparent 36%), linear-gradient(90deg, #5d001f 0%, #030711 42%, #030711 58%, #003f88 100%) !important;
+}
+
+.displayBoardSurface.eventBackground-rainbow::before {
+  background: linear-gradient(120deg, #b91c1c 0%, #ea580c 17%, #ca8a04 34%, #15803d 51%, #0369a1 68%, #4338ca 84%, #7e22ce 100%) !important;
+}
+
+.displayBoardSurface.eventBackground-krinkles_rainbow::before {
+  background: linear-gradient(120deg, #0369a1 0%, #c026d3 24%, #7e22ce 46%, #0f766e 70%, #1d4ed8 100%) !important;
+}
+
 .displayBoardSurface::after {
   content: "";
   position: fixed;
