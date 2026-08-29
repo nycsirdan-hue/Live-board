@@ -2987,6 +2987,11 @@ body:has(.displayBoardSurface) #root {
   box-shadow: 0 0 16px rgba(16, 185, 129, 0.32);
 }
 
+.legendArrowIcon.text-sky-400 {
+  background: #000;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.32);
+}
+
 .legendDetailIcon {
   width: 1.7em;
   height: 1.7em;

@@ -2781,6 +2781,7 @@ export default function App() {
   const activeEventLegendItems = activeEventDisplay?.eventConfig?.legend?.items || [];
   const activeEventLegendColumns = activeEventDisplay?.eventConfig?.legend?.columns === 1 ? 1 : 2;
   const activeEventLegendSize = Math.min(140, Math.max(70, Number(activeEventDisplay?.eventConfig?.legend?.size) || 100));
+  const activeEventLegendRowSpacing = Math.min(140, Math.max(40, Number(activeEventDisplay?.eventConfig?.legend?.rowSpacing) || 100));
 
   const [pendingEventDisplayId, setPendingEventDisplayId] = useState("");
 
@@ -10861,12 +10862,12 @@ export default function App() {
               >
                 {legendPreset === "event_v2" && activeEventLegendItems.length ? (
                   <div
-                    className="grid w-fit max-w-full self-center font-bold leading-tight"
-                    style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, max-content)`, columnGap: `${activeEventLegendSize * 0.16}px`, rowGap: `${activeEventLegendSize * 0.2}px`, fontSize: `${activeEventLegendSize / 5}px` }}
+                    className="grid w-full font-bold leading-tight"
+                    style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, minmax(0, 1fr))`, columnGap: "16px", rowGap: `${20 * activeEventLegendRowSpacing / 100}px`, fontSize: `${activeEventLegendSize / 5}px` }}
                   >
                     {activeEventLegendItems.map((item) => (
                       <div key={item.id || item.key || item.label} className="flex items-center gap-4">
-                        <span className="legendDetailIcon" style={{ color: item.color || "#ffffff", width: `${activeEventLegendSize * 0.42}px`, height: `${activeEventLegendSize * 0.42}px`, fontSize: `${activeEventLegendSize * 0.24}px` }}>{item.icon || "•"}</span>
+                        {item.key === "switch" ? <span className="legendArrowIcon text-sky-400"><DisplayRotateIcon /></span> : <span className={`legendDetailIcon ${item.key === "sexual_preferences" ? "legendDetailIconPair" : ""}`} style={{ color: item.color || "#ffffff", width: item.key === "sexual_preferences" ? "64px" : "42px", minWidth: item.key === "sexual_preferences" ? "64px" : "42px", height: "42px", fontSize: "24px", whiteSpace: "nowrap" }}>{item.icon || "•"}</span>}
                         <span>{item.label}</span>
                       </div>
                     ))}
