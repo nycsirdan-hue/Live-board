@@ -3240,7 +3240,7 @@ export default function App() {
   const appConfig = {
     ...defaultConfig,
     eventName: activeEventDisplay?.eventName || settings?.event_name || defaultConfig.eventName,
-    venueName: activeEventDisplay?.eventDescription || settings?.venue_name || defaultConfig.venueName,
+    venueName: activeEventDisplay?.eventConfig?.shortLabel || activeEventDisplay?.eventDescription || settings?.venue_name || defaultConfig.venueName,
   };
   const displayEasternTime = formatEasternDisplayTime(displayNow);
   const eventCountdown = getEventCountdown(
@@ -4907,6 +4907,7 @@ export default function App() {
       defaultConfig.eventName;
 
     const selectedEventDescription =
+      selectedEventDisplay?.eventConfig?.shortLabel ||
       selectedEventDisplay?.eventDescription ||
       selectedEventDisplay?.event_description ||
       setupVenueName ||
