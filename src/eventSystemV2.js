@@ -16,6 +16,83 @@ export const FIELD_TYPES = [
   ["checkbox", "Checkbox"], ["social", "Social handle"], ["photo", "Photo"],
 ];
 
+export const SOCIAL_PLATFORM_OPTIONS = ["FetLife", "Whappz", "Twitter", "Bluesky", "Instagram / IG", "Telegram"];
+
+export const EVENT_FORM_PRESETS = [
+  { key: "standard", label: "Standard" },
+  { key: "men_only", label: "Men only" },
+  { key: "mens_spanking", label: "Men’s spanking" },
+  { key: "krinkles_social_play", label: "KrINKles social play" },
+  { key: "diaper_debauchery_glow", label: "Diaper Debauchery" },
+];
+
+const formPresetOptions = {
+  position: ["Top", "Bottom", "Switch"],
+  identity: ["Male", "Female", "Other"],
+  seeking: ["Male", "Female", "Open", "Other"],
+  orientation: ["Straight", "Bi", "Gay", "Queer", "Pan", "Other"],
+  intention: ["New here", "Open to play", "Partnered", "Scenes planned", "Learn New Skills", "Watching"],
+  sexual: ["No Sex", "Discuss Sex First", "No Sex / Not Sexual", "Sex", "Oral", "Anal", "Fisting", "Condoms", "Safe Only"],
+  interests: ["BDSM", "Impact Play", "Spanking", "Bondage", "Rope", "Electro", "Floggers", "Paddles", "Canes", "Crops", "Straps", "Open-Hand Impact", "Closed-Hand Impact", "Light Impact", "Heavy Impact", "Warm-Up Needed"],
+  spankingIntention: ["Open to try", "Discuss Limits", "Open to Play", "Watching"],
+  implements: ["Paddles", "Straps", "Belt", "Brushes", "Canes", "Hands"],
+  limits: ["No wood", "No leather", "Domestic implements only"],
+  experience: ["New - No Experience", "Beginner", "Intermediate", "Experienced"],
+  socialVibe: ["Little", "Middle", "Big", "Caregiver", "Mommy", "Daddy", "Switchy", "Shy", "Social", "Playful"],
+  socialLooking: ["Friends", "Chat", "Cuddles", "Movie buddy", "Playtime", "Caregiver connection", "Diaper change", "Social only", "Ask me first"],
+  socialActivities: ["Coloring", "Games", "Movies", "Story Time", "Stuffies", "Cuddling", "Diaper Play", "Changing", "Caregiving", "Roleplay", "Hanging Out"],
+  diaperVibe: ["Little", "Middle", "Big", "Caregiver", "Mommy", "Daddy", "Kinky", "Switchy", "Open to connect", "Open to play"],
+  diaperLooking: ["Friends", "Chat", "Cuddles", "Movie buddy", "Playtime", "Scene partner", "Diaper change", "Caregiver connection", "Social only", "Ask me first"],
+  diaperSexual: ["No Sex", "Discuss Sex First", "Safe Only", "Buzzy Time", "Diaper Sexual"],
+};
+
+const presetField = (legacyKey, type, label, helperText, options = [], extra = {}) => ({
+  ...createEventField(type), legacyKey, label, helperText, options: [...options], ...extra,
+});
+
+const presetRow = (layout, fields) => ({ id: crypto.randomUUID(), layout, fields });
+const attendeeCustom = (label, placeholder, multiline = true) => ({ customEntry: { enabled: true, label, placeholder, required: false, multiline } });
+
+export function createEventFormFromPreset(presetKey = "standard") {
+  const namePhoto = presetRow("50-50", [presetField("name", "name", "Name / display name", "Required"), presetField("photo", "photo", "Profile photo", "Add an optional profile photo.")]);
+  const social = presetRow("100", [presetField("social", "social", "Social Handles", "Select the platforms attendees may add.", SOCIAL_PLATFORM_OPTIONS)]);
+  const position = presetRow("100", [presetField("position", "position", "Position", "Choose how you want to be listed.", formPresetOptions.position)]);
+  const standardConnection = presetRow("thirds", [
+    presetField("identity", "select", "I am a", "Choose one, or use Other.", formPresetOptions.identity, attendeeCustom("Type identity", "Type identity", false)),
+    presetField("seeking", "select", "Searching for", "Choose who you are seeking tonight.", formPresetOptions.seeking, attendeeCustom("Type who you are seeking", "Type who you are seeking", false)),
+    presetField("orientation", "select", "Orientation", "Choose one, or use Other.", formPresetOptions.orientation, attendeeCustom("Type orientation / connection style", "Type orientation / connection style", false)),
+  ]);
+  const selectRow = (key, label, prompt, options, extra = {}) => presetRow("100", [presetField(key, "multi-select", label, prompt, options, extra)]);
+  const commonTail = [
+    selectRow("intention", "Intention", "Choose all that apply.", formPresetOptions.intention),
+    selectRow("sexual", "Sexual Preferences", "Selections are conversation starters, not consent.", formPresetOptions.sexual, attendeeCustom("Anything else about sexual preferences or safer sex", "Ask me first, condoms only, safer sex notes")),
+    selectRow("interests", "Interests", "Choose any that apply.", formPresetOptions.interests, attendeeCustom("Anything else about your interests or kinks", "Rope, impact, watching, service, limits")),
+  ];
+
+  let rows;
+  if (presetKey === "standard") rows = [namePhoto, social, position, standardConnection, ...commonTail];
+  else if (presetKey === "men_only") rows = [namePhoto, social, position, ...commonTail];
+  else if (presetKey === "mens_spanking") rows = [namePhoto, social, position,
+    selectRow("intention", "Intention", "Choose all that apply.", formPresetOptions.spankingIntention),
+    selectRow("topImplements", "As a top I like to use", "Choose all that apply.", formPresetOptions.implements, attendeeCustom("Other / type your own", "Other implements you like to use")),
+    selectRow("bottomImplements", "As a bottom I like to receive", "Choose all that apply.", formPresetOptions.implements, attendeeCustom("Other / type your own", "Other implements you like to receive")),
+    selectRow("limits", "Limits", "Choose all that apply.", formPresetOptions.limits, attendeeCustom("Other limits", "Type any other limits")),
+    selectRow("experience", "Experience", "Choose one.", formPresetOptions.experience),
+    selectRow("sexual", "Sexual Preferences", "Selections are conversation starters, not consent.", formPresetOptions.sexual, attendeeCustom("Anything else about sexual preferences or safer sex", "Safer sex notes or specific limits")),
+    selectRow("interests", "Interests", "Choose any that apply.", formPresetOptions.interests, attendeeCustom("Anything else about your interests or kinks", "Impact, service, scene interests"))];
+  else if (presetKey === "krinkles_social_play") rows = [namePhoto, social,
+    selectRow("vibe", "Vibe Tonight", "Choose the vibe you want people to see on the board.", formPresetOptions.socialVibe),
+    selectRow("lookingFor", "Looking For", "Choose the kind of connection or company you are open to tonight.", formPresetOptions.socialLooking),
+    selectRow("interests", "Play & Activities", "Choose the kinds of play, activities, or connection you would enjoy.", formPresetOptions.socialActivities, attendeeCustom("Anything else?", "Anything else you'd like people to know"))];
+  else rows = [namePhoto, social,
+    selectRow("vibe", "Vibe Tonight", "Choose the vibe you want people to see on the board.", formPresetOptions.diaperVibe),
+    selectRow("lookingFor", "Looking For", "Choose what kind of connection you are open to tonight.", formPresetOptions.diaperLooking),
+    selectRow("sexual", "Sexual Preferences", "Selections are conversation starters, not consent.", formPresetOptions.diaperSexual, attendeeCustom("Anything else about sexual preferences or safer sex", "Ask me first, safer sex notes, specific limits")),
+    selectRow("interests", "Kinks | Fetishes | Responsibilities", "Choose any that apply, then type anything else you want people to know.", formPresetOptions.interests, attendeeCustom("Kinks, fetishes, responsibilities, or scene interests", "Diaper play, impact, service, rope, caregiver energy"))];
+
+  return { title: EVENT_FORM_PRESETS.find((preset) => preset.key === presetKey)?.label || "Event Entry Form", rows };
+}
+
 export const LEGEND_LIBRARY = [
   { key: "name_position", icon: "👤", label: "Name | Position" },
   { key: "identity_seeking", icon: "↔", label: "I am a → Seeking | Orientation" },
@@ -50,7 +127,7 @@ export function createEventDefinition() {
     media: { slidesEnabled: false, slides: [], mediaDurationSeconds: 60, liveboardDurationSeconds: 300, transitionSeconds: 0.5 },
     entryForm: {
       title: "Event Entry Form",
-      rows: [{ id: crypto.randomUUID(), layout: "100", fields: [createEventField("name")] }],
+      ...createEventFormFromPreset("standard"),
     },
     legend: { items: [], columns: 2, size: 0, rowSpacing: 0, columnSpacing: 0 },
     display: { entryFormPreset: "standard", participantLayout: "tiles", sizingMode: "automatic", columns: 4, entryFillDirection: "row", sizing: {} },
@@ -88,7 +165,7 @@ export function eventConfigToLegacyFormConfig(config) {
     for (const field of row.fields || []) {
       if (field.visible === false || field.type === "name") continue;
       const keyMap = { position: "position", social: "social", photo: "photo", select: field.id, "multi-select": field.id, text: field.id, textarea: field.id, checkbox: field.id };
-      const key = keyMap[field.type] || field.id;
+      const key = field.legacyKey || keyMap[field.type] || field.id;
       result[key] = {
         enabled: true, label: field.label, prompt: field.helperText || "",
         options: (field.options || []).map((label) => ({ label, enabled: true })),
