@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { QRCodeSVG } from "qrcode.react";
+import { parseEventV2 } from "../eventSystemV2";
 import "./KioskStartPage.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -22,6 +23,14 @@ function getPresetFromStorage() {
 function getEventNameFromStorage() {
   try {
     return window.localStorage.getItem("kioskEventName") || "";
+  } catch {
+    return "";
+  }
+}
+
+function getEventSubtitleFromStorage() {
+  try {
+    return window.localStorage.getItem("kioskEventSubtitle") || "";
   } catch {
     return "";
   }
@@ -250,6 +259,8 @@ export default function KioskStartPage({ onStart }) {
 
   const [eventName, setEventName] =
     useState(getEventNameFromStorage);
+  const [eventSubtitle, setEventSubtitle] =
+    useState(getEventSubtitleFromStorage);
 
   useEffect(() => {
     let cancelled = false;
@@ -281,7 +292,16 @@ export default function KioskStartPage({ onStart }) {
       }
     }
 
-    async function resolveActiveEventName(settingsRow) {
+    function saveEventSubtitle(nextSubtitle) {
+      setEventSubtitle(nextSubtitle || "");
+      try {
+        window.localStorage.setItem("kioskEventSubtitle", nextSubtitle || "");
+      } catch {
+        // Ignore localStorage issues.
+      }
+    }
+
+    async function resolveActiveEvent(settingsRow) {
       const activePresetId =
         settingsRow?.active_event_display_preset_id;
 
@@ -289,16 +309,16 @@ export default function KioskStartPage({ onStart }) {
         const { data: activePreset, error: presetError } =
           await supabase
             .from("event_display_presets")
-            .select("event_name")
+            .select("event_name, event_description")
             .eq("id", activePresetId)
             .maybeSingle();
 
         if (!presetError && activePreset?.event_name) {
-          return activePreset.event_name;
+          return { name: activePreset.event_name, subtitle: parseEventV2(activePreset.event_description)?.shortLabel || "" };
         }
       }
 
-      return settingsRow?.event_name || "";
+      return { name: settingsRow?.event_name || "", subtitle: "" };
     }
 
     async function loadPreset() {
@@ -317,17 +337,17 @@ export default function KioskStartPage({ onStart }) {
 
       savePreset(data.entry_form_preset);
 
-      const resolvedEventName =
-        await resolveActiveEventName(data);
+      const resolvedEvent = await resolveActiveEvent(data);
 
       if (!cancelled) {
-        saveEventName(resolvedEventName);
+        saveEventName(resolvedEvent.name);
+        saveEventSubtitle(resolvedEvent.subtitle);
       }
     }
 
     loadPreset();
 
-    const interval = window.setInterval(loadPreset, 5000);
+    const interval = window.setInterval(loadPreset, 1000);
 
     const channel = supabase
       ? supabase
@@ -344,10 +364,11 @@ export default function KioskStartPage({ onStart }) {
 
               savePreset(nextSettings.entry_form_preset);
 
-              resolveActiveEventName(nextSettings).then(
-                (resolvedEventName) => {
+              resolveActiveEvent(nextSettings).then(
+                (resolvedEvent) => {
                   if (!cancelled) {
-                    saveEventName(resolvedEventName);
+                    saveEventName(resolvedEvent.name);
+                    saveEventSubtitle(resolvedEvent.subtitle);
                   }
                 }
               );
@@ -395,7 +416,7 @@ export default function KioskStartPage({ onStart }) {
 
               <h1>Connection Board</h1>
 
-              <p>{config.subtitle}</p>
+              <p>{eventSubtitle || config.subtitle}</p>
             </div>
 
             <div className="presetKioskPreviewBadge">

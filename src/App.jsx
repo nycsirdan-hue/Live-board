@@ -2784,7 +2784,9 @@ export default function App() {
   const activeEventLegendSize = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.size);
   const activeEventLegendRowSpacing = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.rowSpacing);
   const activeEventLegendColumnSpacing = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.columnSpacing);
+  const activeEventLegendFillDirection = activeEventDisplay?.eventConfig?.legend?.fillDirection === "row" ? "row" : "column";
   const activeEventBackgroundTheme = activeEventDisplay?.eventConfig?.display?.backgroundTheme || "red_blue";
+  const activeEventShortDescription = activeEventDisplay?.eventConfig?.shortLabel || "";
 
   const [pendingEventDisplayId, setPendingEventDisplayId] = useState("");
 
@@ -9820,13 +9822,13 @@ export default function App() {
                         : "Add Entry"}
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-400">
-                  {isKrinklesEntryForm
+                  {activeEventShortDescription || (isKrinklesEntryForm
                     ? isKrinklesSocialPlayEntryForm
                       ? "Add yourself so people know how you would like to connect, hang out, or play tonight."
                       : "Add yourself to the glow board so people know how to connect with you tonight."
                     : isMensSpankingEntryForm
                       ? "Add the details you want displayed on tonight's Connection Board."
-                      : "Add your name, choose the buttons that fit, and share what you are open to tonight."}
+                      : "Add your name, choose the buttons that fit, and share what you are open to tonight.")}
                 </p>
 
                 <div className="stingKioskIdentityRow mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
@@ -10901,7 +10903,7 @@ export default function App() {
                 {legendPreset === "event_v2" && activeEventLegendItems.length ? (
                   <div
                     className="grid w-full font-bold leading-tight"
-                    style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, minmax(0, 1fr))`, columnGap: `${34 + activeEventLegendColumnSpacing * 6}px`, rowGap: `${22 + activeEventLegendRowSpacing * 4}px`, fontSize: `${20 + activeEventLegendSize * 2}px` }}
+                    style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, minmax(0, 1fr))`, gridTemplateRows: activeEventLegendFillDirection === "column" ? `repeat(${Math.ceil(activeEventLegendItems.length / activeEventLegendColumns)}, auto)` : undefined, gridAutoFlow: activeEventLegendFillDirection, columnGap: `${34 + activeEventLegendColumnSpacing * 6}px`, rowGap: `${22 + activeEventLegendRowSpacing * 4}px`, fontSize: `${20 + activeEventLegendSize * 2}px` }}
                   >
                     {activeEventLegendItems.map((item) => (
                       <div key={item.id || item.key || item.label} className="flex items-center gap-4">

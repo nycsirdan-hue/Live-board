@@ -139,7 +139,7 @@ export function createEventDefinition() {
       title: "Event Entry Form",
       ...createEventFormFromPreset("standard"),
     },
-    legend: { items: [], columns: 2, size: 0, rowSpacing: 0, columnSpacing: 0 },
+    legend: { items: [], columns: 2, fillDirection: "column", size: 0, rowSpacing: 0, columnSpacing: 0 },
     display: { entryFormPreset: "standard", backgroundTheme: "red_blue", participantLayout: "tiles", sizingMode: "automatic", columns: 4, entryFillDirection: "row", sizing: {} },
   };
 }
