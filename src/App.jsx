@@ -2459,6 +2459,7 @@ export default function App() {
   const [participantCameraOpen, setParticipantCameraOpen] = useState(false);
   const participantCameraVideoRef = useRef(null);
   const participantCameraStreamRef = useRef(null);
+  const participantCameraRequestRef = useRef(0);
   const participantCropDragRef = useRef(null);
   const participantCropPreviewStyle = useMemo(() => {
     if (!participantCropDimensions) return { visibility: "hidden" };
@@ -5639,6 +5640,9 @@ export default function App() {
   };
 
   const stopParticipantCamera = () => {
+    // Invalidate getUserMedia calls that have not resolved yet so a late camera
+    // permission response cannot reopen the hardware after this screen closes.
+    participantCameraRequestRef.current += 1;
     const video = participantCameraVideoRef.current;
     const streams = new Set([participantCameraStreamRef.current, video?.srcObject].filter(Boolean));
     streams.forEach((stream) => stream.getTracks().forEach((track) => {
@@ -5663,11 +5667,18 @@ export default function App() {
 
     try {
       stopParticipantCamera();
+      const requestId = participantCameraRequestRef.current;
       setMessage("Requesting camera access...");
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 1280 } },
         audio: false,
       });
+
+      if (requestId !== participantCameraRequestRef.current || document.hidden || !isKioskEntryMode) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
       participantCameraStreamRef.current = stream;
       setParticipantCameraOpen(true);
       setMessage("");
@@ -5687,23 +5698,37 @@ export default function App() {
 
   useEffect(() => {
     const releaseCamera = () => {
+      participantCameraRequestRef.current += 1;
       const video = participantCameraVideoRef.current;
       const streams = new Set([participantCameraStreamRef.current, video?.srcObject].filter(Boolean));
-      streams.forEach((stream) => stream.getTracks().forEach((track) => track.stop()));
+      streams.forEach((stream) => stream.getTracks().forEach((track) => {
+        track.enabled = false;
+        track.stop();
+      }));
       if (video) {
         video.pause();
         video.srcObject = null;
       }
       participantCameraStreamRef.current = null;
+      setParticipantCameraOpen(false);
+    };
+    const releaseCameraWhenHidden = () => {
+      if (document.hidden) releaseCamera();
     };
     window.addEventListener("pagehide", releaseCamera);
-    document.addEventListener("visibilitychange", releaseCamera);
+    window.addEventListener("beforeunload", releaseCamera);
+    document.addEventListener("visibilitychange", releaseCameraWhenHidden);
     return () => {
       window.removeEventListener("pagehide", releaseCamera);
-      document.removeEventListener("visibilitychange", releaseCamera);
+      window.removeEventListener("beforeunload", releaseCamera);
+      document.removeEventListener("visibilitychange", releaseCameraWhenHidden);
       releaseCamera();
     };
   }, []);
+
+  useEffect(() => {
+    if (!isKioskEntryMode) stopParticipantCamera();
+  }, [isKioskEntryMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const captureParticipantPhoto = async () => {
     const video = participantCameraVideoRef.current;
