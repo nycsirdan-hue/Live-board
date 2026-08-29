@@ -3531,9 +3531,7 @@ export default function App() {
         setSetupEventName(data.event_name || "");
         setSetupVenueName(data.venue_name || "");
 
-        if (data.active_event_display_preset_id) {
-          setActiveEventDisplayId(data.active_event_display_preset_id);
-        }
+        setActiveEventDisplayId(data.active_event_display_preset_id || "");
         setLayoutSettings({
           host_max_rows: clampLayoutValue(data.host_max_rows ?? defaultDisplayLayout.host_max_rows),
           host_max_cols: clampLayoutValue(data.host_max_cols ?? defaultDisplayLayout.host_max_cols),
@@ -4762,14 +4760,14 @@ export default function App() {
       .select()
       .single();
 
-    setSettingsSaving(false);
-
     if (error) {
+      setSettingsSaving(false);
       setMessage(`Could not save settings: ${error.message}`);
       return;
     }
 
     setSettings(data);
+    setSettingsSaving(false);
     setMessage("Settings saved.");
     setTimeout(() => setMessage(""), 2000);
   };
@@ -4884,9 +4882,8 @@ export default function App() {
     const { data, error } = await query
       .select("id, event_name, event_description, liveboard_duration_seconds, transition_seconds, images, active, created_at, updated_at")
       .single();
-    setSettingsSaving(false);
-
     if (error) {
+      setSettingsSaving(false);
       setMessage("Could not save event: " + error.message);
       return null;
     }
@@ -4897,13 +4894,22 @@ export default function App() {
       : [saved, ...current]
     );
     setPendingEventDisplayId(saved.id);
-    setMessage(existingId ? "Event definition updated." : "Event created.");
+    if (existingId && existingId === activeEventDisplayId) {
+      const published = await updateActiveEventDisplayPreset(saved.id, saved);
+      if (published !== false) {
+        setMessage("Event updated and published to the active kiosk, mobile entry, and display.");
+      }
+    } else {
+      setMessage(existingId ? "Event definition updated." : "Event created.");
+    }
+    setSettingsSaving(false);
     setTimeout(() => setMessage(""), 2500);
     return saved;
   };
 
-  const updateActiveEventDisplayPreset = async (presetId) => {
+  const updateActiveEventDisplayPreset = async (presetId, selectedEventOverride = null) => {
     const selectedEventDisplay =
+      selectedEventOverride ||
       eventDisplayOptions.find((eventDisplay) => eventDisplay.id === presetId) ||
       activeEventDisplay;
 
@@ -4947,7 +4953,7 @@ export default function App() {
 
     if (!supabase) {
       window.localStorage.setItem("activeEventDisplayId", presetId);
-      return;
+      return true;
     }
 
     const payload = {
@@ -5001,7 +5007,7 @@ export default function App() {
 
       if (activationError) {
         setMessage(`Could not activate event: ${activationError.message}`);
-        return;
+        return false;
       }
 
       setMessage("Event activated. Syncing remaining settings…");
@@ -5014,13 +5020,13 @@ export default function App() {
 
       if (error) {
         setMessage(`Could not update active preset: ${error.message}`);
-        return;
+        return false;
       }
 
       setSettings(data);
       setMessage("Active display preset updated.");
       setTimeout(() => setMessage(""), 1800);
-      return;
+      return true;
     }
 
     const { data, error } = await supabase
@@ -5031,11 +5037,41 @@ export default function App() {
 
     if (error) {
       setMessage(`Could not update active preset: ${error.message}`);
-      return;
+      return false;
     }
 
     setSettings(data);
     setMessage("Active display preset updated.");
+    setTimeout(() => setMessage(""), 1800);
+    return true;
+  };
+
+  const deactivateActiveEventDisplayPreset = async () => {
+    if (!supabase || !settings?.id) {
+      setActiveEventDisplayId("");
+      setPendingEventDisplayId("");
+      window.localStorage.removeItem("activeEventDisplayId");
+      setMessage("Active event preset disabled on this screen.");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("board_settings")
+      .update({ active_event_display_preset_id: null, updated_at: new Date().toISOString() })
+      .eq("id", settings.id)
+      .select()
+      .single();
+
+    if (error) {
+      setMessage(`Could not deactivate event: ${error.message}`);
+      return;
+    }
+
+    setActiveEventDisplayId("");
+    setPendingEventDisplayId("");
+    window.localStorage.removeItem("activeEventDisplayId");
+    setSettings(data);
+    setMessage("Active event preset disabled.");
     setTimeout(() => setMessage(""), 1800);
   };
 
@@ -6613,6 +6649,7 @@ export default function App() {
                     busy={settingsSaving}
                     onSave={saveEventV2}
                     onActivate={(event) => updateActiveEventDisplayPreset(event.id)}
+                    onDeactivate={deactivateActiveEventDisplayPreset}
                     onEditingChange={setEventBuilderOpen}
                   />
 
@@ -10195,7 +10232,7 @@ export default function App() {
                                 : "border-slate-700 bg-slate-950 text-slate-200"
                           }`}
                         >
-                          {option}
+                          {option === "Top" ? "Top | Give" : option === "Bottom" ? "Bottom | Receive" : option === "Switch" ? "Switch | Both" : option}
                         </button>
                       ))}
                     </div>

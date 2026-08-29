@@ -146,10 +146,15 @@ export function createEventDefinition() {
 
 export function createEventField(type = "select") {
   const typeLabel = FIELD_TYPES.find(([key]) => key === type)?.[1] || "Question";
+  const standardOptions = type === "position"
+    ? [...formPresetOptions.position]
+    : type === "select" || type === "multi-select"
+      ? ["Option 1", "Option 2"]
+      : [];
   return {
     id: crypto.randomUUID(), type, label: typeLabel, helperText: "", required: type === "name",
     visible: true, answerStyle: type === "select" || type === "multi-select" ? "buttons" : "input",
-    options: type === "select" || type === "multi-select" ? ["Option 1", "Option 2"] : [],
+    options: standardOptions,
     customEntry: { enabled: false, label: "Other", placeholder: "Add your own answer", required: false, multiline: false },
     displayBehavior: "card", color: "blue", height: "standard",
   };
@@ -178,7 +183,8 @@ export function eventConfigToLegacyFormConfig(config) {
       const key = field.legacyKey || keyMap[field.type] || field.id;
       result[key] = {
         enabled: true, label: field.label, prompt: field.helperText || "",
-        options: (field.options || []).map((label) => ({ label, enabled: true })),
+        options: (field.type === "position" && !(field.options || []).length ? formPresetOptions.position : (field.options || []))
+          .map((label) => ({ label, enabled: true })),
         answerStyle: field.answerStyle || "input", rowId: row.id, rowLayout: row.layout,
         color: field.color || "blue", height: field.height || "standard",
         customField: field.customEntry?.enabled ? {
