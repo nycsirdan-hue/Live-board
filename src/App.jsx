@@ -10861,12 +10861,12 @@ export default function App() {
               >
                 {legendPreset === "event_v2" && activeEventLegendItems.length ? (
                   <div
-                    className="grid gap-x-4 gap-y-5 font-bold leading-tight"
-                    style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, minmax(0, 1fr))`, fontSize: `${activeEventLegendSize / 5}px` }}
+                    className="grid w-fit max-w-full self-center font-bold leading-tight"
+                    style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, max-content)`, columnGap: `${activeEventLegendSize * 0.16}px`, rowGap: `${activeEventLegendSize * 0.2}px`, fontSize: `${activeEventLegendSize / 5}px` }}
                   >
                     {activeEventLegendItems.map((item) => (
                       <div key={item.id || item.key || item.label} className="flex items-center gap-4">
-                        <span className="legendDetailIcon" style={{ color: item.color || "#ffffff" }}>{item.icon || "•"}</span>
+                        <span className="legendDetailIcon" style={{ color: item.color || "#ffffff", width: `${activeEventLegendSize * 0.42}px`, height: `${activeEventLegendSize * 0.42}px`, fontSize: `${activeEventLegendSize * 0.24}px` }}>{item.icon || "•"}</span>
                         <span>{item.label}</span>
                       </div>
                     ))}
