@@ -2780,8 +2780,10 @@ export default function App() {
     null;
   const activeEventLegendItems = activeEventDisplay?.eventConfig?.legend?.items || [];
   const activeEventLegendColumns = activeEventDisplay?.eventConfig?.legend?.columns === 1 ? 1 : 2;
-  const activeEventLegendSize = Math.min(140, Math.max(70, Number(activeEventDisplay?.eventConfig?.legend?.size) || 100));
-  const activeEventLegendRowSpacing = Math.min(140, Math.max(40, Number(activeEventDisplay?.eventConfig?.legend?.rowSpacing) || 100));
+  const normalizeLegendStep = (value) => Number(value) >= -5 && Number(value) <= 5 ? Number(value) : 0;
+  const activeEventLegendSize = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.size);
+  const activeEventLegendRowSpacing = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.rowSpacing);
+  const activeEventLegendColumnSpacing = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.columnSpacing);
 
   const [pendingEventDisplayId, setPendingEventDisplayId] = useState("");
 
@@ -10863,7 +10865,7 @@ export default function App() {
                 {legendPreset === "event_v2" && activeEventLegendItems.length ? (
                   <div
                     className="grid w-full font-bold leading-tight"
-                    style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, minmax(0, 1fr))`, columnGap: "16px", rowGap: `${20 * activeEventLegendRowSpacing / 100}px`, fontSize: `${activeEventLegendSize / 5}px` }}
+                    style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, minmax(0, 1fr))`, columnGap: `${34 + activeEventLegendColumnSpacing * 6}px`, rowGap: `${22 + activeEventLegendRowSpacing * 4}px`, fontSize: `${20 + activeEventLegendSize * 2}px` }}
                   >
                     {activeEventLegendItems.map((item) => (
                       <div key={item.id || item.key || item.label} className="flex items-center gap-4">

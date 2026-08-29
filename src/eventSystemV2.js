@@ -52,7 +52,7 @@ export function createEventDefinition() {
       title: "Event Entry Form",
       rows: [{ id: crypto.randomUUID(), layout: "100", fields: [createEventField("name")] }],
     },
-    legend: { items: [], columns: 2, size: 100, rowSpacing: 100 },
+    legend: { items: [], columns: 2, size: 0, rowSpacing: 0, columnSpacing: 0 },
     display: { entryFormPreset: "standard", participantLayout: "tiles", sizingMode: "automatic", columns: 4, entryFillDirection: "row", sizing: {} },
   };
 }
