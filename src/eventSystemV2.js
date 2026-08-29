@@ -26,7 +26,7 @@ export const LEGEND_LIBRARY = [
   { key: "sexual_preferences", icon: "🍑🍆", label: "Sexual preferences" },
   { key: "likes_to_give", icon: "↑", label: "Likes to give", color: "#ef4444" },
   { key: "likes_to_receive", icon: "↓", label: "Likes to receive", color: "#22c55e" },
-  { key: "switch", icon: "↻↺", label: "Switch", color: "#3b82f6" },
+  { key: "switch", icon: "🔄", label: "Switch", color: "#3b82f6" },
   { key: "limits", icon: "⛔", label: "Limits" },
   { key: "experience", icon: "%", label: "Experience" },
 ];
