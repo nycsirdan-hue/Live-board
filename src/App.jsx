@@ -2364,6 +2364,9 @@ export default function App() {
   const setupTabOptions = ["Events", "Hosts & DMs", "Display Sizing", "Entries", "Raffle"];
   const [activeSetupTab, setActiveSetupTab] = useState("Events");
   const [eventBuilderOpen, setEventBuilderOpen] = useState(false);
+  useEffect(() => {
+    if (activeSetupTab === "Entry Form") setActiveSetupTab("Events");
+  }, [activeSetupTab]);
   const entryUrlParams = new URLSearchParams(window.location.search);
   const isKioskEntryMode =
     isEntryMode &&
@@ -2633,10 +2636,12 @@ export default function App() {
     switch_max_cols: clampLayoutValue(layoutSettings.switch_max_cols ?? defaultDisplayLayout.switch_max_cols),
   };
 
-  const isMensSpankingEntryForm = entryFormPreset === "mens_spanking";
-  const isMenOnlyEntryForm = entryFormPreset === "men_only" || isMensSpankingEntryForm;
-  const isKrinklesDebaucheryEntryForm = entryFormPreset === "diaper_debauchery_glow";
-  const isKrinklesSocialPlayEntryForm = entryFormPreset === "krinkles_social_play";
+  const runtimeEventConfig = savedEventDisplays.find((event) => event.id === activeEventDisplayId)?.eventConfig || null;
+  const runtimeEntryFormPreset = runtimeEventConfig?.version === 2 ? runtimeEventConfig.display?.entryFormPreset || "standard" : entryFormPreset;
+  const isMensSpankingEntryForm = runtimeEntryFormPreset === "mens_spanking";
+  const isMenOnlyEntryForm = runtimeEntryFormPreset === "men_only" || isMensSpankingEntryForm;
+  const isKrinklesDebaucheryEntryForm = runtimeEntryFormPreset === "diaper_debauchery_glow";
+  const isKrinklesSocialPlayEntryForm = runtimeEntryFormPreset === "krinkles_social_play";
   const isKrinklesEntryForm =
     isKrinklesDebaucheryEntryForm || isKrinklesSocialPlayEntryForm;
 
@@ -2673,7 +2678,9 @@ export default function App() {
   const usesMultipleSocialHandles = true;
   const usesSingleConnectionBoard = displayBoardSettings.layout === "singleConnectionBoard";
   const isConnectionEntryForm = entryMenuSettings.type === "abdl";
-  const activeFormBuilderConfig = formBuilderConfigs[entryFormPreset] || createDefaultFormBuilderConfigs()[entryFormPreset];
+  const activeFormBuilderConfig = runtimeEventConfig?.version === 2
+    ? eventConfigToLegacyFormConfig(runtimeEventConfig)
+    : formBuilderConfigs[runtimeEntryFormPreset] || createDefaultFormBuilderConfigs()[runtimeEntryFormPreset];
   const getFormBuilderSection = (key) => activeFormBuilderConfig?.[key] || null;
   const getEnabledFormOptions = (key, fallback = []) => {
     const section = getFormBuilderSection(key);

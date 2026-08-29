@@ -314,11 +314,12 @@ export default function KioskStartPage({ onStart }) {
             .maybeSingle();
 
         if (!presetError && activePreset?.event_name) {
-          return { name: activePreset.event_name, subtitle: parseEventV2(activePreset.event_description)?.shortLabel || "" };
+          const eventConfig = parseEventV2(activePreset.event_description);
+          return { name: activePreset.event_name, subtitle: eventConfig?.shortLabel || "", preset: eventConfig?.display?.entryFormPreset || settingsRow?.entry_form_preset || "standard" };
         }
       }
 
-      return { name: settingsRow?.event_name || "", subtitle: "" };
+      return { name: settingsRow?.event_name || "", subtitle: "", preset: settingsRow?.entry_form_preset || "standard" };
     }
 
     async function loadPreset() {
@@ -335,11 +336,10 @@ export default function KioskStartPage({ onStart }) {
 
       if (cancelled || error || !data) return;
 
-      savePreset(data.entry_form_preset);
-
       const resolvedEvent = await resolveActiveEvent(data);
 
       if (!cancelled) {
+        savePreset(resolvedEvent.preset);
         saveEventName(resolvedEvent.name);
         saveEventSubtitle(resolvedEvent.subtitle);
       }
@@ -362,11 +362,10 @@ export default function KioskStartPage({ onStart }) {
             (payload) => {
               const nextSettings = payload?.new || {};
 
-              savePreset(nextSettings.entry_form_preset);
-
               resolveActiveEvent(nextSettings).then(
                 (resolvedEvent) => {
                   if (!cancelled) {
+                    savePreset(resolvedEvent.preset);
                     saveEventName(resolvedEvent.name);
                     saveEventSubtitle(resolvedEvent.subtitle);
                   }
