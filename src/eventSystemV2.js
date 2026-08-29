@@ -62,6 +62,7 @@ export function createEventField(type = "select") {
     id: crypto.randomUUID(), type, label: typeLabel, helperText: "", required: type === "name",
     visible: true, answerStyle: type === "select" || type === "multi-select" ? "buttons" : "input",
     options: type === "select" || type === "multi-select" ? ["Option 1", "Option 2"] : [],
+    customEntry: { enabled: false, label: "Other", placeholder: "Add your own answer", required: false, multiline: false },
     displayBehavior: "card", color: "blue", height: "standard",
   };
 }
@@ -92,7 +93,14 @@ export function eventConfigToLegacyFormConfig(config) {
         options: (field.options || []).map((label) => ({ label, enabled: true })),
         answerStyle: field.answerStyle || "input", rowId: row.id, rowLayout: row.layout,
         color: field.color || "blue", height: field.height || "standard",
-        customField: {
+        customField: field.customEntry?.enabled ? {
+          enabled: true,
+          label: field.customEntry.label || "Other",
+          placeholder: field.customEntry.placeholder || "Add your own answer",
+          required: Boolean(field.customEntry.required),
+          multiline: Boolean(field.customEntry.multiline),
+          maxLength: field.customEntry.multiline ? 500 : 160,
+        } : {
           enabled: ["text", "textarea"].includes(field.type), label: field.label,
           placeholder: field.helperText || "", required: Boolean(field.required),
           multiline: field.type === "textarea", maxLength: field.type === "textarea" ? 500 : 160,
