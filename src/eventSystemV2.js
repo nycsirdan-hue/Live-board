@@ -24,8 +24,9 @@ export const LEGEND_LIBRARY = [
   { key: "social_handles", icon: "@", label: "Social handles" },
   { key: "interests", icon: "👀", label: "Interests" },
   { key: "sexual_preferences", icon: "🍑🍆", label: "Sexual preferences" },
-  { key: "likes_to_give", icon: "↑", label: "Likes to give" },
-  { key: "likes_to_receive", icon: "↓", label: "Likes to receive" },
+  { key: "likes_to_give", icon: "↑", label: "Likes to give", color: "#ef4444" },
+  { key: "likes_to_receive", icon: "↓", label: "Likes to receive", color: "#22c55e" },
+  { key: "switch", icon: "↻↺", label: "Switch", color: "#3b82f6" },
   { key: "limits", icon: "⛔", label: "Limits" },
   { key: "experience", icon: "%", label: "Experience" },
 ];
@@ -51,7 +52,7 @@ export function createEventDefinition() {
       title: "Event Entry Form",
       rows: [{ id: crypto.randomUUID(), layout: "100", fields: [createEventField("name")] }],
     },
-    legend: { items: [] },
+    legend: { items: [], columns: 2, size: 100 },
     display: { entryFormPreset: "standard", participantLayout: "tiles", sizingMode: "automatic", columns: 4, entryFillDirection: "row", sizing: {} },
   };
 }

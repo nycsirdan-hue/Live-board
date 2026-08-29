@@ -2779,6 +2779,8 @@ export default function App() {
     eventDisplayOptions[0] ||
     null;
   const activeEventLegendItems = activeEventDisplay?.eventConfig?.legend?.items || [];
+  const activeEventLegendColumns = activeEventDisplay?.eventConfig?.legend?.columns === 1 ? 1 : 2;
+  const activeEventLegendSize = Math.min(140, Math.max(70, Number(activeEventDisplay?.eventConfig?.legend?.size) || 100));
 
   const [pendingEventDisplayId, setPendingEventDisplayId] = useState("");
 
@@ -10858,10 +10860,13 @@ export default function App() {
                 aria-label="Board icon guide"
               >
                 {legendPreset === "event_v2" && activeEventLegendItems.length ? (
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-5 text-xl font-bold leading-tight">
+                  <div
+                    className="grid gap-x-4 gap-y-5 font-bold leading-tight"
+                    style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, minmax(0, 1fr))`, fontSize: `${activeEventLegendSize / 5}px` }}
+                  >
                     {activeEventLegendItems.map((item) => (
                       <div key={item.id || item.key || item.label} className="flex items-center gap-4">
-                        <span className="legendDetailIcon">{item.icon || "•"}</span>
+                        <span className="legendDetailIcon" style={{ color: item.color || "#ffffff" }}>{item.icon || "•"}</span>
                         <span>{item.label}</span>
                       </div>
                     ))}
