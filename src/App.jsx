@@ -5619,14 +5619,17 @@ export default function App() {
   };
 
   const stopParticipantCamera = () => {
-    const stream = participantCameraStreamRef.current;
-    stream?.getTracks().forEach((track) => {
+    const video = participantCameraVideoRef.current;
+    const streams = new Set([participantCameraStreamRef.current, video?.srcObject].filter(Boolean));
+    streams.forEach((stream) => stream.getTracks().forEach((track) => {
       track.stop();
       track.enabled = false;
-    });
-    if (participantCameraVideoRef.current) {
-      participantCameraVideoRef.current.pause();
-      participantCameraVideoRef.current.srcObject = null;
+    }));
+    if (video) {
+      video.pause();
+      video.srcObject = null;
+      video.removeAttribute("src");
+      video.load();
     }
     participantCameraStreamRef.current = null;
     setParticipantCameraOpen(false);
@@ -5662,13 +5665,24 @@ export default function App() {
     participantCameraVideoRef.current.srcObject = participantCameraStreamRef.current;
   }, [participantCameraOpen]);
 
-  useEffect(() => () => {
-    participantCameraStreamRef.current?.getTracks().forEach((track) => track.stop());
-    if (participantCameraVideoRef.current) {
-      participantCameraVideoRef.current.pause();
-      participantCameraVideoRef.current.srcObject = null;
-    }
-    participantCameraStreamRef.current = null;
+  useEffect(() => {
+    const releaseCamera = () => {
+      const video = participantCameraVideoRef.current;
+      const streams = new Set([participantCameraStreamRef.current, video?.srcObject].filter(Boolean));
+      streams.forEach((stream) => stream.getTracks().forEach((track) => track.stop()));
+      if (video) {
+        video.pause();
+        video.srcObject = null;
+      }
+      participantCameraStreamRef.current = null;
+    };
+    window.addEventListener("pagehide", releaseCamera);
+    document.addEventListener("visibilitychange", releaseCamera);
+    return () => {
+      window.removeEventListener("pagehide", releaseCamera);
+      document.removeEventListener("visibilitychange", releaseCamera);
+      releaseCamera();
+    };
   }, []);
 
   const captureParticipantPhoto = async () => {

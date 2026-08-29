@@ -152,7 +152,9 @@ export function createEventField(type = "select") {
       ? ["Option 1", "Option 2"]
       : [];
   return {
-    id: crypto.randomUUID(), type, label: typeLabel, helperText: "", required: type === "name",
+    id: crypto.randomUUID(), type: type === "position" ? "select" : type,
+    ...(type === "position" ? { legacyKey: "position" } : {}),
+    label: typeLabel, helperText: "", required: type === "name",
     visible: true, answerStyle: type === "select" || type === "multi-select" ? "buttons" : "input",
     options: standardOptions,
     customEntry: { enabled: false, label: "Other", placeholder: "Add your own answer", required: false, multiline: false },
