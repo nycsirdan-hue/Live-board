@@ -2697,7 +2697,16 @@ export default function App() {
       const fieldIndex = fields.findIndex((field) => (field.legacyKey || field.type) === fieldKey);
       if (fieldIndex >= 0) {
         const spans = spanMap[rows[rowIndex].layout] || [12];
-        return { gridColumn: `span ${spans[fieldIndex] || 12} / span ${spans[fieldIndex] || 12}`, order: rowIndex * 10 + fieldIndex };
+        const accent = {
+          blue: "#0066ff", red: "#ff1f1f", yellow: "#ffd400", green: "#00b83f",
+          orange: "#ff7300", purple: "#7b2cff", pink: "#ff2d8d", teal: "#00b8a9",
+          black: "#050505", grey: "#808080",
+        }[fields[fieldIndex].color] || "#0066ff";
+        return {
+          gridColumn: `span ${spans[fieldIndex] || 12} / span ${spans[fieldIndex] || 12}`,
+          order: rowIndex * 10 + fieldIndex,
+          "--event-field-accent": accent,
+        };
       }
     }
     return undefined;
@@ -9953,7 +9962,7 @@ export default function App() {
                 </p>
 
                 <div className="stingKioskIdentityRow mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
-                  <div className="stingKioskNameField" style={getRuntimeFieldLayoutStyle("name")}>
+                  <div className="stingKioskNameField eventV2FieldSurface" style={getRuntimeFieldLayoutStyle("name")}>
                     <label className="mb-2 block text-sm font-semibold">{isKrinklesEntryForm ? "Name / Scene Name" : "Display name"}</label>
                     <input
                       name="connection-board-display-name"
@@ -9970,7 +9979,7 @@ export default function App() {
                   </div>
 
                   {getFormBuilderSection("photo")?.enabled !== false ? (
-                    <div className="stingKioskPhotoField xl:col-span-2" style={getRuntimeFieldLayoutStyle("photo")}>
+                    <div className="stingKioskPhotoField eventV2FieldSurface xl:col-span-2" style={getRuntimeFieldLayoutStyle("photo")}>
                       <label className="mb-2 block text-sm font-semibold">
                         {getFormBuilderSection("photo")?.label || "Profile photo"} <span className="font-normal text-slate-400">(optional)</span>
                       </label>
@@ -10125,7 +10134,7 @@ export default function App() {
                   ) : null}
 
                   {getFormBuilderSection("social")?.enabled !== false ? (
-                    <div className="stingKioskSocialField" style={getRuntimeFieldLayoutStyle("social")}>
+                    <div className="stingKioskSocialField eventV2FieldSurface" style={getRuntimeFieldLayoutStyle("social")}>
                       <label className="mb-2 block text-sm font-semibold">
                         {getFormBuilderSection("social")?.label || (usesMultipleSocialHandles ? "Social Handles" : "Social handle")} <span className="font-normal text-slate-400">(optional)</span>
                       </label>
@@ -10259,7 +10268,7 @@ export default function App() {
 
                 {!isKrinklesEntryForm ? (
                 <div className={`stingKioskChoiceGrid mt-5 grid gap-4 ${isMenOnlyEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
-                  <div style={getRuntimeFieldLayoutStyle("position")} className={`stingKioskPositionCard ${getFormBuilderSection("position")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
+                  <div style={getRuntimeFieldLayoutStyle("position")} className={`stingKioskPositionCard eventV2FieldSurface ${getFormBuilderSection("position")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMenOnlyEntryForm
                       ? "border-zinc-500/60 bg-zinc-950/70 shadow-[0_0_24px_rgba(113,113,122,0.14)]"
                       : "border-slate-700/70 bg-slate-950/60"
@@ -10588,7 +10597,7 @@ export default function App() {
                   </div>
                   ) : null}
 
-                  <div style={getRuntimeFieldLayoutStyle(isKrinklesEntryForm ? "vibe" : "intention")} className={`stingKioskIntentionCard ${getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
+                  <div style={getRuntimeFieldLayoutStyle(isKrinklesEntryForm ? "vibe" : "intention")} className={`stingKioskIntentionCard eventV2FieldSurface ${getFormBuilderSection(isKrinklesEntryForm ? "vibe" : "intention")?.enabled === false ? "hidden " : ""}rounded-2xl border p-4 ${
                     isMensSpankingEntryForm
                       ? "border-blue-800/60 bg-blue-950/20 shadow-[0_0_28px_rgba(59,130,246,0.14)]"
                       : isMenOnlyEntryForm
@@ -10693,7 +10702,7 @@ export default function App() {
                 ) : null}
 
                 <div className="stingKioskDetailsGrid mt-4 grid gap-4 xl:grid-cols-2">
-                  <div style={getRuntimeFieldLayoutStyle("sexual")} className={`${getFormBuilderSection("sexual") && getFormBuilderSection("sexual")?.enabled !== false ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
+                  <div style={getRuntimeFieldLayoutStyle("sexual")} className={`eventV2FieldSurface ${getFormBuilderSection("sexual") && getFormBuilderSection("sexual")?.enabled !== false ? "" : "hidden"} rounded-2xl border border-red-900/50 bg-red-950/20 p-4`}>
                     <div className="mb-3 border-b border-red-900/30 pb-2">
                       <label className="block text-sm font-semibold text-red-100">{getFormBuilderSection("sexual")?.label || "Sexual Preferences"}</label>
                       <p className="mt-1 text-xs leading-5 text-red-100/60">
@@ -10765,7 +10774,7 @@ export default function App() {
                     /> : <input id="sexual-preference-input" value={sexualPreferenceInput} onChange={(e) => setSexualPreferenceInput(e.target.value)} placeholder={getFormBuilderSection("sexual")?.customField?.placeholder || ""} maxLength={getFormBuilderSection("sexual")?.customField?.maxLength || 160} className="mt-2 w-full rounded-2xl border border-red-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-red-300" />}</> : null}
                   </div>
 
-                  <div style={getRuntimeFieldLayoutStyle("interests")} className={`${getFormBuilderSection("interests")?.enabled !== false ? "" : "hidden"} rounded-2xl border p-4 ${
+                  <div style={getRuntimeFieldLayoutStyle("interests")} className={`eventV2FieldSurface ${getFormBuilderSection("interests")?.enabled !== false ? "" : "hidden"} rounded-2xl border p-4 ${
                     (isMenOnlyEntryForm && !isMensSpankingEntryForm)
                       ? "border-violet-800/60 bg-violet-950/20 shadow-[0_0_28px_rgba(124,58,237,0.14)]"
                       : "border-amber-700/50 bg-amber-950/10"

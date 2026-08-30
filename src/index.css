@@ -38,6 +38,31 @@ body,
     margin-top: 0;
   }
 }
+
+.eventV2RuntimeLayout .eventV2FieldSurface {
+  border: 1px solid color-mix(in srgb, var(--event-field-accent) 72%, transparent) !important;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--event-field-accent) 16%, #020617) !important;
+  padding: 1rem;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--event-field-accent) 10%, transparent);
+}
+
+.eventV2RuntimeLayout .eventV2FieldSurface label,
+.eventV2RuntimeLayout .eventV2FieldSurface > div:first-child label {
+  color: color-mix(in srgb, var(--event-field-accent) 32%, white) !important;
+}
+
+.eventV2RuntimeLayout .eventV2FieldSurface > div:first-child,
+.eventV2RuntimeLayout .eventV2FieldSurface .krinklesSocialSection,
+.eventV2RuntimeLayout .eventV2FieldSurface input,
+.eventV2RuntimeLayout .eventV2FieldSurface textarea,
+.eventV2RuntimeLayout .eventV2FieldSurface button {
+  border-color: color-mix(in srgb, var(--event-field-accent) 58%, #334155) !important;
+}
+
+.eventV2RuntimeLayout .eventV2FieldSurface .krinklesSocialSection {
+  background: color-mix(in srgb, var(--event-field-accent) 10%, #020617) !important;
+}
 /* TV DISPLAY — Sanctuary Connection Board visual theme */
 .displayBoardSurface {
   min-height: 100vh;
