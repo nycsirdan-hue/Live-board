@@ -7,68 +7,13 @@ body,
   min-height: 100%;
 }
 
-@media (min-width: 1280px) {
-  .eventV2RuntimeLayout {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .eventV2RuntimeLayout > h2,
-  .eventV2RuntimeLayout > p {
-    grid-column: 1 / -1;
-    order: -20;
-  }
-
-  .eventV2RuntimeLayout > .stingKioskIdentityRow,
-  .eventV2RuntimeLayout > .stingKioskChoiceGrid,
-  .eventV2RuntimeLayout > .stingKioskIntentionGrid,
-  .eventV2RuntimeLayout > .stingKioskDetailsGrid {
-    display: contents;
-  }
-
-  .eventV2RuntimeLayout > .krinklesLookingForSection {
-    grid-column: 1 / -1;
-  }
-
-  .eventV2RuntimeLayout > .stingKioskActions,
-  .eventV2RuntimeLayout > div[role="alert"] {
-    grid-column: 1 / -1;
-    order: 1000;
-    margin-top: 0;
-  }
-}
-
-.eventV2RuntimeLayout .eventV2FieldSurface {
-  border: 1px solid color-mix(in srgb, var(--event-field-accent) 72%, transparent) !important;
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--event-field-accent) 16%, #020617) !important;
-  padding: 1rem;
-  box-shadow: 0 0 24px color-mix(in srgb, var(--event-field-accent) 10%, transparent);
-}
-
-.eventV2RuntimeLayout .eventV2FieldSurface label,
-.eventV2RuntimeLayout .eventV2FieldSurface > div:first-child label {
-  color: color-mix(in srgb, var(--event-field-accent) 32%, white) !important;
-}
-
-.eventV2RuntimeLayout .eventV2FieldSurface > div:first-child,
-.eventV2RuntimeLayout .eventV2FieldSurface .krinklesSocialSection,
-.eventV2RuntimeLayout .eventV2FieldSurface input,
-.eventV2RuntimeLayout .eventV2FieldSurface textarea,
-.eventV2RuntimeLayout .eventV2FieldSurface button {
-  border-color: color-mix(in srgb, var(--event-field-accent) 58%, #334155) !important;
-}
-
-.eventV2RuntimeLayout .eventV2FieldSurface .krinklesSocialSection {
-  background: color-mix(in srgb, var(--event-field-accent) 10%, #020617) !important;
-}
 /* TV DISPLAY — Sanctuary Connection Board visual theme */
 .displayBoardSurface {
   min-height: 100vh;
   position: relative;
   isolation: isolate;
 }
+
 
 .displayBoardSurface::before {
   content: "";
@@ -3334,4 +3279,62 @@ body:has(.displayBoardSurface) #root {
   .stingKioskEntryPage .stingKioskFormCard > .mt-4.border-emerald-400\/30 {
     grid-column: 1 / -1;
   }
+}
+
+/* Final V2 authority layer: legacy theme rules above must not override event settings. */
+@media (min-width: 1280px) {
+  .eventV2RuntimeLayout {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .eventV2RuntimeLayout > h2,
+  .eventV2RuntimeLayout > p {
+    grid-column: 1 / -1;
+    order: -20;
+  }
+
+  .eventV2RuntimeLayout > .stingKioskIdentityRow,
+  .eventV2RuntimeLayout > .stingKioskChoiceGrid,
+  .eventV2RuntimeLayout > .stingKioskIntentionGrid,
+  .eventV2RuntimeLayout > .stingKioskDetailsGrid {
+    display: contents !important;
+  }
+
+  .eventV2RuntimeLayout > .krinklesLookingForSection {
+    grid-column: 1 / -1;
+  }
+
+  .eventV2RuntimeLayout > .stingKioskActions,
+  .eventV2RuntimeLayout > div[role="alert"] {
+    grid-column: 1 / -1;
+    order: 1000;
+    margin-top: 0;
+  }
+}
+
+.eventV2RuntimeLayout .eventV2FieldSurface {
+  border: 1px solid color-mix(in srgb, var(--event-field-accent) 72%, transparent) !important;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--event-field-accent) 16%, #020617) !important;
+  padding: 1rem;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--event-field-accent) 10%, transparent) !important;
+}
+
+.eventV2RuntimeLayout .eventV2FieldSurface label,
+.eventV2RuntimeLayout .eventV2FieldSurface > div:first-child label {
+  color: color-mix(in srgb, var(--event-field-accent) 32%, white) !important;
+}
+
+.eventV2RuntimeLayout .eventV2FieldSurface > div:first-child,
+.eventV2RuntimeLayout .eventV2FieldSurface .krinklesSocialSection,
+.eventV2RuntimeLayout .eventV2FieldSurface input,
+.eventV2RuntimeLayout .eventV2FieldSurface textarea,
+.eventV2RuntimeLayout .eventV2FieldSurface button {
+  border-color: color-mix(in srgb, var(--event-field-accent) 58%, #334155) !important;
+}
+
+.eventV2RuntimeLayout .eventV2FieldSurface .krinklesSocialSection {
+  background: color-mix(in srgb, var(--event-field-accent) 10%, #020617) !important;
 }

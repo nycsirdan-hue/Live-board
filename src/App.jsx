@@ -2815,15 +2815,15 @@ export default function App() {
     eventDisplayOptions.find((eventDisplay) => eventDisplay.id === activeEventDisplayId) ||
     eventDisplayOptions[0] ||
     null;
-  const activeEventLegendItems = activeEventDisplay?.eventConfig?.legend?.items || [];
-  const activeEventLegendColumns = activeEventDisplay?.eventConfig?.legend?.columns === 1 ? 1 : 2;
+  const activeEventLegendItems = runtimeEventConfig?.legend?.items || [];
+  const activeEventLegendColumns = runtimeEventConfig?.legend?.columns === 1 ? 1 : 2;
   const normalizeLegendStep = (value) => Number(value) >= -5 && Number(value) <= 5 ? Number(value) : 0;
-  const activeEventLegendSize = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.size);
-  const activeEventLegendRowSpacing = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.rowSpacing);
-  const activeEventLegendColumnSpacing = normalizeLegendStep(activeEventDisplay?.eventConfig?.legend?.columnSpacing);
-  const activeEventLegendFillDirection = activeEventDisplay?.eventConfig?.legend?.fillDirection === "row" ? "row" : "column";
-  const activeEventBackgroundTheme = activeEventDisplay?.eventConfig?.display?.backgroundTheme || "red_blue";
-  const activeEventShortDescription = activeEventDisplay?.eventConfig?.shortLabel || "";
+  const activeEventLegendSize = normalizeLegendStep(runtimeEventConfig?.legend?.size);
+  const activeEventLegendRowSpacing = normalizeLegendStep(runtimeEventConfig?.legend?.rowSpacing);
+  const activeEventLegendColumnSpacing = normalizeLegendStep(runtimeEventConfig?.legend?.columnSpacing);
+  const activeEventLegendFillDirection = runtimeEventConfig?.legend?.fillDirection === "row" ? "row" : "column";
+  const activeEventBackgroundTheme = runtimeEventConfig?.display?.backgroundTheme || "red_blue";
+  const activeEventShortDescription = runtimeEventConfig?.shortLabel || "";
 
   const [pendingEventDisplayId, setPendingEventDisplayId] = useState("");
 
@@ -3276,8 +3276,8 @@ export default function App() {
 
   const appConfig = {
     ...defaultConfig,
-    eventName: activeEventDisplay?.eventName || settings?.event_name || defaultConfig.eventName,
-    venueName: activeEventDisplay?.eventConfig?.shortLabel || activeEventDisplay?.eventDescription || settings?.venue_name || defaultConfig.venueName,
+    eventName: runtimeEventConfig?.name || settings?.event_name || defaultConfig.eventName,
+    venueName: runtimeEventConfig?.shortLabel || settings?.venue_name || defaultConfig.venueName,
   };
   const displayEasternTime = formatEasternDisplayTime(displayNow);
   const eventCountdown = getEventCountdown(
@@ -11030,7 +11030,7 @@ export default function App() {
                 className="displayIconLegend flex h-full w-[36rem] shrink-0 self-stretch flex-col justify-center px-2 py-4 text-white"
                 aria-label="Board icon guide"
               >
-                {legendPreset === "event_v2" && activeEventLegendItems.length ? (
+                {runtimeEventConfig?.version === 2 && activeEventLegendItems.length ? (
                   <div
                     className="grid w-full font-bold leading-tight"
                     style={{ gridTemplateColumns: `repeat(${activeEventLegendColumns}, minmax(0, 1fr))`, gridTemplateRows: activeEventLegendFillDirection === "column" ? `repeat(${Math.ceil(activeEventLegendItems.length / activeEventLegendColumns)}, auto)` : undefined, gridAutoFlow: activeEventLegendFillDirection, columnGap: `${34 + activeEventLegendColumnSpacing * 6}px`, rowGap: `${22 + activeEventLegendRowSpacing * 4}px`, fontSize: `${20 + activeEventLegendSize * 2}px` }}
