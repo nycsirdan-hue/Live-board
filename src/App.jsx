@@ -2414,6 +2414,7 @@ export default function App() {
   const [socialHandle, setSocialHandle] = useState("");
   const [socialPlatform, setSocialPlatform] = useState("FetLife");
   const [socialHandleDraftPlatform, setSocialHandleDraftPlatform] = useState("FetLife");
+  const [socialOtherPlatform, setSocialOtherPlatform] = useState("");
   const [socialHandleDraftValue, setSocialHandleDraftValue] = useState("");
   const [socialHandleItems, setSocialHandleItems] = useState([]);
   const [position, setPosition] = useState("");
@@ -2696,7 +2697,10 @@ export default function App() {
       const fields = rows[rowIndex].fields || [];
       const fieldIndex = fields.findIndex((field) => (field.legacyKey || field.type) === fieldKey);
       if (fieldIndex >= 0) {
-        const spans = spanMap[rows[rowIndex].layout] || [12];
+        const spans =
+          rows[rowIndex].layout === "thirds" && fields.length === 2
+            ? [4, 8]
+            : spanMap[rows[rowIndex].layout] || [12];
         const accent = {
           blue: "#0066ff", red: "#ff1f1f", yellow: "#ffd400", green: "#00b83f",
           orange: "#ff7300", purple: "#7b2cff", pink: "#ff2d8d", teal: "#00b8a9",
@@ -3287,13 +3291,17 @@ export default function App() {
   );
 
   const availableHandlePlatforms = getEnabledFormOptions("social", handlePlatformOptions);
+  const socialCustomEntryEnabled = getFormBuilderSection("social")?.customField?.enabled === true;
+  const selectableHandlePlatforms = socialCustomEntryEnabled
+    ? [...availableHandlePlatforms.filter((platform) => platform !== "Other"), "Other"]
+    : availableHandlePlatforms.filter((platform) => platform !== "Other");
 
   useEffect(() => {
-    if (!availableHandlePlatforms.includes(socialPlatform)) {
-      setSocialPlatform(availableHandlePlatforms[0] || "FetLife");
+    if (!selectableHandlePlatforms.includes(socialPlatform)) {
+      setSocialPlatform(selectableHandlePlatforms[0] || "FetLife");
     }
-    if (!availableHandlePlatforms.includes(socialHandleDraftPlatform)) {
-      setSocialHandleDraftPlatform(availableHandlePlatforms[0] || "");
+    if (!selectableHandlePlatforms.includes(socialHandleDraftPlatform)) {
+      setSocialHandleDraftPlatform(selectableHandlePlatforms[0] || "");
     }
   }, [entryFormPreset, formBuilderConfigs]); // eslint-disable-line
 
@@ -4664,8 +4672,9 @@ export default function App() {
   const resetEntryForm = () => {
     setName("");
     setSocialHandle("");
-    setSocialPlatform(availableHandlePlatforms[0] || "FetLife");
-    setSocialHandleDraftPlatform(availableHandlePlatforms[0] || "FetLife");
+    setSocialPlatform(selectableHandlePlatforms[0] || "FetLife");
+    setSocialHandleDraftPlatform(selectableHandlePlatforms[0] || "FetLife");
+    setSocialOtherPlatform("");
     setSocialHandleDraftValue("");
     setSocialHandleItems([]);
     setPosition("");
@@ -5539,7 +5548,8 @@ export default function App() {
 
     if (!cleanPlatform) return cleanLines;
 
-    if (new RegExp(`^${cleanPlatform}\\s*:`, "i").test(cleanLines)) {
+    const escapedPlatform = cleanPlatform.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (new RegExp(`^${escapedPlatform}\\s*:`, "i").test(cleanLines)) {
       return cleanLines;
     }
 
@@ -5547,7 +5557,17 @@ export default function App() {
   };
 
   const addSocialHandleItem = () => {
-    const line = formatSocialHandleLine(socialHandleDraftPlatform, socialHandleDraftValue);
+    const chosenPlatform =
+      socialHandleDraftPlatform === "Other"
+        ? socialOtherPlatform.trim()
+        : socialHandleDraftPlatform;
+
+    if (socialHandleDraftPlatform === "Other" && !chosenPlatform) {
+      setMessage("Please type the social platform name.");
+      return;
+    }
+
+    const line = formatSocialHandleLine(chosenPlatform, socialHandleDraftValue);
 
     if (!line) {
       setMessage("Please type a handle before adding it.");
@@ -5558,6 +5578,7 @@ export default function App() {
       current.includes(line) ? current : [...current, line]
     );
     setSocialHandleDraftValue("");
+    if (socialHandleDraftPlatform === "Other") setSocialOtherPlatform("");
   };
 
   const removeSocialHandleItem = (line) => {
@@ -6185,8 +6206,20 @@ export default function App() {
       : [];
     const finalCustomItems = [...customItems, ...orientationItem, ...quickTagItems, ...photoItem];
 
+    if (
+      socialHandleDraftPlatform === "Other" &&
+      socialHandleDraftValue.trim() &&
+      !socialOtherPlatform.trim()
+    ) {
+      setSaving(false);
+      setMessage("Please type the social platform name.");
+      return;
+    }
+
     const draftSocialHandleLine = formatSocialHandleLine(
-      socialHandleDraftPlatform,
+      socialHandleDraftPlatform === "Other"
+        ? socialOtherPlatform.trim()
+        : socialHandleDraftPlatform,
       socialHandleDraftValue
     );
 
@@ -6209,8 +6242,10 @@ export default function App() {
     const platformValue =
       usesMultipleSocialHandles
         ? null
-        : getFormBuilderSection("social")?.enabled !== false && handleValue && availableHandlePlatforms.includes(socialPlatform)
-          ? socialPlatform
+        : getFormBuilderSection("social")?.enabled !== false && handleValue && selectableHandlePlatforms.includes(socialPlatform)
+          ? socialPlatform === "Other"
+            ? socialOtherPlatform.trim() || null
+            : socialPlatform
           : null;
 
     const { error } = await supabase.from("board_entries").insert({
@@ -10156,7 +10191,7 @@ export default function App() {
                                 Platform
                               </div>
                               <div className="flex flex-wrap gap-1.5">
-                                {availableHandlePlatforms.map((platform) => (
+                                {selectableHandlePlatforms.map((platform) => (
                                   <button
                                     key={platform}
                                     type="button"
@@ -10171,6 +10206,20 @@ export default function App() {
                                   </button>
                                 ))}
                               </div>
+                              {socialHandleDraftPlatform === "Other" ? (
+                                <div className="mt-2">
+                                  <label className="krinklesSocialLabel mb-1 block text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
+                                    Platform name
+                                  </label>
+                                  <input
+                                    value={socialOtherPlatform}
+                                    onChange={(e) => setSocialOtherPlatform(e.target.value)}
+                                    placeholder="Platform"
+                                    autoComplete="off"
+                                    className="w-full rounded-2xl border border-fuchsia-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-fuchsia-300"
+                                  />
+                                </div>
+                              ) : null}
                             </div>
 
                             <div>
@@ -10250,9 +10299,9 @@ export default function App() {
                             className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
                           />
 
-                          {availableHandlePlatforms.length > 0 ? (
+                          {selectableHandlePlatforms.length > 0 ? (
                             <div className="mt-2 flex flex-wrap gap-1.5">
-                              {availableHandlePlatforms.map((platform) => (
+                              {selectableHandlePlatforms.map((platform) => (
                                 <button
                                   key={platform}
                                   type="button"
@@ -10266,6 +10315,20 @@ export default function App() {
                                   <SocialPlatformLabel platform={platform} />
                                 </button>
                               ))}
+                            </div>
+                          ) : null}
+                          {socialPlatform === "Other" ? (
+                            <div className="mt-2">
+                              <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                Platform name
+                              </label>
+                              <input
+                                value={socialOtherPlatform}
+                                onChange={(e) => setSocialOtherPlatform(e.target.value)}
+                                placeholder="Platform"
+                                autoComplete="off"
+                                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-amber-400"
+                              />
                             </div>
                           ) : null}
                         </>

@@ -1165,7 +1165,10 @@ export default function EventSystemV2({
                         <div
                           className="grid gap-2"
                           style={{
-                            gridTemplateColumns: `repeat(${ROW_LAYOUTS[row.layout]?.length || 1}, minmax(0, 1fr))`,
+                            gridTemplateColumns:
+                              row.layout === "thirds" && row.fields.length === 2
+                                ? "minmax(0, 1fr) minmax(0, 2fr)"
+                                : `repeat(${ROW_LAYOUTS[row.layout]?.length || 1}, minmax(0, 1fr))`,
                           }}
                         >
                           {row.fields.map((field) => (

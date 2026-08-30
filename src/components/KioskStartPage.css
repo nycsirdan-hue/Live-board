@@ -1266,6 +1266,27 @@ body,
   color: #fff;
 }
 
+.eventKioskMockOtherPlatform {
+  display: block;
+  margin-top: 7px;
+}
+
+.eventKioskMockOtherPlatform input,
+.eventKioskMockOtherPlatform strong {
+  width: 100%;
+  min-height: 34px;
+  padding: 8px 10px;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--mock-field-accent) 58%, #334155);
+  border-radius: 9px;
+  outline: none;
+  background: rgba(2, 6, 23, 0.88);
+  color: #fff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+}
+
 .eventKioskMockSocialHandleColumn input,
 .eventKioskMockSocialHandleColumn strong {
   width: 100%;

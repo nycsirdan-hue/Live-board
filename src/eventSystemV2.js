@@ -507,6 +507,8 @@ export function createKioskPreview() {
     enabled: true,
     name: "Alex",
     socialHandle: "@alex",
+    socialPlatform: "FetLife",
+    socialOtherPlatform: "",
     photoDataUrl: "",
     socialHandles: { FetLife: "@alex" },
     selections: {

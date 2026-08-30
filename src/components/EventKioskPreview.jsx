@@ -77,10 +77,18 @@ function PreviewField({ field, preview, onChange }) {
   const accent = FIELD_COLORS[field.color] || FIELD_COLORS.blue;
   const options =
     field.options || (isPosition ? ["Top", "Bottom", "Switch"] : []);
+  const socialOptions =
+    key === "social"
+      ? field.customEntry?.enabled
+        ? [...options.filter((option) => option !== "Other"), "Other"]
+        : options.filter((option) => option !== "Other")
+      : options;
   const socialHandles = preview?.socialHandles || {};
-  const activeSocialPlatform = options.includes(preview?.socialPlatform)
+  const activeSocialPlatform = socialOptions.includes(preview?.socialPlatform)
     ? preview.socialPlatform
-    : options.find((platform) => socialHandles[platform]) || options[0] || "";
+    : socialOptions.find((platform) => socialHandles[platform]) ||
+      socialOptions[0] ||
+      "";
   const patchSelections = (next) =>
     onChange?.({ selections: { ...(preview.selections || {}), [key]: next } });
   const patchCustom = (value) =>
@@ -126,7 +134,7 @@ function PreviewField({ field, preview, onChange }) {
           <div className="eventKioskMockSocialPlatformColumn">
             <span className="eventKioskMockControlLabel">Platform</span>
             <div className="eventKioskMockSocialPlatforms">
-              {options.map((platform) => {
+              {socialOptions.map((platform) => {
                 const Tag = isEditable ? "button" : "span";
                 return (
                   <Tag
@@ -149,6 +157,24 @@ function PreviewField({ field, preview, onChange }) {
                 );
               })}
             </div>
+            {activeSocialPlatform === "Other" ? (
+              <label className="eventKioskMockOtherPlatform">
+                <span className="eventKioskMockControlLabel">
+                  Platform name
+                </span>
+                {isEditable ? (
+                  <input
+                    value={preview?.socialOtherPlatform || ""}
+                    onChange={(event) =>
+                      onChange({ socialOtherPlatform: event.target.value })
+                    }
+                    placeholder="Platform"
+                  />
+                ) : (
+                  <strong>{preview?.socialOtherPlatform || "Platform"}</strong>
+                )}
+              </label>
+            ) : null}
           </div>
           <label className="eventKioskMockSocialHandleColumn">
             <span className="eventKioskMockControlLabel">Handle</span>
@@ -283,7 +309,7 @@ function PreviewField({ field, preview, onChange }) {
           })}
         </div>
       ) : null}
-      {field.customEntry?.enabled ? (
+      {field.customEntry?.enabled && key !== "social" ? (
         <label
           className={`eventKioskMockCustomInput ${custom.length ? "isFilled" : ""}`}
         >
@@ -380,7 +406,9 @@ export default function EventKioskPreview({
             className="eventKioskMockRow"
             style={{
               gridTemplateColumns:
-                ROW_COLUMNS[row.layout] || ROW_COLUMNS["100"],
+                row.layout === "thirds" && row.fields.length === 2
+                  ? "minmax(0, 1fr) minmax(0, 2fr)"
+                  : ROW_COLUMNS[row.layout] || ROW_COLUMNS["100"],
             }}
           >
             {row.fields.map((field) => (
