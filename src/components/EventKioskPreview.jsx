@@ -23,6 +23,17 @@ const ROW_COLUMNS = {
 
 const fieldKey = (field) => field.legacyKey || field.type || field.id;
 
+const SOCIAL_PLATFORM_ICONS = {
+  FetLife: "♥",
+  Whappz: "W",
+  Twitter: "𝕏",
+  "X / Twitter": "𝕏",
+  Bluesky: "🦋",
+  "Instagram / IG": "▣",
+  Instagram: "▣",
+  Telegram: "➤",
+};
+
 function readMockPhoto(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -67,6 +78,9 @@ function PreviewField({ field, preview, onChange }) {
   const options =
     field.options || (isPosition ? ["Top", "Bottom", "Switch"] : []);
   const socialHandles = preview?.socialHandles || {};
+  const activeSocialPlatform = options.includes(preview?.socialPlatform)
+    ? preview.socialPlatform
+    : options.find((platform) => socialHandles[platform]) || options[0] || "";
   const patchSelections = (next) =>
     onChange?.({ selections: { ...(preview.selections || {}), [key]: next } });
   const patchCustom = (value) =>
@@ -83,10 +97,16 @@ function PreviewField({ field, preview, onChange }) {
       style={{ "--mock-field-accent": accent }}
     >
       <div className="eventKioskMockFieldLabel">
-        {field.label || "Entry field"}
-        {field.required ? " *" : ""}
+        {key === "name"
+          ? "Display name"
+          : key === "photo"
+            ? "Profile photo (optional)"
+            : key === "social"
+              ? "Social Handles (optional)"
+              : field.label || "Entry field"}
+        {field.required && key !== "name" ? " *" : ""}
       </div>
-      {field.helperText ? (
+      {field.helperText && !["name", "photo", "social"].includes(key) ? (
         <div className="eventKioskMockHelper">{field.helperText}</div>
       ) : null}
       {key === "name" ? (
@@ -102,39 +122,72 @@ function PreviewField({ field, preview, onChange }) {
         )
       ) : null}
       {key === "social" ? (
-        <div className="eventKioskMockSocialOptions">
-          {options.map((platform) => {
-            const handle =
-              socialHandles[platform] ||
-              (platform === options[0] ? preview?.socialHandle : "");
-            return (
-              <label
-                key={platform}
-                className={`eventKioskMockSocialOption ${handle ? "isSelected" : ""}`}
-              >
-                <span>{platform}</span>
-                {isEditable ? (
-                  <input
-                    value={handle || ""}
-                    onChange={(event) =>
-                      onChange({
-                        socialHandles: {
-                          ...socialHandles,
-                          [platform]: event.target.value,
-                        },
-                        ...(platform === options[0]
-                          ? { socialHandle: event.target.value }
-                          : {}),
-                      })
+        <div className="eventKioskMockSocialBuilder">
+          <div className="eventKioskMockSocialPlatformColumn">
+            <span className="eventKioskMockControlLabel">Platform</span>
+            <div className="eventKioskMockSocialPlatforms">
+              {options.map((platform) => {
+                const Tag = isEditable ? "button" : "span";
+                return (
+                  <Tag
+                    key={platform}
+                    type={isEditable ? "button" : undefined}
+                    className={
+                      platform === activeSocialPlatform ? "isSelected" : ""
                     }
-                    placeholder="Optional handle"
-                  />
-                ) : (
-                  <strong>{handle || "Optional"}</strong>
-                )}
-              </label>
-            );
-          })}
+                    onClick={
+                      isEditable
+                        ? () => onChange({ socialPlatform: platform })
+                        : undefined
+                    }
+                  >
+                    <span aria-hidden="true">
+                      {SOCIAL_PLATFORM_ICONS[platform] || "@"}
+                    </span>{" "}
+                    {platform}
+                  </Tag>
+                );
+              })}
+            </div>
+          </div>
+          <label className="eventKioskMockSocialHandleColumn">
+            <span className="eventKioskMockControlLabel">Handle</span>
+            {isEditable ? (
+              <input
+                value={
+                  socialHandles[activeSocialPlatform] ||
+                  preview?.socialHandle ||
+                  ""
+                }
+                onChange={(event) =>
+                  onChange({
+                    socialHandles: {
+                      ...socialHandles,
+                      [activeSocialPlatform]: event.target.value,
+                    },
+                    socialHandle: event.target.value,
+                  })
+                }
+                placeholder="@name"
+              />
+            ) : (
+              <strong>
+                {socialHandles[activeSocialPlatform] ||
+                  preview?.socialHandle ||
+                  "@name"}
+              </strong>
+            )}
+          </label>
+          <button
+            type="button"
+            className="eventKioskMockAddHandle"
+            disabled={!isEditable}
+          >
+            Add handle
+          </button>
+          <div className="eventKioskMockSocialHint">
+            Press Enter to add another handle.
+          </div>
         </div>
       ) : null}
       {key === "photo" ? (
@@ -144,15 +197,13 @@ function PreviewField({ field, preview, onChange }) {
           ) : (
             <span aria-hidden="true">●</span>
           )}
-          <span>
-            {preview?.photoDataUrl
-              ? "Photo selected"
-              : "Optional profile photo"}
-          </span>
+          <span>{preview?.photoDataUrl ? "Photo selected" : "No photo"}</span>
           {isEditable ? (
             <>
               <label className="eventKioskMockPhotoButton">
-                {preview?.photoDataUrl ? "Replace" : "Add photo"}
+                {preview?.photoDataUrl
+                  ? "Replace photo/file"
+                  : "Upload photo/file"}
                 <input
                   type="file"
                   accept="image/*"
@@ -172,6 +223,23 @@ function PreviewField({ field, preview, onChange }) {
                   Remove
                 </button>
               ) : null}
+              <label className="eventKioskMockPhotoButton">
+                Take photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  onChange={async (event) => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    onChange({ photoDataUrl: await readMockPhoto(file) });
+                    event.target.value = "";
+                  }}
+                />
+              </label>
+              <span className="eventKioskMockPhotoHelp">
+                Add an optional profile photo.
+              </span>
             </>
           ) : null}
         </div>
@@ -203,7 +271,13 @@ function PreviewField({ field, preview, onChange }) {
                 }
                 className={active ? "isSelected" : ""}
               >
-                {option}
+                {isPosition && option === "Top"
+                  ? "Top | Give"
+                  : isPosition && option === "Bottom"
+                    ? "Bottom | Receive"
+                    : isPosition && option === "Switch"
+                      ? "Switch | Both"
+                      : option}
               </Tag>
             );
           })}
@@ -285,7 +359,11 @@ export default function EventKioskPreview({
           <div className="eventKioskMockupEvent">
             {eventConfig?.name || "Event name"}
           </div>
-          <div className="eventKioskMockupTitle">Connection Board Entry</div>
+          <div className="eventKioskMockupTitle">
+            {onPreviewChange
+              ? "Connection Board Entry Kiosk View"
+              : "Connection Board Entry Kiosk"}
+          </div>
           {eventConfig?.shortLabel ? (
             <div className="eventKioskMockupSubtitle">
               {eventConfig.shortLabel}

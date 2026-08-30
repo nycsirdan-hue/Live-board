@@ -159,7 +159,9 @@ function KioskViewEditor({ draft, patchKioskPreview }) {
       <div className="rounded-2xl border border-cyan-400/30 bg-slate-900/70 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h4 className="font-bold text-white">Kiosk example form</h4>
+            <h4 className="font-bold text-white">
+              Connection Board Entry Kiosk View
+            </h4>
             <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-400">
               Fill this out exactly as a guest would see it. It is saved only as
               this event’s example and cannot submit an entry to the board.

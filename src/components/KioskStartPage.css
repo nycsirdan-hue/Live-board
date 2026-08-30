@@ -937,6 +937,12 @@ body,
   transform-origin: top left;
 }
 
+.eventKioskMockup.isEditable {
+  width: min(100%, 1500px);
+  margin-right: auto;
+  margin-left: auto;
+}
+
 .eventKioskMockupHeader {
   display: flex;
   align-items: flex-start;
@@ -1065,7 +1071,7 @@ body,
 
 .eventKioskMockAllChoices {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .eventKioskMockAllChoices span,
@@ -1184,6 +1190,94 @@ body,
   color: #fff;
 }
 
+.eventKioskMockSocialBuilder {
+  margin-top: 9px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: minmax(210px, 0.8fr) minmax(220px, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--mock-field-accent) 58%, #334155);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--mock-field-accent) 10%, #020617);
+}
+
+.eventKioskMockControlLabel {
+  display: block;
+  margin-bottom: 5px;
+  color: #94a3b8;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.eventKioskMockSocialPlatforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.eventKioskMockSocialPlatforms button,
+.eventKioskMockSocialPlatforms > span {
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--mock-field-accent) 45%, #334155);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mock-field-accent) 10%, #020617);
+  color: #cbd5e1;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.eventKioskMockSocialPlatforms button {
+  cursor: pointer;
+}
+
+.eventKioskMockSocialPlatforms .isSelected {
+  border-color: var(--mock-field-accent);
+  background: color-mix(in srgb, var(--mock-field-accent) 25%, #020617);
+  color: #fff;
+}
+
+.eventKioskMockSocialHandleColumn input,
+.eventKioskMockSocialHandleColumn strong {
+  width: 100%;
+  min-height: 34px;
+  padding: 8px 10px;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--mock-field-accent) 58%, #334155);
+  border-radius: 9px;
+  outline: none;
+  background: rgba(2, 6, 23, 0.88);
+  color: #fff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.eventKioskMockAddHandle {
+  min-height: 34px;
+  padding: 8px 11px;
+  border: 1px solid var(--mock-field-accent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--mock-field-accent) 25%, #020617);
+  color: #fff;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.eventKioskMockAddHandle:disabled {
+  opacity: 0.72;
+}
+
+.eventKioskMockSocialHint {
+  grid-column: 1 / -1;
+  color: #94a3b8;
+  font-size: 8px;
+}
+
 .eventKioskMockChoices .eventKioskMockEmpty {
   border-style: dashed;
   color: #64748b;
@@ -1238,6 +1332,13 @@ body,
   font: inherit;
   font-size: 9px;
   font-weight: 850;
+}
+
+.eventKioskMockPhoto .eventKioskMockPhotoHelp {
+  flex-basis: 100%;
+  color: #64748b;
+  font-size: 8px;
+  font-weight: 650;
 }
 
 .eventKioskMockPhotoButton input {
@@ -1310,5 +1411,17 @@ body,
 @media (max-width: 760px) {
   .eventKioskMockRow {
     grid-template-columns: 1fr !important;
+  }
+
+  .eventKioskMockAllChoices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .eventKioskMockSocialBuilder {
+    grid-template-columns: 1fr;
+  }
+
+  .eventKioskMockSocialHint {
+    grid-column: 1;
   }
 }

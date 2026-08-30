@@ -9943,7 +9943,9 @@ export default function App() {
 
               <div className={`stingKioskFormCard ${runtimeEventConfig?.version === 2 ? "eventV2RuntimeLayout" : ""} rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6`}>
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  {isKrinklesEntryForm
+                  {isKioskEntryMode
+                    ? "Connection Board Entry Kiosk"
+                    : isKrinklesEntryForm
                     ? "KrINKles Connection Board"
                     : isMensSpankingEntryForm
                       ? `${appConfig.eventName} Connection Board`
@@ -9998,13 +10000,24 @@ export default function App() {
 
                         <div className="min-w-[220px] flex-1">
                           {isKioskEntryMode ? (
-                            <button
-                              type="button"
-                              onClick={startParticipantCamera}
-                              className="rounded-xl bg-sky-400 px-4 py-3 text-sm font-bold text-slate-950"
-                            >
-                              {participantPhotoPreview ? "Retake photo" : "Take photo"}
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={startParticipantCamera}
+                                className="rounded-xl bg-sky-400 px-4 py-3 text-sm font-bold text-slate-950"
+                              >
+                                {participantPhotoPreview ? "Retake photo" : "Take photo"}
+                              </button>
+                              <label className="cursor-pointer rounded-xl border border-sky-400/50 bg-sky-400/10 px-4 py-3 text-sm font-bold text-sky-100">
+                                Upload photo/file
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleParticipantPhotoChange}
+                                  className="sr-only"
+                                />
+                              </label>
+                            </div>
                           ) : (
                             <input
                               type="file"
