@@ -39,7 +39,9 @@ function getEventSubtitleFromStorage() {
 
 function getEventConfigFromStorage() {
   try {
-    return JSON.parse(window.localStorage.getItem("kioskEventConfigV2") || "null");
+    return JSON.parse(
+      window.localStorage.getItem("kioskEventConfigV2") || "null",
+    );
   } catch {
     return null;
   }
@@ -70,19 +72,13 @@ const kioskPresetConfigs = {
       {
         label: "Intention",
         tone: "blue",
-        items: [
-          "Open to Play",
-          "Discuss Limits",
-          "Open to Try",
-          "Watching",
-        ],
+        items: ["Open to Play", "Discuss Limits", "Open to Try", "Watching"],
       },
     ],
     more: ["LIMITS", "EXPERIENCE", "INTERESTS", "SOCIAL"],
     profile: {
       eyebrow: "COME HERE OFTEN?",
-      text:
-        "Create a STING profile so you can save your Connection Card and use it again at future parties.",
+      text: "Create a STING profile so you can save your Connection Card and use it again at future parties.",
       action: "SELECT CREATE NEW PROFILE",
       hint: "instead of Create New Entry",
     },
@@ -133,11 +129,7 @@ const kioskPresetConfigs = {
         ],
       },
     ],
-    more: [
-      "PROFILE PHOTO",
-      "SOCIAL HANDLES",
-      "ANYTHING ELSE",
-    ],
+    more: ["PROFILE PHOTO", "SOCIAL HANDLES", "ANYTHING ELSE"],
   },
 
   diaper_debauchery_glow: {
@@ -149,14 +141,7 @@ const kioskPresetConfigs = {
       {
         label: "Vibe Tonight",
         tone: "fuchsia",
-        items: [
-          "Little",
-          "Middle",
-          "Big",
-          "Caregiver",
-          "Kinky",
-          "Switchy",
-        ],
+        items: ["Little", "Middle", "Big", "Caregiver", "Kinky", "Switchy"],
       },
       {
         label: "Looking For",
@@ -210,12 +195,7 @@ const kioskPresetConfigs = {
       {
         label: "Intention",
         tone: "blue",
-        items: [
-          "Open to Play",
-          "Watching",
-          "Conversation",
-          "Negotiation",
-        ],
+        items: ["Open to Play", "Watching", "Conversation", "Negotiation"],
       },
       {
         label: "Sexual Preferences",
@@ -263,15 +243,15 @@ const kioskPresetConfigs = {
 };
 
 export default function KioskStartPage({ onStart }) {
-  const [entryFormPreset, setEntryFormPreset] =
-    useState(getPresetFromStorage);
+  const [entryFormPreset, setEntryFormPreset] = useState(getPresetFromStorage);
 
-  const [eventName, setEventName] =
-    useState(getEventNameFromStorage);
-  const [eventSubtitle, setEventSubtitle] =
-    useState(getEventSubtitleFromStorage);
-  const [activeEventConfig, setActiveEventConfig] =
-    useState(getEventConfigFromStorage);
+  const [eventName, setEventName] = useState(getEventNameFromStorage);
+  const [eventSubtitle, setEventSubtitle] = useState(
+    getEventSubtitleFromStorage,
+  );
+  const [activeEventConfig, setActiveEventConfig] = useState(
+    getEventConfigFromStorage,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -294,10 +274,7 @@ export default function KioskStartPage({ onStart }) {
       setEventName(nextEventName);
 
       try {
-        window.localStorage.setItem(
-          "kioskEventName",
-          nextEventName
-        );
+        window.localStorage.setItem("kioskEventName", nextEventName);
       } catch {
         // Ignore localStorage issues.
       }
@@ -315,7 +292,11 @@ export default function KioskStartPage({ onStart }) {
     function saveEventConfig(nextConfig) {
       setActiveEventConfig(nextConfig || null);
       try {
-        if (nextConfig) window.localStorage.setItem("kioskEventConfigV2", JSON.stringify(nextConfig));
+        if (nextConfig)
+          window.localStorage.setItem(
+            "kioskEventConfigV2",
+            JSON.stringify(nextConfig),
+          );
         else window.localStorage.removeItem("kioskEventConfigV2");
       } catch {
         // Ignore localStorage issues.
@@ -323,24 +304,35 @@ export default function KioskStartPage({ onStart }) {
     }
 
     async function resolveActiveEvent(settingsRow) {
-      const activePresetId =
-        settingsRow?.active_event_display_preset_id;
+      const activePresetId = settingsRow?.active_event_display_preset_id;
 
       if (activePresetId && supabase) {
-        const { data: activePreset, error: presetError } =
-          await supabase
-            .from("event_display_presets")
-            .select("event_name, event_description")
-            .eq("id", activePresetId)
-            .maybeSingle();
+        const { data: activePreset, error: presetError } = await supabase
+          .from("event_display_presets")
+          .select("event_name, event_description")
+          .eq("id", activePresetId)
+          .maybeSingle();
 
         if (!presetError && activePreset?.event_name) {
           const eventConfig = parseEventV2(activePreset.event_description);
-          return { name: activePreset.event_name, subtitle: eventConfig?.shortLabel || "", preset: eventConfig?.display?.entryFormPreset || settingsRow?.entry_form_preset || "standard", eventConfig };
+          return {
+            name: activePreset.event_name,
+            subtitle: eventConfig?.shortLabel || "",
+            preset:
+              eventConfig?.display?.entryFormPreset ||
+              settingsRow?.entry_form_preset ||
+              "standard",
+            eventConfig,
+          };
         }
       }
 
-      return { name: settingsRow?.event_name || "", subtitle: "", preset: settingsRow?.entry_form_preset || "standard", eventConfig: null };
+      return {
+        name: settingsRow?.event_name || "",
+        subtitle: "",
+        preset: settingsRow?.entry_form_preset || "standard",
+        eventConfig: null,
+      };
     }
 
     async function loadPreset() {
@@ -349,7 +341,7 @@ export default function KioskStartPage({ onStart }) {
       const { data, error } = await supabase
         .from("board_settings")
         .select(
-          "entry_form_preset, event_name, active_event_display_preset_id, updated_at"
+          "entry_form_preset, event_name, active_event_display_preset_id, updated_at",
         )
         .order("updated_at", { ascending: false })
         .limit(1)
@@ -384,17 +376,15 @@ export default function KioskStartPage({ onStart }) {
             (payload) => {
               const nextSettings = payload?.new || {};
 
-              resolveActiveEvent(nextSettings).then(
-                (resolvedEvent) => {
-                  if (!cancelled) {
-                    savePreset(resolvedEvent.preset);
-                    saveEventName(resolvedEvent.name);
-                    saveEventSubtitle(resolvedEvent.subtitle);
-                    saveEventConfig(resolvedEvent.eventConfig);
-                  }
+              resolveActiveEvent(nextSettings).then((resolvedEvent) => {
+                if (!cancelled) {
+                  savePreset(resolvedEvent.preset);
+                  saveEventName(resolvedEvent.name);
+                  saveEventSubtitle(resolvedEvent.subtitle);
+                  saveEventConfig(resolvedEvent.eventConfig);
                 }
-              );
-            }
+              });
+            },
           )
           .subscribe()
       : null;
@@ -410,24 +400,34 @@ export default function KioskStartPage({ onStart }) {
   }, []);
 
   const config =
-    kioskPresetConfigs[entryFormPreset] ||
-    kioskPresetConfigs.standard;
+    kioskPresetConfigs[entryFormPreset] || kioskPresetConfigs.standard;
 
-  const displayEventName =
-    eventName || config.fallbackName;
-  const kioskEventConfig = activeEventConfig?.version === 2 ? {
-    ...activeEventConfig,
-    name: displayEventName,
-    kioskPreview: {
-      ...createKioskPreview(),
-      ...(activeEventConfig.kioskPreview || {}),
-      selections: { ...createKioskPreview().selections, ...(activeEventConfig.kioskPreview?.selections || {}) },
-      customEntries: { ...createKioskPreview().customEntries, ...(activeEventConfig.kioskPreview?.customEntries || {}) },
-    },
-  } : null;
+  const displayEventName = eventName || config.fallbackName;
+  const kioskEventConfig =
+    activeEventConfig?.version === 2
+      ? {
+          ...activeEventConfig,
+          name: displayEventName,
+          kioskPreview: {
+            ...createKioskPreview(),
+            ...(activeEventConfig.kioskPreview || {}),
+            selections: {
+              ...createKioskPreview().selections,
+              ...(activeEventConfig.kioskPreview?.selections || {}),
+            },
+            customEntries: {
+              ...createKioskPreview().customEntries,
+              ...(activeEventConfig.kioskPreview?.customEntries || {}),
+            },
+            socialHandles: {
+              ...createKioskPreview().socialHandles,
+              ...(activeEventConfig.kioskPreview?.socialHandles || {}),
+            },
+          },
+        }
+      : null;
 
-  const mobileEntryUrl =
-    `${window.location.origin}/liveboard/mobile`;
+  const mobileEntryUrl = `${window.location.origin}/liveboard/mobile`;
 
   return (
     <main
@@ -442,73 +442,68 @@ export default function KioskStartPage({ onStart }) {
         <section className="presetKioskEntryPanel">
           <header className="presetKioskHeader">
             <div>
-              <div className="presetKioskEventName">
-                {displayEventName}
-              </div>
+              <div className="presetKioskEventName">{displayEventName}</div>
 
               <h1>Connection Board Entry Kiosk</h1>
 
               <p>{eventSubtitle || config.subtitle}</p>
             </div>
 
-            <div className="presetKioskPreviewBadge">
-              ENTRY PREVIEW
-            </div>
+            <div className="presetKioskPreviewBadge">ENTRY PREVIEW</div>
           </header>
 
-          {kioskEventConfig && kioskEventConfig.kioskPreview?.enabled !== false ? <EventKioskPreview eventConfig={kioskEventConfig} /> : <div className="presetKioskFormPreview">
-            <div className="presetPreviewIdentityRow">
-              <div className="presetPreviewField">
-                <div className="presetPreviewLabel">
-                  Name / Scene Name
+          {kioskEventConfig &&
+          kioskEventConfig.kioskPreview?.enabled !== false ? (
+            <EventKioskPreview eventConfig={kioskEventConfig} />
+          ) : (
+            <div className="presetKioskFormPreview">
+              <div className="presetPreviewIdentityRow">
+                <div className="presetPreviewField">
+                  <div className="presetPreviewLabel">Name / Scene Name</div>
+
+                  <div className="presetPreviewInput">
+                    Your name as you want it shown
+                  </div>
                 </div>
 
-                <div className="presetPreviewInput">
-                  Your name as you want it shown
+                <div className="presetPreviewField presetPreviewSocialField">
+                  <div className="presetPreviewLabel">Social Handle</div>
+
+                  <div className="presetPreviewInput">@yourhandle</div>
                 </div>
               </div>
 
-              <div className="presetPreviewField presetPreviewSocialField">
-                <div className="presetPreviewLabel">
-                  Social Handle
-                </div>
+              <div className="presetPreviewSectionGrid">
+                {config.sections.map((section, index) => (
+                  <div
+                    key={`${section.label}-${index}`}
+                    className={`presetPreviewSection presetPreviewTone-${section.tone}`}
+                  >
+                    <div className="presetPreviewSectionTitle">
+                      {section.label}
+                    </div>
 
-                <div className="presetPreviewInput">
-                  @yourhandle
-                </div>
-              </div>
-            </div>
-
-            <div className="presetPreviewSectionGrid">
-              {config.sections.map((section, index) => (
-                <div
-                  key={`${section.label}-${index}`}
-                  className={`presetPreviewSection presetPreviewTone-${section.tone}`}
-                >
-                  <div className="presetPreviewSectionTitle">
-                    {section.label}
+                    <div className="presetPreviewChips">
+                      {section.items.map((item) => (
+                        <span key={item}>{item}</span>
+                      ))}
+                    </div>
                   </div>
-
-                  <div className="presetPreviewChips">
-                    {section.items.map((item) => (
-                      <span key={item}>{item}</span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="presetPreviewMore">
-              {config.more
-                .filter(
-                  (item) =>
-                    !["PROFILE PHOTO", "SOCIAL HANDLES"].includes(item)
-                )
-                .map((item) => (
-                  <span key={item}>{item}</span>
                 ))}
+              </div>
+
+              <div className="presetPreviewMore">
+                {config.more
+                  .filter(
+                    (item) =>
+                      !["PROFILE PHOTO", "SOCIAL HANDLES"].includes(item),
+                  )
+                  .map((item) => (
+                    <span key={item}>{item}</span>
+                  ))}
+              </div>
             </div>
-          </div>}
+          )}
 
           <button
             type="button"
@@ -524,22 +519,15 @@ export default function KioskStartPage({ onStart }) {
         </section>
 
         <aside className="presetKioskMobilePanel">
-          <div
-            className="presetKioskPhoneIcon"
-            aria-hidden="true"
-          >
+          <div className="presetKioskPhoneIcon" aria-hidden="true">
             ↗
           </div>
 
-          <div className="presetKioskMobileEyebrow">
-            MOBILE ENTRY
-          </div>
+          <div className="presetKioskMobileEyebrow">MOBILE ENTRY</div>
 
           <h2>Use your phone instead</h2>
 
-          <div className="presetKioskMobileSubhead">
-            &amp; upload a picture
-          </div>
+          <div className="presetKioskMobileSubhead">&amp; upload a picture</div>
 
           <div className="presetKioskQrFrame">
             <QRCodeSVG
@@ -552,13 +540,11 @@ export default function KioskStartPage({ onStart }) {
             />
           </div>
 
-          <div className="presetKioskScanText">
-            SCAN HERE
-          </div>
+          <div className="presetKioskScanText">SCAN HERE</div>
 
           <p className="presetKioskMobileExplanation">
-            Complete your Connection Board entry on your
-            phone and choose the picture you want to use.
+            Complete your Connection Board entry on your phone and choose the
+            picture you want to use.
           </p>
 
           {config.profile ? (

@@ -110,11 +110,81 @@ function TogglePill({
   );
 }
 
+function readMockPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("Could not read that image."));
+      image.onload = () => {
+        const size = Math.min(image.naturalWidth, image.naturalHeight);
+        const sourceX = (image.naturalWidth - size) / 2;
+        const sourceY = (image.naturalHeight - size) / 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = 320;
+        canvas
+          .getContext("2d")
+          .drawImage(image, sourceX, sourceY, size, size, 0, 0, 320, 320);
+        resolve(canvas.toDataURL("image/jpeg", 0.78));
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function KioskViewEditor({ draft, patchKioskPreview }) {
   const preview = { ...createKioskPreview(), ...(draft.kioskPreview || {}) };
+  const previewWithDefaults = {
+    ...createKioskPreview(),
+    ...preview,
+    selections: {
+      ...createKioskPreview().selections,
+      ...(preview.selections || {}),
+    },
+    customEntries: {
+      ...createKioskPreview().customEntries,
+      ...(preview.customEntries || {}),
+    },
+    socialHandles: {
+      ...createKioskPreview().socialHandles,
+      ...(preview.socialHandles || {}),
+    },
+  };
+
+  if (previewWithDefaults.editorVersion !== "legacy-controls")
+    return (
+      <div className="rounded-2xl border border-cyan-400/30 bg-slate-900/70 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h4 className="font-bold text-white">Kiosk example form</h4>
+            <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-400">
+              Fill this out exactly as a guest would see it. It is saved only as
+              this event’s example and cannot submit an entry to the board.
+            </p>
+          </div>
+          <TogglePill
+            enabled={previewWithDefaults.enabled !== false}
+            onChange={(enabled) => patchKioskPreview({ enabled })}
+            enabledLabel="Example form shown"
+            disabledLabel="Example form hidden"
+          />
+        </div>
+        {previewWithDefaults.enabled !== false ? (
+          <EventKioskPreview
+            eventConfig={{ ...draft, kioskPreview: previewWithDefaults }}
+            onPreviewChange={patchKioskPreview}
+          />
+        ) : null}
+      </div>
+    );
+
   const fields = draft.entryForm.rows
     .flatMap((row) => row.fields)
     .filter((field) => field.visible !== false);
+  const socialFields = fields.filter((field) => fieldKey(field) === "social");
   const patchSelections = (key, values) =>
     patchKioskPreview({
       selections: { ...(preview.selections || {}), [key]: values },
@@ -128,6 +198,10 @@ function KioskViewEditor({ draft, patchKioskPreview }) {
           .map((item) => item.trim())
           .filter(Boolean),
       },
+    });
+  const patchSocialHandle = (platform, handle) =>
+    patchKioskPreview({
+      socialHandles: { ...(preview.socialHandles || {}), [platform]: handle },
     });
 
   return (
@@ -176,16 +250,81 @@ function KioskViewEditor({ draft, patchKioskPreview }) {
                 onChange={(e) => patchKioskPreview({ name: e.target.value })}
               />
             </Input>
-            <Input label="Social handle">
-              <input
-                className={inputClass}
-                value={preview.socialHandle || ""}
-                onChange={(e) =>
-                  patchKioskPreview({ socialHandle: e.target.value })
-                }
-              />
-            </Input>
+            <div className="rounded-xl border border-slate-700 bg-slate-950/65 p-3">
+              <div className="text-xs font-black text-white">
+                Mock profile photo
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                {preview.photoDataUrl ? (
+                  <img
+                    src={preview.photoDataUrl}
+                    alt="Mock attendee preview"
+                    className="h-20 w-20 rounded-xl border border-cyan-400/35 object-cover"
+                  />
+                ) : (
+                  <div className="grid h-20 w-20 place-items-center rounded-xl border border-dashed border-slate-600 text-[10px] text-slate-500">
+                    No photo
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <label className="cursor-pointer rounded-lg bg-cyan-300 px-3 py-2 text-xs font-black text-slate-950">
+                    {preview.photoDataUrl ? "Replace photo" : "Add photo"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={async (event) => {
+                        const file = event.target.files?.[0];
+                        if (!file) return;
+                        patchKioskPreview({
+                          photoDataUrl: await readMockPhoto(file),
+                        });
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {preview.photoDataUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => patchKioskPreview({ photoDataUrl: "" })}
+                      className="rounded-lg border border-rose-400/40 px-3 py-2 text-xs font-bold text-rose-200"
+                    >
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
           </div>
+          {socialFields.map((field) => (
+            <div
+              key={field.id}
+              className="mt-4 rounded-xl border border-slate-700 bg-slate-950/65 p-3"
+            >
+              <div className="text-xs font-black text-white">{field.label}</div>
+              <p className="mt-1 text-[11px] text-slate-500">
+                Only the social platforms enabled for this event appear in the
+                kiosk miniature.
+              </p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {(field.options || []).map((platform) => (
+                  <Input
+                    key={platform}
+                    label={`${platform} mock handle (optional)`}
+                  >
+                    <input
+                      className={inputClass}
+                      value={preview.socialHandles?.[platform] || ""}
+                      onChange={(event) =>
+                        patchSocialHandle(platform, event.target.value)
+                      }
+                      placeholder={`Optional ${platform} handle`}
+                    />
+                  </Input>
+                ))}
+              </div>
+            </div>
+          ))}
           <div className="mt-5 space-y-4">
             {fields
               .filter(
@@ -315,6 +454,10 @@ export default function EventSystemV2({
       customEntries: {
         ...defaultPreview.customEntries,
         ...(next.kioskPreview?.customEntries || {}),
+      },
+      socialHandles: {
+        ...defaultPreview.socialHandles,
+        ...(next.kioskPreview?.socialHandles || {}),
       },
     };
     next.entryForm.rows = next.entryForm.rows.map((row) => ({
