@@ -124,6 +124,23 @@ const createStandardPricing = () => [
   { id: crypto.randomUUID(), key: "members", label: "Members", amount: "", currency: "USD", active: true },
 ];
 
+export function createKioskPreview() {
+  return {
+    enabled: true,
+    name: "Alex",
+    socialHandle: "@alex",
+    selections: {
+      position: ["Top"],
+      intention: ["New here", "Watching"],
+      sexual: ["Discuss Sex First"],
+      interests: ["BDSM", "Rope", "Impact Play"],
+    },
+    customEntries: {
+      interests: ["Fire Play", "Electro Stimulation"],
+    },
+  };
+}
+
 export function createEventDefinition() {
   return {
     version: 2,
@@ -139,6 +156,7 @@ export function createEventDefinition() {
       title: "Event Entry Form",
       ...createEventFormFromPreset("standard"),
     },
+    kioskPreview: createKioskPreview(),
     legend: { items: [], columns: 2, fillDirection: "column", size: 0, rowSpacing: 0, columnSpacing: 0 },
     display: { entryFormPreset: "standard", backgroundTheme: "red_blue", participantLayout: "tiles", sizingMode: "automatic", columns: 4, entryFillDirection: "row", sizing: {} },
   };

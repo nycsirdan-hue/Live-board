@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { QRCodeSVG } from "qrcode.react";
-import { parseEventV2 } from "../eventSystemV2";
+import { createKioskPreview, parseEventV2 } from "../eventSystemV2";
+import EventKioskPreview from "./EventKioskPreview";
 import "./KioskStartPage.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -33,6 +34,14 @@ function getEventSubtitleFromStorage() {
     return window.localStorage.getItem("kioskEventSubtitle") || "";
   } catch {
     return "";
+  }
+}
+
+function getEventConfigFromStorage() {
+  try {
+    return JSON.parse(window.localStorage.getItem("kioskEventConfigV2") || "null");
+  } catch {
+    return null;
   }
 }
 
@@ -261,6 +270,8 @@ export default function KioskStartPage({ onStart }) {
     useState(getEventNameFromStorage);
   const [eventSubtitle, setEventSubtitle] =
     useState(getEventSubtitleFromStorage);
+  const [activeEventConfig, setActiveEventConfig] =
+    useState(getEventConfigFromStorage);
 
   useEffect(() => {
     let cancelled = false;
@@ -301,6 +312,16 @@ export default function KioskStartPage({ onStart }) {
       }
     }
 
+    function saveEventConfig(nextConfig) {
+      setActiveEventConfig(nextConfig || null);
+      try {
+        if (nextConfig) window.localStorage.setItem("kioskEventConfigV2", JSON.stringify(nextConfig));
+        else window.localStorage.removeItem("kioskEventConfigV2");
+      } catch {
+        // Ignore localStorage issues.
+      }
+    }
+
     async function resolveActiveEvent(settingsRow) {
       const activePresetId =
         settingsRow?.active_event_display_preset_id;
@@ -315,11 +336,11 @@ export default function KioskStartPage({ onStart }) {
 
         if (!presetError && activePreset?.event_name) {
           const eventConfig = parseEventV2(activePreset.event_description);
-          return { name: activePreset.event_name, subtitle: eventConfig?.shortLabel || "", preset: eventConfig?.display?.entryFormPreset || settingsRow?.entry_form_preset || "standard" };
+          return { name: activePreset.event_name, subtitle: eventConfig?.shortLabel || "", preset: eventConfig?.display?.entryFormPreset || settingsRow?.entry_form_preset || "standard", eventConfig };
         }
       }
 
-      return { name: settingsRow?.event_name || "", subtitle: "", preset: settingsRow?.entry_form_preset || "standard" };
+      return { name: settingsRow?.event_name || "", subtitle: "", preset: settingsRow?.entry_form_preset || "standard", eventConfig: null };
     }
 
     async function loadPreset() {
@@ -342,6 +363,7 @@ export default function KioskStartPage({ onStart }) {
         savePreset(resolvedEvent.preset);
         saveEventName(resolvedEvent.name);
         saveEventSubtitle(resolvedEvent.subtitle);
+        saveEventConfig(resolvedEvent.eventConfig);
       }
     }
 
@@ -368,6 +390,7 @@ export default function KioskStartPage({ onStart }) {
                     savePreset(resolvedEvent.preset);
                     saveEventName(resolvedEvent.name);
                     saveEventSubtitle(resolvedEvent.subtitle);
+                    saveEventConfig(resolvedEvent.eventConfig);
                   }
                 }
               );
@@ -392,6 +415,16 @@ export default function KioskStartPage({ onStart }) {
 
   const displayEventName =
     eventName || config.fallbackName;
+  const kioskEventConfig = activeEventConfig?.version === 2 ? {
+    ...activeEventConfig,
+    name: displayEventName,
+    kioskPreview: {
+      ...createKioskPreview(),
+      ...(activeEventConfig.kioskPreview || {}),
+      selections: { ...createKioskPreview().selections, ...(activeEventConfig.kioskPreview?.selections || {}) },
+      customEntries: { ...createKioskPreview().customEntries, ...(activeEventConfig.kioskPreview?.customEntries || {}) },
+    },
+  } : null;
 
   const mobileEntryUrl =
     `${window.location.origin}/liveboard/mobile`;
@@ -413,7 +446,7 @@ export default function KioskStartPage({ onStart }) {
                 {displayEventName}
               </div>
 
-              <h1>Connection Board</h1>
+              <h1>Connection Board Entry Kiosk</h1>
 
               <p>{eventSubtitle || config.subtitle}</p>
             </div>
@@ -423,7 +456,7 @@ export default function KioskStartPage({ onStart }) {
             </div>
           </header>
 
-          <div className="presetKioskFormPreview">
+          {kioskEventConfig && kioskEventConfig.kioskPreview?.enabled !== false ? <EventKioskPreview eventConfig={kioskEventConfig} /> : <div className="presetKioskFormPreview">
             <div className="presetPreviewIdentityRow">
               <div className="presetPreviewField">
                 <div className="presetPreviewLabel">
@@ -475,7 +508,7 @@ export default function KioskStartPage({ onStart }) {
                   <span key={item}>{item}</span>
                 ))}
             </div>
-          </div>
+          </div>}
 
           <button
             type="button"
