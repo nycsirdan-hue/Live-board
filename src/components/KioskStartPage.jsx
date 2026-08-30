@@ -440,6 +440,9 @@ export default function KioskStartPage({ onStart }) {
 
       <div className="presetKioskShell">
         <section className="presetKioskEntryPanel">
+          <div className="presetKioskScreenWatermark" aria-hidden="true">
+            EXAMPLE
+          </div>
           <header className="presetKioskHeader">
             <div>
               <div className="presetKioskEventName">{displayEventName}</div>
@@ -448,8 +451,6 @@ export default function KioskStartPage({ onStart }) {
 
               <p>{eventSubtitle || config.subtitle}</p>
             </div>
-
-            <div className="presetKioskPreviewBadge">ENTRY PREVIEW</div>
           </header>
 
           {kioskEventConfig &&

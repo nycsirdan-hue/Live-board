@@ -141,7 +141,9 @@ body,
 /* ---------- LEFT PANEL ---------- */
 
 .presetKioskEntryPanel {
+  position: relative;
   padding: clamp(24px, 2.3vw, 40px);
+  overflow: hidden;
 
   background: linear-gradient(
     145deg,
@@ -151,6 +153,25 @@ body,
 
   display: flex;
   flex-direction: column;
+}
+
+.presetKioskScreenWatermark {
+  position: absolute;
+  z-index: 20;
+  top: 50%;
+  left: 50%;
+  width: 118%;
+  color: rgba(255, 255, 255, 0.18);
+  font-size: clamp(84px, 9vw, 190px);
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 0 22px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(-25deg);
+  user-select: none;
+  white-space: nowrap;
 }
 
 .presetKioskHeader {
@@ -911,14 +932,17 @@ body,
 
 .eventKioskExampleWatermark {
   position: absolute;
-  z-index: 0;
+  z-index: 20;
   top: 50%;
   left: 50%;
-  color: rgba(255, 255, 255, 0.055);
-  font-size: clamp(72px, 12vw, 190px);
+  width: 118%;
+  color: rgba(255, 255, 255, 0.18);
+  font-size: clamp(84px, 9vw, 190px);
   font-weight: 950;
   letter-spacing: 0.12em;
   line-height: 1;
+  text-align: center;
+  text-shadow: 0 0 22px rgba(0, 0, 0, 0.45);
   pointer-events: none;
   transform: translate(-50%, -50%) rotate(-24deg);
   user-select: none;

@@ -351,9 +351,11 @@ export default function EventKioskPreview({
     <div
       className={`eventKioskMockup ${compact ? "isCompact" : ""} ${onPreviewChange ? "isEditable" : ""}`}
     >
-      <div className="eventKioskExampleWatermark" aria-hidden="true">
-        EXAMPLE
-      </div>
+      {onPreviewChange ? (
+        <div className="eventKioskExampleWatermark" aria-hidden="true">
+          EXAMPLE
+        </div>
+      ) : null}
       <div className="eventKioskMockupHeader">
         <div>
           <div className="eventKioskMockupEvent">
@@ -370,7 +372,6 @@ export default function EventKioskPreview({
             </div>
           ) : null}
         </div>
-        <div className="eventKioskMockupBadge">EXAMPLE ENTRY</div>
       </div>
       <div className="eventKioskMockRows">
         {rows.map((row) => (
@@ -392,11 +393,6 @@ export default function EventKioskPreview({
             ))}
           </div>
         ))}
-      </div>
-      <div className="eventKioskMockSubmit">
-        <button type="button" disabled>
-          Example only — not submitted
-        </button>
       </div>
     </div>
   );
