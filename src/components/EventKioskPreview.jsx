@@ -34,6 +34,25 @@ const SOCIAL_PLATFORM_ICONS = {
   Telegram: "➤",
 };
 
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8.4 5.5 9.7 3.8h4.6l1.3 1.7H19A2.5 2.5 0 0 1 21.5 8v9A2.5 2.5 0 0 1 19 19.5H5A2.5 2.5 0 0 1 2.5 17V8A2.5 2.5 0 0 1 5 5.5h3.4Z" />
+      <circle cx="12" cy="12.5" r="4" />
+    </svg>
+  );
+}
+
+function UploadPhotoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="3.5" width="18" height="17" rx="2.5" />
+      <circle cx="8.5" cy="9" r="1.5" />
+      <path d="m5.5 17 4.2-4.4 3.1 3 2.2-2.3 3.5 3.7M12 11V5.8m0 0L9.8 8M12 5.8 14.2 8" />
+    </svg>
+  );
+}
+
 function readMockPhoto(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -221,15 +240,20 @@ function PreviewField({ field, preview, onChange }) {
           {preview?.photoDataUrl ? (
             <img src={preview.photoDataUrl} alt="Example attendee" />
           ) : (
-            <span aria-hidden="true">●</span>
+            <span className="eventKioskMockPhotoPlaceholder" aria-hidden="true">
+              <CameraIcon />
+            </span>
           )}
           <span>{preview?.photoDataUrl ? "Photo selected" : "No photo"}</span>
-          {isEditable ? (
-            <>
-              <label className="eventKioskMockPhotoButton">
-                {preview?.photoDataUrl
-                  ? "Replace photo/file"
-                  : "Upload photo/file"}
+          <div className="eventKioskMockPhotoActions">
+            <label
+              className={`eventKioskMockPhotoButton ${!isEditable ? "isPreviewOnly" : ""}`}
+            >
+              <UploadPhotoIcon />
+              <span>
+                {preview?.photoDataUrl ? "Replace photo" : "Upload photo"}
+              </span>
+              {isEditable ? (
                 <input
                   type="file"
                   accept="image/*"
@@ -240,17 +264,14 @@ function PreviewField({ field, preview, onChange }) {
                     event.target.value = "";
                   }}
                 />
-              </label>
-              {preview?.photoDataUrl ? (
-                <button
-                  type="button"
-                  onClick={() => onChange({ photoDataUrl: "" })}
-                >
-                  Remove
-                </button>
               ) : null}
-              <label className="eventKioskMockPhotoButton">
-                Take photo
+            </label>
+            <label
+              className={`eventKioskMockPhotoButton ${!isEditable ? "isPreviewOnly" : ""}`}
+            >
+              <CameraIcon />
+              <span>Take photo</span>
+              {isEditable ? (
                 <input
                   type="file"
                   accept="image/*"
@@ -262,12 +283,20 @@ function PreviewField({ field, preview, onChange }) {
                     event.target.value = "";
                   }}
                 />
-              </label>
-              <span className="eventKioskMockPhotoHelp">
-                Add an optional profile photo.
-              </span>
-            </>
-          ) : null}
+              ) : null}
+            </label>
+            {isEditable && preview?.photoDataUrl ? (
+              <button
+                type="button"
+                onClick={() => onChange({ photoDataUrl: "" })}
+              >
+                Remove
+              </button>
+            ) : null}
+          </div>
+          <span className="eventKioskMockPhotoHelp">
+            Add an optional profile photo.
+          </span>
         </div>
       ) : null}
       {["select", "multi-select", "checkbox"].includes(field.type) ? (
