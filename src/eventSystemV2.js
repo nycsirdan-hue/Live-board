@@ -546,6 +546,7 @@ export function createEventDefinition() {
     },
     kioskPreview: createKioskPreview(),
     legend: {
+      enabled: true,
       items: [],
       columns: 2,
       fillDirection: "column",

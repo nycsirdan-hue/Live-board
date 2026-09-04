@@ -2845,6 +2845,7 @@ export default function App() {
     eventDisplayOptions[0] ||
     null;
   const activeEventLegendItems = runtimeEventConfig?.legend?.items || [];
+  const activeEventLegendEnabled = runtimeEventConfig?.legend?.enabled !== false;
   const activeEventLegendColumns = runtimeEventConfig?.legend?.columns === 1 ? 1 : 2;
   const normalizeLegendStep = (value) => Number(value) >= -5 && Number(value) <= 5 ? Number(value) : 0;
   const activeEventLegendSize = normalizeLegendStep(runtimeEventConfig?.legend?.size);
@@ -11202,7 +11203,7 @@ export default function App() {
               </div>
             ) : null}
 
-            <div className="displayBoardHeader displayBoardHeaderWithLegend">
+            <div className={`displayBoardHeader ${activeEventLegendEnabled ? "displayBoardHeaderWithLegend" : "displayBoardHeaderWithoutLegend"}`}>
               <div className="flex min-w-0 flex-col gap-2">
                 <div className="displayBoardTitleBlock">
                   <h1 className="displayBoardInlineTitle">
@@ -11238,7 +11239,7 @@ export default function App() {
                 </div>
               </div>
 
-              <aside
+              {activeEventLegendEnabled ? <aside
                 className="displayIconLegend flex h-full w-[36rem] shrink-0 self-stretch flex-col justify-center px-2 py-4 text-white"
                 aria-label="Board icon guide"
               >
@@ -11279,7 +11280,7 @@ export default function App() {
                     </div>
                   </div>
                 )}
-              </aside>
+              </aside> : null}
 
               <div className="flex h-full w-[36rem] shrink-0 self-stretch flex-col justify-center gap-4 rounded-2xl border border-white/20 bg-black/30 px-6 py-4 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md">
                 <div className="grid w-full grid-cols-2 items-end gap-4 border-b border-white/15 pb-4 text-center">

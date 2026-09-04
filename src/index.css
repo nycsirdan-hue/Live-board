@@ -3338,3 +3338,46 @@ body:has(.displayBoardSurface) #root {
 .eventV2RuntimeLayout .eventV2FieldSurface .krinklesSocialSection {
   background: color-mix(in srgb, var(--event-field-accent) 10%, #020617) !important;
 }
+
+/* Event displays without a legend use the reclaimed header width for event information. */
+.displayBoardHeader.displayBoardHeaderWithoutLegend {
+  grid-template-columns: minmax(0, 1fr) 36rem !important;
+  column-gap: 30px !important;
+}
+
+.displayBoardHeaderWithoutLegend .displayBoardInlineTitle {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 10px !important;
+  white-space: normal !important;
+}
+
+.displayBoardHeaderWithoutLegend .displayBoardTitleDivider {
+  display: none !important;
+}
+
+.displayBoardHeaderWithoutLegend .displayBoardEventName {
+  font-size: clamp(64px, 6vw, 116px) !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.displayBoardHeaderWithoutLegend .displayBoardEventDescription {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  padding: 0 !important;
+  font-size: clamp(30px, 2.5vw, 52px) !important;
+  line-height: 1.08 !important;
+  white-space: normal !important;
+}
+
+.displayBoardHeaderWithoutLegend .displayBoardEventDescriptionText {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+  line-clamp: 3 !important;
+  line-height: 1.08 !important;
+}

@@ -1716,6 +1716,22 @@ export default function EventSystemV2({
                     Choose from the items and icons already used by LiveBoard,
                     then arrange the selected event legend.
                   </p>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cyan-400/30 bg-cyan-400/5 p-3">
+                    <div>
+                      <div className="text-sm font-black text-white">Show legend on this event</div>
+                      <div className="mt-1 text-xs text-slate-400">
+                        When hidden, the display gives its title and short description the extra space.
+                      </div>
+                    </div>
+                    <TogglePill
+                      enabled={draft.legend.enabled !== false}
+                      onChange={(enabled) =>
+                        patchDraft({ legend: { ...draft.legend, enabled } })
+                      }
+                      enabledLabel="Legend shown"
+                      disabledLabel="Legend hidden"
+                    />
+                  </div>
                   <div className="mt-4 max-w-md rounded-xl border border-slate-700 bg-slate-900 p-3">
                     <Input label="LiveBoard background color scheme">
                       <select
@@ -2089,9 +2105,54 @@ export default function EventSystemV2({
                               item.icon
                             )}
                           </span>
-                          <span className="min-w-0 flex-1 text-sm font-bold text-white">
-                            {item.label}
-                          </span>
+                          {String(item.key || "").startsWith("custom-") ? (
+                            <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[110px_minmax(0,1fr)]">
+                              <Input label="Emoji / icon">
+                                <input
+                                  aria-label="Custom legend emoji or icon"
+                                  className={inputClass}
+                                  value={item.icon || ""}
+                                  onChange={(event) =>
+                                    patchDraft({
+                                      legend: {
+                                        ...draft.legend,
+                                        items: draft.legend.items.map((value) =>
+                                          value.id === item.id
+                                            ? { ...value, icon: event.target.value }
+                                            : value,
+                                        ),
+                                      },
+                                    })
+                                  }
+                                  placeholder="✨"
+                                />
+                              </Input>
+                              <Input label="Legend name">
+                                <input
+                                  aria-label="Custom legend item name"
+                                  className={inputClass}
+                                  value={item.label || ""}
+                                  onChange={(event) =>
+                                    patchDraft({
+                                      legend: {
+                                        ...draft.legend,
+                                        items: draft.legend.items.map((value) =>
+                                          value.id === item.id
+                                            ? { ...value, label: event.target.value }
+                                            : value,
+                                        ),
+                                      },
+                                    })
+                                  }
+                                  placeholder="Legend item name"
+                                />
+                              </Input>
+                            </div>
+                          ) : (
+                            <span className="min-w-0 flex-1 text-sm font-bold text-white">
+                              {item.label}
+                            </span>
+                          )}
                           <button
                             type="button"
                             onClick={() =>
@@ -2122,8 +2183,8 @@ export default function EventSystemV2({
                             ...draft.legend.items,
                             {
                               id: crypto.randomUUID(),
-                              icon: "●",
-                              label: "Custom legend item",
+                              icon: "",
+                              label: "",
                               key: `custom-${crypto.randomUUID()}`,
                             },
                           ],
