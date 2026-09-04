@@ -2441,6 +2441,7 @@ export default function App() {
   const [spankingLimitsOther, setSpankingLimitsOther] = useState("");
   const [spankingExperienceLevel, setSpankingExperienceLevel] = useState("");
   const [quickTags, setQuickTags] = useState([]);
+  const [eventV2FieldValues, setEventV2FieldValues] = useState({});
   const [message, setMessage] = useState("");
   const [entrySuccess, setEntrySuccess] = useState(false);
   const [mobileEntryStart, setMobileEntryStart] = useState("choose");
@@ -2683,6 +2684,19 @@ export default function App() {
   const activeFormBuilderConfig = runtimeEventConfig?.version === 2
     ? eventConfigToLegacyFormConfig(runtimeEventConfig)
     : formBuilderConfigs[runtimeEntryFormPreset] || createDefaultFormBuilderConfigs()[runtimeEntryFormPreset];
+  const runtimeEventFields = runtimeEventConfig?.version === 2
+    ? (runtimeEventConfig.entryForm?.rows || []).flatMap((row) =>
+        (row.fields || []).filter((field) => field.visible !== false),
+      )
+    : [];
+  const builtInRuntimeFieldKeys = new Set([
+    "name", "photo", "social", "position", "identity", "seeking",
+    "orientation", "intention", "sexual", "interests", "vibe",
+    "lookingFor", "topImplements", "bottomImplements", "limits", "experience",
+  ]);
+  const customRuntimeFields = runtimeEventFields.filter(
+    (field) => !builtInRuntimeFieldKeys.has(field.legacyKey || field.type),
+  );
   const getRuntimeFieldLayoutStyle = (fieldKey) => {
     if (runtimeEventConfig?.version !== 2) return undefined;
     const rows = runtimeEventConfig.entryForm?.rows || [];
@@ -2694,20 +2708,27 @@ export default function App() {
       thirds: [4, 4, 4],
     };
     for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
-      const fields = rows[rowIndex].fields || [];
-      const fieldIndex = fields.findIndex((field) => (field.legacyKey || field.type) === fieldKey);
+      const fields = (rows[rowIndex].fields || []).filter(
+        (field) => field.visible !== false,
+      );
+      const fieldIndex = fields.findIndex(
+        (field) => field.id === fieldKey || (field.legacyKey || field.type) === fieldKey,
+      );
       if (fieldIndex >= 0) {
         const spans =
           rows[rowIndex].layout === "thirds" && fields.length === 2
             ? [4, 8]
             : spanMap[rows[rowIndex].layout] || [12];
+        const span = spans[fieldIndex] || 12;
+        const columnStart =
+          spans.slice(0, fieldIndex).reduce((total, value) => total + value, 0) + 1;
         const accent = {
           blue: "#0066ff", red: "#ff1f1f", yellow: "#ffd400", green: "#00b83f",
           orange: "#ff7300", purple: "#7b2cff", pink: "#ff2d8d", teal: "#00b8a9",
           black: "#050505", grey: "#808080",
         }[fields[fieldIndex].color] || "#0066ff";
         return {
-          gridColumn: `span ${spans[fieldIndex] || 12} / span ${spans[fieldIndex] || 12}`,
+          gridColumn: `${columnStart} / span ${span}`,
           order: rowIndex * 10 + fieldIndex,
           "--event-field-accent": accent,
         };
@@ -2715,7 +2736,11 @@ export default function App() {
     }
     return undefined;
   };
-  const getFormBuilderSection = (key) => activeFormBuilderConfig?.[key] || null;
+  const getFormBuilderSection = (key) => {
+    const section = activeFormBuilderConfig?.[key];
+    if (section) return section;
+    return runtimeEventConfig?.version === 2 ? { enabled: false } : null;
+  };
   const getEnabledFormOptions = (key, fallback = []) => {
     const section = getFormBuilderSection(key);
     return section
@@ -4701,6 +4726,7 @@ export default function App() {
     setSpankingLimitItems([]);
     setSpankingLimitsOther("");
     setSpankingExperienceLevel("");
+    setEventV2FieldValues({});
     setMessage("");
     setEntrySuccess(false);
     removeParticipantPhoto();
@@ -6037,6 +6063,18 @@ export default function App() {
       return;
     }
 
+    for (const field of customRuntimeFields) {
+      const key = field.legacyKey || field.id;
+      const value = eventV2FieldValues[key];
+      const hasValue = Array.isArray(value)
+        ? value.length > 0
+        : Boolean(String(value || "").trim());
+      if (field.required && !hasValue) {
+        setMessage(`Please complete: ${field.label || "Required field"}.`);
+        return;
+      }
+    }
+
     if (!isMensSpankingEntryForm && !isConnectionEntryForm && getFormBuilderSection("position")?.enabled !== false && !position) {
       setMessage("Please choose Top, Bottom, or Switch.");
       return;
@@ -6204,7 +6242,19 @@ export default function App() {
     const photoItem = uploadedParticipantPhoto
       ? [createParticipantPhotoMarker(uploadedParticipantPhoto)]
       : [];
-    const finalCustomItems = [...customItems, ...orientationItem, ...quickTagItems, ...photoItem];
+    const eventV2CustomItems = customRuntimeFields.flatMap((field) => {
+      const key = field.legacyKey || field.id;
+      const value = eventV2FieldValues[key];
+      const values = [
+        ...(Array.isArray(value) ? value : [value]),
+        eventV2FieldValues[`${key}__custom`],
+      ];
+      return values
+        .map((item) => String(item || "").trim())
+        .filter(Boolean)
+        .map((item) => `${field.label || "Answer"}: ${item}`);
+    });
+    const finalCustomItems = [...customItems, ...orientationItem, ...quickTagItems, ...eventV2CustomItems, ...photoItem];
 
     if (
       socialHandleDraftPlatform === "Other" &&
@@ -10538,7 +10588,7 @@ export default function App() {
 
                   {!isMenOnlyEntryForm ? (
                     <>
-                  <div className={`${getFormBuilderSection("identity")?.enabled === false ? "hidden " : ""}rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4`}>
+                  <div style={getRuntimeFieldLayoutStyle("identity")} className={`eventV2FieldSurface ${getFormBuilderSection("identity")?.enabled === false ? "hidden " : ""}rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4`}>
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold text-slate-100">{getFormBuilderSection("identity")?.label || "I identify as"}</label>
                       <p className="mt-1 text-xs leading-5 text-slate-500">{getFormBuilderSection("identity")?.prompt || "Choose one, or use Other."}</p>
@@ -10571,7 +10621,7 @@ export default function App() {
                     ) : null}
                   </div>
 
-                  <div className={`${getFormBuilderSection("seeking")?.enabled === false ? "hidden " : ""}rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4`}>
+                  <div style={getRuntimeFieldLayoutStyle("seeking")} className={`eventV2FieldSurface ${getFormBuilderSection("seeking")?.enabled === false ? "hidden " : ""}rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4`}>
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold text-slate-100">{getFormBuilderSection("seeking")?.label || "Seeking"}</label>
                       <p className="mt-1 text-xs leading-5 text-slate-500">{getFormBuilderSection("seeking")?.prompt || "Choose who you are seeking tonight."}</p>
@@ -10610,7 +10660,7 @@ export default function App() {
 
                 <div className={`stingKioskIntentionGrid mt-4 grid gap-4 ${isMenOnlyEntryForm || isKrinklesEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-[1fr_0.85fr]"}`}>
                   {!isMenOnlyEntryForm && !isKrinklesEntryForm && getFormBuilderSection("orientation")?.enabled !== false ? (
-                  <div className="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
+                  <div style={getRuntimeFieldLayoutStyle("orientation")} className="eventV2FieldSurface rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold">
   <span className="text-slate-100">{getFormBuilderSection("orientation")?.label || "Orientation"}</span>
@@ -10947,6 +10997,97 @@ export default function App() {
                     /> : <input id="interest-input" value={interestInput} onChange={(e) => setInterestInput(e.target.value)} placeholder={getFormBuilderSection("interests")?.customField?.placeholder || ""} maxLength={getFormBuilderSection("interests")?.customField?.maxLength || 160} className={`mt-2 w-full rounded-2xl border bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 ${(isMenOnlyEntryForm && !isMensSpankingEntryForm) ? "border-violet-500/40 focus:border-violet-300" : "border-amber-500/40 focus:border-amber-300"}`} />}</> : null}
                   </div>
                 </div>
+
+                {customRuntimeFields.map((field) => {
+                  const key = field.legacyKey || field.id;
+                  const value = eventV2FieldValues[key] || "";
+                  const selectedValues = Array.isArray(value) ? value : [];
+                  const isChoiceField = ["select", "multi-select", "checkbox"].includes(field.type);
+                  const isSingleChoice = field.type === "select";
+                  const setFieldValue = (nextValue) =>
+                    setEventV2FieldValues((current) => ({ ...current, [key]: nextValue }));
+
+                  return (
+                    <div
+                      key={field.id}
+                      style={getRuntimeFieldLayoutStyle(key)}
+                      className="eventV2FieldSurface rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4"
+                    >
+                      <div className="mb-3 border-b border-slate-800 pb-2">
+                        <label className="block text-sm font-semibold text-slate-100">
+                          {field.label || "Question"}{field.required ? " *" : ""}
+                        </label>
+                        {field.helperText ? (
+                          <p className="mt-1 text-xs leading-5 text-slate-500">{field.helperText}</p>
+                        ) : null}
+                      </div>
+
+                      {isChoiceField ? (
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                          {(field.options || []).map((option) => {
+                            const active = selectedValues.includes(option);
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() =>
+                                  setFieldValue(
+                                    isSingleChoice
+                                      ? active ? [] : [option]
+                                      : active
+                                        ? selectedValues.filter((item) => item !== option)
+                                        : [...selectedValues, option],
+                                  )
+                                }
+                                className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${
+                                  active
+                                    ? "border-sky-400 bg-sky-400/10 text-sky-100"
+                                    : "border-slate-700 bg-slate-950 text-slate-200"
+                                }`}
+                              >
+                                {option}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : field.type === "textarea" ? (
+                        <textarea
+                          value={String(value)}
+                          onChange={(event) => setFieldValue(event.target.value)}
+                          placeholder={field.helperText || "Type your answer"}
+                          rows={field.height === "tall" ? 5 : 3}
+                          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          value={String(value)}
+                          onChange={(event) => setFieldValue(event.target.value)}
+                          placeholder={field.helperText || "Type your answer"}
+                          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                        />
+                      )}
+
+                      {field.customEntry?.enabled && isChoiceField ? (
+                        <label className="mt-3 block text-sm font-semibold text-slate-200">
+                          {field.customEntry.label || "Other"}
+                          <input
+                            type="text"
+                            value={eventV2FieldValues[`${key}__custom`] || ""}
+                            onChange={(event) =>
+                              setEventV2FieldValues((current) => ({
+                                ...current,
+                                [`${key}__custom`]: event.target.value,
+                              }))
+                            }
+                            placeholder={field.customEntry.placeholder || "Type your answer"}
+                            className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                          />
+                        </label>
+                      ) : null}
+                    </div>
+                  );
+                })}
 
                 <div className="stingKioskActions mt-4 flex flex-wrap gap-3">
                   <button
