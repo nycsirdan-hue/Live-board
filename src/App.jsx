@@ -11203,7 +11203,7 @@ export default function App() {
               </div>
             ) : null}
 
-            <div className={`displayBoardHeader ${activeEventLegendEnabled ? "displayBoardHeaderWithLegend" : "displayBoardHeaderWithoutLegend"}`}>
+            <div className={`displayBoardHeader ${activeEventLegendEnabled ? `displayBoardHeaderWithLegend ${activeEventLegendColumns === 1 ? "displayBoardHeaderLegendOneColumn" : ""}` : "displayBoardHeaderWithoutLegend"}`}>
               <div className="flex min-w-0 flex-col gap-2">
                 <div className="displayBoardTitleBlock">
                   <h1 className="displayBoardInlineTitle">
@@ -11240,7 +11240,7 @@ export default function App() {
               </div>
 
               {activeEventLegendEnabled ? <aside
-                className="displayIconLegend flex h-full w-[36rem] shrink-0 self-stretch flex-col justify-center px-2 py-4 text-white"
+                className={`displayIconLegend ${activeEventLegendColumns === 1 ? "displayIconLegendOneColumn" : ""} flex h-full w-[36rem] shrink-0 self-stretch flex-col justify-center px-2 py-4 text-white`}
                 aria-label="Board icon guide"
               >
                 {runtimeEventConfig?.version === 2 && activeEventLegendItems.length ? (

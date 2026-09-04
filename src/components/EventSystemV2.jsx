@@ -1996,7 +1996,7 @@ export default function EventSystemV2({
                         className="h-[22.5rem] w-[36rem] max-w-none overflow-hidden rounded-2xl border border-cyan-400/35 bg-[#020617] px-2 py-4 shadow-[inset_0_0_45px_rgba(8,145,178,0.08)]"
                       >
                         <div
-                          className="grid content-start font-bold leading-tight text-white"
+                          className={`grid content-start font-bold leading-tight text-white ${Number(draft.legend.columns || 2) === 1 ? "ml-auto w-fit justify-items-end text-right" : "w-full"}`}
                           style={{
                             gridTemplateColumns: `repeat(${Number(draft.legend.columns || 2)}, minmax(0, 1fr))`,
                             gridTemplateRows:
@@ -2018,7 +2018,7 @@ export default function EventSystemV2({
                             draft.legend.items.map((item) => (
                               <div
                                 key={`preview-${item.id}`}
-                                className="flex min-w-0 items-center gap-[0.8em]"
+                                className={`flex min-w-0 items-center gap-[0.8em] ${Number(draft.legend.columns || 2) === 1 ? "justify-end" : ""}`}
                               >
                                 <span
                                   className="grid shrink-0 place-items-center rounded-full bg-black"

@@ -3345,6 +3345,28 @@ body:has(.displayBoardSurface) #root {
   column-gap: 30px !important;
 }
 
+.displayBoardHeader.displayBoardHeaderWithLegend.displayBoardHeaderLegendOneColumn {
+  grid-template-columns: minmax(0, 1fr) 24rem 36rem !important;
+}
+
+.displayIconLegend.displayIconLegendOneColumn {
+  width: 24rem !important;
+  align-items: flex-end !important;
+  text-align: right !important;
+}
+
+.displayIconLegendOneColumn > .grid {
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin-left: auto !important;
+  justify-items: end !important;
+}
+
+.displayIconLegendOneColumn > .grid > div {
+  width: 100% !important;
+  justify-content: flex-end !important;
+}
+
 .displayBoardHeaderWithoutLegend .displayBoardInlineTitle {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) !important;
