@@ -3339,6 +3339,23 @@ body:has(.displayBoardSurface) #root {
   background: color-mix(in srgb, var(--event-field-accent) 10%, #020617) !important;
 }
 
+/* Phone entry forms: keep every answer choice in one readable vertical list. */
+@media (max-width: 639px) {
+  .eventV2RuntimeLayout .eventV2FieldSurface .grid:has(> button) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .eventV2RuntimeLayout .eventV2FieldSurface .flex.flex-wrap:has(> button) {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .eventV2RuntimeLayout .eventV2FieldSurface .grid:has(> button) > button,
+  .eventV2RuntimeLayout .eventV2FieldSurface .flex.flex-wrap:has(> button) > button {
+    width: 100% !important;
+  }
+}
+
 /* Event displays without a legend use the reclaimed header width for event information. */
 .displayBoardHeader.displayBoardHeaderWithoutLegend {
   grid-template-columns: minmax(0, 1fr) 36rem !important;
