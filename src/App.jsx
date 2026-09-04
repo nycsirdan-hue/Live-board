@@ -6299,7 +6299,7 @@ export default function App() {
             : socialPlatform
           : null;
 
-    const { error } = await supabase.from("board_entries").insert({
+    const boardEntryPayload = {
       name: name.trim() || (isMensSpankingEntryForm ? "Anonymous" : ""),
       social_handle: handleValue || null,
       social_platform: platformValue || null,
@@ -6312,7 +6312,13 @@ export default function App() {
       custom_items: finalCustomItems.sort((a, b) => a.localeCompare(b)),
       entry_kind: "participant",
       active: true,
-    });
+    };
+
+    const { data: savedBoardEntry, error } = await supabase
+      .from("board_entries")
+      .insert(boardEntryPayload)
+      .select("id")
+      .single();
 
     setSaving(false);
 
@@ -6322,6 +6328,32 @@ export default function App() {
       }
       setMessage(`Could not save entry: ${error.message}`);
       return;
+    }
+
+    if (savedProfileResult?.profile && savedProfileResult?.event && savedBoardEntry?.id) {
+      try {
+        const cardResponse = await fetch("/api/connection-board", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            createCard: true,
+            email: savedProfileEmail.trim().toLowerCase(),
+            eventSlug: savedProfileResult.event.slug,
+            eventTitle: savedProfileResult.event.title,
+            formKey: savedProfileResult.event.formKey,
+            liveboardEntryId: savedBoardEntry.id,
+            card: { liveboardPayload: boardEntryPayload },
+          }),
+        });
+        const cardData = await cardResponse.json();
+        if (!cardResponse.ok || !cardData?.ok) {
+          throw new Error(cardData?.error || "The event card could not be saved to your profile.");
+        }
+      } catch (cardError) {
+        setSaving(false);
+        setMessage(`You were added to the board, but the card was not saved to your profile: ${cardError.message}`);
+        return;
+      }
     }
 
     resetEntryForm();
@@ -9833,6 +9865,13 @@ export default function App() {
                           Use a Saved Profile
                         </span>
                       </button>
+
+                      <a
+                        href="/profiles"
+                        className="group rounded-full border border-amber-300/45 bg-[linear-gradient(90deg,rgba(251,191,36,0.16),rgba(255,255,255,0.03))] px-6 py-4 text-center text-base font-bold text-amber-50 shadow-[0_10px_30px_rgba(0,0,0,0.16)] transition hover:border-amber-200/70 hover:bg-amber-400/20"
+                      >
+                        Create a New Profile
+                      </a>
                     </div>
                   </>
                 ) : (
@@ -9849,7 +9888,7 @@ export default function App() {
                       ← Back
                     </button>
 
-                    {!(savedProfileResult?.profile && savedProfileResult.cards.length > 0) ? (
+                    {!savedProfileResult ? (
                       <>
                         <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-100">
                           Use a Saved Profile
@@ -9902,17 +9941,23 @@ export default function App() {
                     {savedProfileResult && !savedProfileResult.profile ? (
                       <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-950 p-5">
                         <h3 className="font-semibold text-slate-100">
-                          No saved profile found
+                          No Studio125 Profile found
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-slate-400">
-                          You can still add yourself to the Connection Board by creating a new entry.
+                          Create a profile to save Connection Cards for this event and future events, or continue with a one-time entry.
                         </p>
+                        <a
+                          href="/profiles"
+                          className="mt-4 block w-full rounded-full bg-amber-300 px-5 py-3 text-center font-bold text-slate-950"
+                        >
+                          Create a New Profile
+                        </a>
                         <button
                           type="button"
                           onClick={() => setMobileEntryStart("new")}
-                          className="mt-4 w-full rounded-2xl bg-slate-100 px-5 py-3 font-bold text-slate-950"
+                          className="mt-3 w-full rounded-full border border-white/20 px-5 py-3 font-bold text-slate-100"
                         >
-                          Create a New Entry
+                          Continue Without a Profile
                         </button>
                       </div>
                     ) : null}
@@ -9923,14 +9968,14 @@ export default function App() {
                           Profile found
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-slate-400">
-                          There is not a saved Connection Card for {savedProfileResult.event?.title || "this event"} yet.
+                          You have a Studio125 Profile, but you don’t have a Connection Card for {savedProfileResult.event?.title || "this event"}. Would you like to create one?
                         </p>
                         <button
                           type="button"
                           onClick={() => setMobileEntryStart("new")}
-                          className="mt-4 w-full rounded-2xl bg-slate-100 px-5 py-3 font-bold text-slate-950"
+                          className="mt-4 w-full rounded-full bg-amber-300 px-5 py-3 font-bold text-slate-950"
                         >
-                          Create a New Entry
+                          Create a New Event Card
                         </button>
                       </div>
                     ) : null}
@@ -10024,6 +10069,13 @@ export default function App() {
                             </div>
                           </div>
                         ))}
+                        <button
+                          type="button"
+                          onClick={() => setMobileEntryStart("new")}
+                          className="w-full rounded-full bg-amber-300 px-5 py-3 font-bold text-slate-950"
+                        >
+                          Create Another Card for This Event
+                        </button>
                       </div>
                     ) : null}
                   </>
