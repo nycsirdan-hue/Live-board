@@ -86,7 +86,13 @@ function readMockPhoto(file) {
   });
 }
 
-function PreviewField({ field, preview, onChange, hasPositionModifiers }) {
+function PreviewField({
+  field,
+  preview,
+  onChange,
+  hasPositionModifiers,
+  hideCustomEntries = false,
+}) {
   const key = fieldKey(field);
   const selected = preview?.selections?.[key] || [];
   const custom = preview?.customEntries?.[key] || [];
@@ -167,7 +173,7 @@ function PreviewField({ field, preview, onChange, hasPositionModifiers }) {
               })}
             </div>
           ) : null}
-          {isIdentifierName && field.customEntry?.enabled ? (
+          {isIdentifierName && field.customEntry?.enabled && !hideCustomEntries ? (
             <label className={`eventKioskMockCustomInput ${custom.length ? "isFilled" : ""}`}>
               <span>Custom Role</span>
               {isEditable ? (
@@ -385,12 +391,12 @@ function PreviewField({ field, preview, onChange, hasPositionModifiers }) {
             return <div key={groupKey} className={`eventKioskMockModifierGroup is${groupKey === "top" ? "Top" : "Bottom"}`}>
               <div className="eventKioskMockModifierTitle"><span>{groupKey === "top" ? "↑" : "↓"}</span>{group.label}</div>
               <div className="eventKioskMockChoices">{(group.options || []).map((option) => <span key={option} className={groupSelected.includes(option) ? "isSelected" : ""}>{option}</span>)}</div>
-              {group.customEntry?.enabled ? <div className="eventKioskMockInput">{group.customEntry.placeholder || "Add your own answer"}</div> : null}
+              {group.customEntry?.enabled && !hideCustomEntries ? <div className="eventKioskMockInput">{group.customEntry.placeholder || "Add your own answer"}</div> : null}
             </div>;
           })}
         </div>
       ) : null}
-      {field.customEntry?.enabled && key !== "social" && !isIdentifierName ? (
+      {field.customEntry?.enabled && key !== "social" && !isIdentifierName && !hideCustomEntries ? (
         <label
           className={`eventKioskMockCustomInput ${custom.length ? "isFilled" : ""}`}
         >
@@ -445,12 +451,22 @@ export default function EventKioskPreview({
   eventConfig,
   compact = false,
   onPreviewChange,
+  teaser = false,
 }) {
   const preview = eventConfig?.kioskPreview || {};
   const rows = (eventConfig?.entryForm?.rows || [])
     .map((row) => ({
       ...row,
-      fields: (row.fields || []).filter((field) => field.visible !== false),
+      fields: (row.fields || []).filter((field) => {
+        if (field.visible === false) return false;
+        if (!teaser) return true;
+        const options = field.options || [];
+        const isCustomOnly =
+          ["select", "multi-select", "checkbox"].includes(field.type) &&
+          options.length === 0 &&
+          field.customEntry?.enabled;
+        return !isCustomOnly;
+      }),
     }))
     .filter((row) => row.fields.length);
   const hasPositionModifiers = rows.some((row) =>
@@ -502,6 +518,7 @@ export default function EventKioskPreview({
                 preview={preview}
                 onChange={onPreviewChange}
                 hasPositionModifiers={hasPositionModifiers}
+                hideCustomEntries={teaser}
               />
             ))}
           </div>

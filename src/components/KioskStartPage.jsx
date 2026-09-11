@@ -455,7 +455,9 @@ export default function KioskStartPage({ onStart }) {
 
           {kioskEventConfig &&
           kioskEventConfig.kioskPreview?.enabled !== false ? (
-            <EventKioskPreview eventConfig={kioskEventConfig} />
+            <div className="presetKioskPreviewViewport">
+              <EventKioskPreview eventConfig={kioskEventConfig} teaser />
+            </div>
           ) : (
             <div className="presetKioskFormPreview">
               <div className="presetPreviewIdentityRow">
