@@ -430,6 +430,7 @@ export default function EventSystemV2({
   const [selectedRowId, setSelectedRowId] = useState("");
   const [draggedFieldId, setDraggedFieldId] = useState("");
   const [draggedLegendId, setDraggedLegendId] = useState("");
+  const [modifierNewOptions, setModifierNewOptions] = useState({});
   const [draggedCardFieldId, setDraggedCardFieldId] = useState("");
   const v2Events = useMemo(
     () => events.filter((event) => event.eventConfig?.version === 2),
@@ -444,6 +445,15 @@ export default function EventSystemV2({
     }
     return null;
   }, [draft, selectedFieldId]);
+  const positionModifierFields = useMemo(
+    () =>
+      draft.entryForm.rows
+        .flatMap((row) => row.fields || [])
+        .filter((field) =>
+          ["topImplements", "bottomImplements"].includes(fieldKey(field)),
+        ),
+    [draft],
+  );
   const cardFields = useMemo(() => {
     const eligible = draft.entryForm.rows
       .flatMap((row) => row.fields || [])
@@ -565,6 +575,19 @@ export default function EventSystemV2({
         })),
       },
     }));
+  const patchFieldById = (fieldId, patch) =>
+    setDraft((current) => ({
+      ...current,
+      entryForm: {
+        ...current.entryForm,
+        rows: current.entryForm.rows.map((row) => ({
+          ...row,
+          fields: row.fields.map((field) =>
+            field.id === fieldId ? { ...field, ...patch } : field,
+          ),
+        })),
+      },
+    }));
   const assignFieldLegend = (legendKey) =>
     setDraft((current) => {
       const libraryItem = LEGEND_LIBRARY.find((item) => item.key === legendKey);
@@ -637,9 +660,21 @@ export default function EventSystemV2({
       ...current,
       entryForm: {
         ...current.entryForm,
-        rows: current.entryForm.rows.map((row) =>
-          row.id === rowId ? { ...row, fields: [...row.fields, field] } : row,
-        ),
+        rows: [
+          ...current.entryForm.rows.map((row) =>
+            row.id === rowId ? { ...row, fields: [...row.fields, field] } : row,
+          ),
+          ...(block.modifierFields?.length
+            ? [{
+                id: crypto.randomUUID(),
+                layout: "50-50",
+                fields: block.modifierFields.map((modifierField) => ({
+                  ...clone(modifierField),
+                  id: crypto.randomUUID(),
+                })),
+              }]
+            : []),
+        ],
       },
     }));
     setSelectedFieldId(field.id);
@@ -1318,6 +1353,11 @@ export default function EventSystemV2({
                                 {field.type} ·{" "}
                                 {field.required ? "required" : "optional"}
                               </div>
+                              {fieldKey(field) === "position" && positionModifierFields.length ? (
+                                <div className="mt-2 rounded-lg border border-violet-300/60 bg-violet-400/20 px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-violet-50">
+                                  Position with modifiers · Top / Bottom / Switch
+                                </div>
+                              ) : null}
                               {field.legendKey ? (
                                 <div className="mt-2 text-[10px] font-bold text-cyan-100">
                                   {LEGEND_LIBRARY.find((item) => item.key === field.legendKey)?.icon || "•"}{" "}
@@ -1436,6 +1476,35 @@ export default function EventSystemV2({
                           disabledLabel="Optional"
                         />
                       </div>
+                      {fieldKey(selectedField) === "position" && positionModifierFields.length ? (
+                        <div className="rounded-xl border border-violet-400/50 bg-violet-500/10 p-3">
+                          <div className="text-xs font-black uppercase tracking-[0.12em] text-violet-100">Position modifier groups</div>
+                          <p className="mt-1 text-[11px] leading-4 text-violet-100/65">Top shows the red group, Bottom shows the green group, and Switch shows both on the entry kiosk.</p>
+                          <div className="mt-3 space-y-4">
+                            {positionModifierFields.map((modifierField) => {
+                              const isTopModifier = fieldKey(modifierField) === "topImplements";
+                              return (
+                                <div key={modifierField.id} className={`rounded-lg border p-3 ${isTopModifier ? "border-red-400/45 bg-red-500/10" : "border-emerald-400/45 bg-emerald-500/10"}`}>
+                                  <div className={`mb-2 text-xs font-black ${isTopModifier ? "text-red-100" : "text-emerald-100"}`}>{isTopModifier ? "↑ Top modifiers" : "↓ Bottom modifiers"}</div>
+                                  <Input label="Group label"><input className={inputClass} value={modifierField.label || ""} onChange={(e) => patchFieldById(modifierField.id, { label: e.target.value })} /></Input>
+                                  <div className="mt-2 space-y-1">
+                                    {(modifierField.options || []).map((option, optionIndex) => (
+                                      <div key={`${modifierField.id}-${optionIndex}`} className="flex gap-1">
+                                        <input className={inputClass} value={option} onChange={(e) => patchFieldById(modifierField.id, { options: modifierField.options.map((item, index) => index === optionIndex ? e.target.value : item) })} />
+                                        <button type="button" aria-label={`Remove ${option}`} onClick={() => patchFieldById(modifierField.id, { options: modifierField.options.filter((_, index) => index !== optionIndex) })} className="rounded-lg border border-red-500/40 px-2 text-red-200">×</button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div className="mt-2 flex gap-1">
+                                    <input className={inputClass} value={modifierNewOptions[modifierField.id] || ""} onChange={(e) => setModifierNewOptions((current) => ({ ...current, [modifierField.id]: e.target.value }))} placeholder="New modifier option" />
+                                    <button type="button" onClick={() => { const value = (modifierNewOptions[modifierField.id] || "").trim(); if (!value) return; patchFieldById(modifierField.id, { options: [...(modifierField.options || []), value] }); setModifierNewOptions((current) => ({ ...current, [modifierField.id]: "" })); }} className="rounded-lg bg-violet-300 px-3 text-xs font-black text-slate-950">Add</button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
                       <Input label="Card legend category">
                         <select
                           className={inputClass}

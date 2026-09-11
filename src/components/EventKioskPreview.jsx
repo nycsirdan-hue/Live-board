@@ -86,7 +86,7 @@ function readMockPhoto(file) {
   });
 }
 
-function PreviewField({ field, preview, onChange }) {
+function PreviewField({ field, preview, onChange, hasPositionModifiers }) {
   const key = fieldKey(field);
   const selected = preview?.selections?.[key] || [];
   const custom = preview?.customEntries?.[key] || [];
@@ -139,6 +139,9 @@ function PreviewField({ field, preview, onChange }) {
               : field.label || "Entry field"}
         {field.required && key !== "name" ? " *" : ""}
       </div>
+      {isPosition && hasPositionModifiers ? (
+        <div className="eventKioskMockPositionModifierBadge">Position with modifiers · Top ↑ · Bottom ↓ · Switch ↑↓</div>
+      ) : null}
       {field.helperText && !["name", "photo", "social"].includes(key) ? (
         <div className="eventKioskMockHelper">{field.helperText}</div>
       ) : null}
@@ -436,6 +439,9 @@ export default function EventKioskPreview({
       fields: (row.fields || []).filter((field) => field.visible !== false),
     }))
     .filter((row) => row.fields.length);
+  const hasPositionModifiers = rows.some((row) =>
+    row.fields.some((field) => ["topImplements", "bottomImplements"].includes(fieldKey(field))),
+  );
 
   return (
     <div
@@ -481,6 +487,7 @@ export default function EventKioskPreview({
                 field={field}
                 preview={preview}
                 onChange={onPreviewChange}
+                hasPositionModifiers={hasPositionModifiers}
               />
             ))}
           </div>

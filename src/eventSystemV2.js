@@ -457,7 +457,7 @@ export function createEventFormFromPreset(presetKey = "standard") {
 }
 
 export function createEventBlockLibrary() {
-  return EVENT_FORM_PRESETS.flatMap((preset) =>
+  const blocks = EVENT_FORM_PRESETS.flatMap((preset) =>
     createEventFormFromPreset(preset.key).rows.flatMap((row) =>
       row.fields.map((field) => ({
         key: `${preset.key}:${field.legacyKey || field.type}`,
@@ -475,6 +475,14 @@ export function createEventBlockLibrary() {
       })),
     ),
   );
+  const spankingForm = createEventFormFromPreset("mens_spanking");
+  const spankingFields = spankingForm.rows.flatMap((row) => row.fields || []);
+  const position = spankingFields.find((field) => (field.legacyKey || field.type) === "position");
+  const modifiers = spankingFields.filter((field) => ["topImplements", "bottomImplements"].includes(field.legacyKey || field.type));
+  if (position && modifiers.length === 2) {
+    blocks.unshift({ key: "mens_spanking:position-with-modifiers", presetKey: "mens_spanking", presetLabel: "Men’s spanking", label: "Position with modifiers", field: { ...position, positionModifiers: true }, modifierFields: modifiers });
+  }
+  return blocks;
 }
 
 export const LEGEND_LIBRARY = [

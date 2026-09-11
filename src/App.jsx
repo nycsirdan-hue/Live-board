@@ -2689,6 +2689,9 @@ export default function App() {
         (row.fields || []).filter((field) => field.visible !== false),
       )
     : [];
+  const hasPositionModifiers = runtimeEventFields.some((field) =>
+    ["topImplements", "bottomImplements"].includes(field.legacyKey || field.type),
+  );
   const identifierNameField = runtimeEventFields.find(
     (field) => field.type === "identifier-name" || field.legacyKey === "identifierName",
   );
@@ -10545,6 +10548,9 @@ export default function App() {
                       <label className={`block text-sm font-semibold ${
                         isMenOnlyEntryForm ? "text-zinc-100" : "text-slate-100"
                       }`}>{getFormBuilderSection("position")?.label || "Position"}</label>
+                      {hasPositionModifiers ? (
+                        <div className="mt-2 inline-flex rounded-full border border-violet-300/50 bg-violet-400/15 px-3 py-1 text-[11px] font-black uppercase tracking-[0.08em] text-violet-100">Position with modifiers · Top ↑ · Bottom ↓ · Switch ↑↓</div>
+                      ) : null}
                       <p className={`mt-1 text-xs leading-5 ${
                         isMenOnlyEntryForm ? "text-zinc-400" : "text-slate-500"
                       }`}>{getFormBuilderSection("position")?.prompt || "Choose how you want to be listed."}</p>
@@ -10572,7 +10578,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {isMensSpankingEntryForm ? (
+                  {isMensSpankingEntryForm || hasPositionModifiers ? (
                     <div className="stingKioskSpankingDetails mt-4 grid gap-4 xl:grid-cols-2">
                       {getFormBuilderSection("topImplements")?.enabled !== false && (position === "Top" || position === "Switch") ? (
                         <div style={getRuntimeFieldLayoutStyle("topImplements")} className="eventV2FieldSurface rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 shadow-[0_0_24px_rgba(225,29,72,0.12)]">
