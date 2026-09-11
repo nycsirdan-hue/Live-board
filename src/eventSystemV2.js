@@ -487,6 +487,9 @@ export const LEGEND_LIBRARY = [
   { key: "switch", icon: "switch", label: "Switch", color: "#3b82f6" },
   { key: "limits", icon: "⛔", label: "Limits" },
   { key: "experience", icon: "%", label: "Experience" },
+  { key: "kinks_fetishes", icon: "⛓️🪢", label: "Kinks & Fetishes" },
+  { key: "vibes_tonight", icon: "😎", label: "Vibes Tonight" },
+  { key: "play_activities", icon: "🎨🧸", label: "Play & Activities" },
 ];
 
 export const FIELD_LEGEND_DEFAULTS = {
