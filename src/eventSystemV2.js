@@ -11,7 +11,7 @@ export const ROW_LAYOUTS = {
 
 export const FIELD_TYPES = [
   ["name", "Name / display name"],
-  ["identifier-name", "Identifier | Name"],
+  ["identifier-name", "Role | Name"],
   ["position", "Role / position"],
   ["select", "Select buttons"],
   ["text", "Text field"],
@@ -211,10 +211,10 @@ export function createEventFormFromPreset(presetKey = "standard") {
     presetField(
       "identifierName",
       "identifier-name",
-      "Identifier | Name",
-      "Choose the identifier that fits you, then enter your name.",
+      "Role | Name",
+      "Choose the role that fits you, or enter a custom role, then enter your name.",
       formPresetOptions.identifiers,
-      attendeeCustom("Custom identifier", "Type your identifier", false),
+      attendeeCustom("Custom Role", "Type your role", false),
     ),
     presetField(
       "photo",

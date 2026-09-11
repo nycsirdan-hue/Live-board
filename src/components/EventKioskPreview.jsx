@@ -130,7 +130,9 @@ function PreviewField({ field, preview, onChange, hasPositionModifiers }) {
       style={{ "--mock-field-accent": accent }}
     >
       <div className="eventKioskMockFieldLabel">
-        {key === "name"
+        {isIdentifierName
+          ? "Role | Name"
+          : key === "name"
           ? "Display name"
           : key === "photo"
             ? "Profile photo (optional)"
@@ -163,20 +165,17 @@ function PreviewField({ field, preview, onChange, hasPositionModifiers }) {
                   </Tag>
                 );
               })}
-              {field.customEntry?.enabled ? (
-                <button
-                  type="button"
-                  disabled={!isEditable}
-                  className={custom.length ? "isSelected" : ""}
-                  onClick={() => {
-                    patchSelections([]);
-                    patchCustom(custom.length ? "" : "Custom ID");
-                  }}
-                >
-                  Custom ID
-                </button>
-              ) : null}
             </div>
+          ) : null}
+          {isIdentifierName && field.customEntry?.enabled ? (
+            <label className={`eventKioskMockCustomInput ${custom.length ? "isFilled" : ""}`}>
+              <span>Custom Role</span>
+              {isEditable ? (
+                <input value={custom.join(", ")} onChange={(event) => { patchSelections([]); patchCustom(event.target.value); }} placeholder="Type your role" />
+              ) : (
+                <strong>{custom.length ? custom.join(", ") : "Type your role"}</strong>
+              )}
+            </label>
           ) : null}
         {isEditable ? (
           <input

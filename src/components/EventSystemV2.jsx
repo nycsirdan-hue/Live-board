@@ -540,7 +540,14 @@ export default function EventSystemV2({
     next.entryForm.rows = next.entryForm.rows.map((row) => ({
       ...row,
       fields: row.fields.map((field) =>
-        field.type === "position" || field.legacyKey === "position"
+        field.type === "identifier-name" || field.legacyKey === "identifierName"
+          ? {
+              ...field,
+              label: "Role | Name",
+              helperText: "Choose the role that fits you, or enter a custom role, then enter your name.",
+              customEntry: { ...field.customEntry, label: "Custom Role", placeholder: "Type your role" },
+            }
+          : field.type === "position" || field.legacyKey === "position"
           ? {
               ...field,
               type: "select",

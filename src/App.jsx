@@ -6086,7 +6086,7 @@ export default function App() {
       !selectedEntryIdentifier &&
       !customEntryIdentifier
     ) {
-      setMessage("Please choose or enter an identifier.");
+      setMessage("Please choose or enter a role.");
       return;
     }
 
@@ -10148,7 +10148,7 @@ export default function App() {
                 <div className="stingKioskIdentityRow mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
                   <div className="stingKioskNameField eventV2FieldSurface" style={getRuntimeFieldLayoutStyle(identifierNameField ? identifierNameKey : "name")}>
                     <label className="mb-2 block text-sm font-semibold">
-                      {identifierNameField?.label || (isKrinklesEntryForm ? "Name / Scene Name" : "Display name")}
+                      {identifierNameField ? "Role | Name" : (isKrinklesEntryForm ? "Name / Scene Name" : "Display name")}
                       {identifierNameField?.required ? " *" : ""}
                     </label>
                     {identifierNameField ? (
@@ -10183,27 +10183,13 @@ export default function App() {
                               </button>
                             );
                           })}
-                          {identifierNameField.customEntry?.enabled ? (
-                            <button
-                              type="button"
-                              aria-pressed={Boolean(customEntryIdentifier)}
-                              onClick={() =>
-                                setEventV2FieldValues((current) => ({
-                                  ...current,
-                                  [identifierNameKey]: [],
-                                  [`${identifierNameKey}__custom`]: customEntryIdentifier ? "" : "Custom ID",
-                                }))
-                              }
-                              className={`rounded-full border px-4 py-2 text-sm font-bold ${
-                                customEntryIdentifier
-                                  ? "border-fuchsia-300 bg-fuchsia-400/20 text-fuchsia-50"
-                                  : "border-slate-700 bg-slate-950 text-slate-200"
-                              }`}
-                            >
-                              Custom ID
-                            </button>
-                          ) : null}
                         </div>
+                        {identifierNameField.customEntry?.enabled ? (
+                          <label className="mb-3 block text-sm font-semibold text-slate-200">
+                            Custom Role
+                            <input type="text" value={eventV2FieldValues[`${identifierNameKey}__custom`] || ""} onChange={(event) => setEventV2FieldValues((current) => ({ ...current, [identifierNameKey]: [], [`${identifierNameKey}__custom`]: event.target.value }))} placeholder="Type your role" maxLength={identifierNameField.customEntry.maxLength || 80} className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-fuchsia-300" />
+                          </label>
+                        ) : null}
                       </>
                     ) : null}
                     <input
