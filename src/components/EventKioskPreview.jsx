@@ -472,7 +472,6 @@ export default function EventKioskPreview({
   const hasPositionModifiers = rows.some((row) =>
     row.fields.some((field) => field.modifiers?.enabled || ["topImplements", "bottomImplements"].includes(fieldKey(field))),
   );
-  const displayRows = teaser ? rows.slice(0, 2) : rows;
 
   return (
     <div
@@ -501,7 +500,7 @@ export default function EventKioskPreview({
         </div>
       </div>
       <div className="eventKioskMockRows">
-        {displayRows.map((row) => (
+        {rows.map((row) => (
           <div
             key={row.id}
             className="eventKioskMockRow"

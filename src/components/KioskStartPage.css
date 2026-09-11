@@ -142,9 +142,10 @@ body,
 /* ---------- LEFT PANEL ---------- */
 
 .presetKioskEntryPanel {
+  --entry-panel-padding: clamp(24px, 2.3vw, 40px);
   position: relative;
   isolation: isolate;
-  padding: clamp(24px, 2.3vw, 40px);
+  padding: var(--entry-panel-padding);
   overflow: hidden;
 
   background: linear-gradient(
@@ -171,7 +172,7 @@ body,
   right: 0;
   bottom: 0;
   left: 0;
-  height: clamp(28px, 4vh, 48px);
+  height: clamp(112px, 15vh, 170px);
   background: linear-gradient(180deg, transparent, rgba(7, 8, 10, 0.98));
   content: "";
   pointer-events: none;
@@ -494,7 +495,13 @@ body,
 .presetKioskStartButton {
   width: 100%;
 
-  margin-top: auto;
+  position: absolute;
+  z-index: 200;
+  right: var(--entry-panel-padding);
+  bottom: var(--entry-panel-padding);
+  left: var(--entry-panel-padding);
+  width: auto;
+  margin-top: 0;
   flex: 0 0 auto;
 
   padding: 17px 24px 16px;
