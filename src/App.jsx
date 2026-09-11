@@ -2706,7 +2706,7 @@ export default function App() {
     "name", "identifierName", "identifier-name", "photo", "social", "position", "identity", "seeking",
     "orientation", "sexual", "interests",
     ...(isKrinklesEntryForm ? ["vibe", "lookingFor"] : ["intention"]),
-    ...(isMensSpankingEntryForm
+    ...(isMensSpankingEntryForm || hasPositionModifiers
       ? ["topImplements", "bottomImplements", "limits", "experience"]
       : []),
   ]);
