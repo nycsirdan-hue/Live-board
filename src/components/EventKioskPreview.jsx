@@ -375,6 +375,21 @@ function PreviewField({ field, preview, onChange, hasPositionModifiers }) {
           })}
         </div>
       ) : null}
+      {isPosition && field.modifiers?.enabled ? (
+        <div className="eventKioskMockPositionModifiers">
+          {Object.entries(field.modifiers.groups || {}).map(([groupKey, group]) => {
+            const chosenPosition = selected[0];
+            const visible = groupKey === "top" ? chosenPosition === "Top" || chosenPosition === "Switch" : chosenPosition === "Bottom" || chosenPosition === "Switch";
+            if (!visible) return null;
+            const groupSelected = preview?.selections?.[group.legacyKey] || [];
+            return <div key={groupKey} className={`eventKioskMockModifierGroup is${groupKey === "top" ? "Top" : "Bottom"}`}>
+              <div className="eventKioskMockModifierTitle"><span>{groupKey === "top" ? "↑" : "↓"}</span>{group.label}</div>
+              <div className="eventKioskMockChoices">{(group.options || []).map((option) => <span key={option} className={groupSelected.includes(option) ? "isSelected" : ""}>{option}</span>)}</div>
+              {group.customEntry?.enabled ? <div className="eventKioskMockInput">{group.customEntry.placeholder || "Add your own answer"}</div> : null}
+            </div>;
+          })}
+        </div>
+      ) : null}
       {field.customEntry?.enabled && key !== "social" && !isIdentifierName ? (
         <label
           className={`eventKioskMockCustomInput ${custom.length ? "isFilled" : ""}`}
@@ -439,7 +454,7 @@ export default function EventKioskPreview({
     }))
     .filter((row) => row.fields.length);
   const hasPositionModifiers = rows.some((row) =>
-    row.fields.some((field) => ["topImplements", "bottomImplements"].includes(fieldKey(field))),
+    row.fields.some((field) => field.modifiers?.enabled || ["topImplements", "bottomImplements"].includes(fieldKey(field))),
   );
 
   return (

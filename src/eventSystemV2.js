@@ -319,6 +319,13 @@ export function createEventFormFromPreset(presetKey = "standard") {
   else if (presetKey === "men_only")
     rows = [namePhoto, social, position, ...commonTail];
   else if (presetKey === "mens_spanking")
+    position.fields[0].modifiers = {
+      enabled: true,
+      groups: {
+        top: { legacyKey: "topImplements", label: "As a top I like to use", helperText: "Choose all that apply.", options: [...formPresetOptions.implements], customEntry: attendeeCustom("Other / type your own", "Other implements you like to use").customEntry },
+        bottom: { legacyKey: "bottomImplements", label: "As a bottom I like to receive", helperText: "Choose all that apply.", options: [...formPresetOptions.implements], customEntry: attendeeCustom("Other / type your own", "Other implements you like to receive").customEntry },
+      },
+    },
     rows = [
       namePhoto,
       social,
@@ -328,26 +335,6 @@ export function createEventFormFromPreset(presetKey = "standard") {
         "Intention",
         "Choose all that apply.",
         formPresetOptions.spankingIntention,
-      ),
-      selectRow(
-        "topImplements",
-        "As a top I like to use",
-        "Choose all that apply.",
-        formPresetOptions.implements,
-        attendeeCustom(
-          "Other / type your own",
-          "Other implements you like to use",
-        ),
-      ),
-      selectRow(
-        "bottomImplements",
-        "As a bottom I like to receive",
-        "Choose all that apply.",
-        formPresetOptions.implements,
-        attendeeCustom(
-          "Other / type your own",
-          "Other implements you like to receive",
-        ),
       ),
       selectRow(
         "limits",
@@ -464,25 +451,18 @@ export function createEventBlockLibrary() {
         presetKey: preset.key,
         presetLabel: preset.label,
         label:
-          (field.legacyKey || field.type) === "position"
-            ? "Position (Top / Bottom / Switch)"
-            : (field.legacyKey || field.type) === "topImplements"
-              ? "Position modifiers · Top"
-              : (field.legacyKey || field.type) === "bottomImplements"
-                ? "Position modifiers · Bottom"
-                : field.label,
+          (field.legacyKey || field.type) === "position" ? "Position" : field.label,
         field,
       })),
     ),
   );
-  const spankingForm = createEventFormFromPreset("mens_spanking");
-  const spankingFields = spankingForm.rows.flatMap((row) => row.fields || []);
-  const position = spankingFields.find((field) => (field.legacyKey || field.type) === "position");
-  const modifiers = spankingFields.filter((field) => ["topImplements", "bottomImplements"].includes(field.legacyKey || field.type));
-  if (position && modifiers.length === 2) {
-    blocks.unshift({ key: "mens_spanking:position-with-modifiers", presetKey: "mens_spanking", presetLabel: "Men’s spanking", label: "Position with modifiers", field: { ...position, positionModifiers: true }, modifierFields: modifiers });
-  }
-  return blocks;
+  let positionIncluded = false;
+  return blocks.filter((block) => {
+    if ((block.field.legacyKey || block.field.type) !== "position") return true;
+    if (positionIncluded) return false;
+    positionIncluded = true;
+    return true;
+  });
 }
 
 export const LEGEND_LIBRARY = [
@@ -720,6 +700,17 @@ export function eventConfigToLegacyFormConfig(config) {
               maxLength: field.type === "textarea" ? 500 : 160,
             },
       };
+      if (key === "position" && field.modifiers?.enabled) {
+        for (const group of Object.values(field.modifiers.groups || {})) {
+          if (!group?.legacyKey) continue;
+          result[group.legacyKey] = {
+            enabled: true, label: group.label || "Position preferences", prompt: group.helperText || "Choose all that apply.",
+            options: (group.options || []).map((label) => ({ label, enabled: true })), answerStyle: "buttons", rowId: row.id, rowLayout: row.layout,
+            color: group.legacyKey === "topImplements" ? "red" : "green", height: field.height || "standard",
+            customField: group.customEntry?.enabled ? { enabled: true, label: group.customEntry.label || "Other", placeholder: group.customEntry.placeholder || "Add your own answer", required: Boolean(group.customEntry.required), multiline: Boolean(group.customEntry.multiline), maxLength: group.customEntry.multiline ? 500 : 160 } : { enabled: false },
+          };
+        }
+      }
     }
   }
   return result;

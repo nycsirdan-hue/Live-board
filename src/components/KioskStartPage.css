@@ -1369,6 +1369,12 @@ body,
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
+.eventKioskMockPositionModifiers { display: grid; gap: 7px; margin-top: 8px; }
+.eventKioskMockModifierGroup { padding: 8px; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 10px; }
+.eventKioskMockModifierGroup.isTop { border-color: rgba(248, 113, 113, 0.6); background: rgba(127, 29, 29, 0.18); }
+.eventKioskMockModifierGroup.isBottom { border-color: rgba(52, 211, 153, 0.6); background: rgba(6, 78, 59, 0.18); }
+.eventKioskMockModifierTitle { display: flex; align-items: center; gap: 6px; color: white; font-size: 9px; font-weight: 900; }
+.eventKioskMockModifierTitle span { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 999px; background: #000; }
 
 .eventKioskMockPositionChoices span {
   text-align: center;

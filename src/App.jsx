@@ -2689,9 +2689,9 @@ export default function App() {
         (row.fields || []).filter((field) => field.visible !== false),
       )
     : [];
-  const hasPositionModifiers = runtimeEventFields.some((field) =>
-    ["topImplements", "bottomImplements"].includes(field.legacyKey || field.type),
-  );
+  const runtimePositionField = runtimeEventFields.find((field) => (field.legacyKey || field.type) === "position");
+  const hasLegacyPositionModifierFields = runtimeEventFields.some((field) => ["topImplements", "bottomImplements"].includes(field.legacyKey || field.type));
+  const hasPositionModifiers = runtimePositionField?.modifiers?.enabled === true || hasLegacyPositionModifierFields;
   const identifierNameField = runtimeEventFields.find(
     (field) => field.type === "identifier-name" || field.legacyKey === "identifierName",
   );
@@ -5561,6 +5561,21 @@ export default function App() {
   const toggleSpankingTopImplement = (item) => toggleListItem(setSpankingTopImplements, item);
   const toggleSpankingBottomImplement = (item) => toggleListItem(setSpankingBottomImplements, item);
   const toggleSpankingLimitItem = (item) => toggleListItem(setSpankingLimitItems, item);
+  const renderPositionModifierGroup = (groupKey) => {
+    const isTopModifier = groupKey === "topImplements";
+    const visible = isTopModifier ? position === "Top" || position === "Switch" : position === "Bottom" || position === "Switch";
+    const section = getFormBuilderSection(groupKey);
+    if (!visible || section?.enabled === false) return null;
+    const selectedItems = isTopModifier ? spankingTopImplements : spankingBottomImplements;
+    const toggleItem = isTopModifier ? toggleSpankingTopImplement : toggleSpankingBottomImplement;
+    const otherValue = isTopModifier ? spankingTopOther : spankingBottomOther;
+    const setOtherValue = isTopModifier ? setSpankingTopOther : setSpankingBottomOther;
+    return <div className={`mt-4 rounded-2xl border p-4 ${isTopModifier ? "border-red-500/55 bg-red-950/25" : "border-emerald-500/55 bg-emerald-950/25"}`}>
+      <div className={`mb-3 flex items-center gap-2 text-sm font-black ${isTopModifier ? "text-red-100" : "text-emerald-100"}`}><span className={`grid h-7 w-7 place-items-center rounded-full bg-black ${isTopModifier ? "text-red-400" : "text-emerald-400"}`}>{isTopModifier ? "↑" : "↓"}</span>{section?.label || (isTopModifier ? "Top preferences" : "Bottom preferences")}</div>
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-3">{getEnabledFormOptions(groupKey, spankingImplementOptions).map((item) => <button key={item} type="button" onClick={() => toggleItem(item)} className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${selectedItems.includes(item) ? (isTopModifier ? "border-red-300 bg-red-500/25 text-red-50" : "border-emerald-300 bg-emerald-500/25 text-emerald-50") : (isTopModifier ? "border-red-500/45 bg-red-500/10 text-red-100" : "border-emerald-500/45 bg-emerald-500/10 text-emerald-100")}`}>{item}</button>)}</div>
+      {section?.customField?.enabled ? <><label className={`mt-4 block text-sm font-bold ${isTopModifier ? "text-red-50" : "text-emerald-50"}`}>{section.customField.label}</label><FormBuilderCustomInput config={section.customField} value={otherValue} onChange={(e) => setOtherValue(e.target.value)} rows={2} className={`mt-2 w-full rounded-2xl border bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 ${isTopModifier ? "border-red-500/40 focus:border-red-300" : "border-emerald-500/40 focus:border-emerald-300"}`} /></> : null}
+    </div>;
+  };
 
   const formatSocialHandleLine = (platform, value) => {
     const cleanPlatform = String(platform || "").trim();
@@ -10562,11 +10577,12 @@ export default function App() {
                         </button>
                       ))}
                     </div>
+                    {hasPositionModifiers ? <div>{renderPositionModifierGroup("topImplements")}{renderPositionModifierGroup("bottomImplements")}</div> : null}
                   </div>
 
                   {isMensSpankingEntryForm || hasPositionModifiers ? (
                     <div className="stingKioskSpankingDetails mt-4 grid gap-4 xl:grid-cols-2">
-                      {getFormBuilderSection("topImplements")?.enabled !== false && (position === "Top" || position === "Switch") ? (
+                      {false && getFormBuilderSection("topImplements")?.enabled !== false && (position === "Top" || position === "Switch") ? (
                         <div style={getRuntimeFieldLayoutStyle("topImplements")} className="eventV2FieldSurface rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 shadow-[0_0_24px_rgba(225,29,72,0.12)]">
                           <div className="mb-3 border-b border-rose-900/40 pb-2">
                             <label className="block text-sm font-semibold text-rose-100">
@@ -10609,7 +10625,7 @@ export default function App() {
                         </div>
                       ) : null}
 
-                      {getFormBuilderSection("bottomImplements")?.enabled !== false && (position === "Bottom" || position === "Switch") ? (
+                      {false && getFormBuilderSection("bottomImplements")?.enabled !== false && (position === "Bottom" || position === "Switch") ? (
                         <div style={getRuntimeFieldLayoutStyle("bottomImplements")} className="eventV2FieldSurface rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-4 shadow-[0_0_24px_rgba(16,185,129,0.12)]">
                           <div className="mb-3 border-b border-emerald-900/40 pb-2">
                             <label className="block text-sm font-semibold text-emerald-100">

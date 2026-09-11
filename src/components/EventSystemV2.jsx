@@ -446,12 +446,12 @@ export default function EventSystemV2({
     return null;
   }, [draft, selectedFieldId]);
   const positionModifierFields = useMemo(
-    () =>
-      draft.entryForm.rows
-        .flatMap((row) => row.fields || [])
-        .filter((field) =>
-          ["topImplements", "bottomImplements"].includes(fieldKey(field)),
-        ),
+    () => {
+      const fields = draft.entryForm.rows.flatMap((row) => row.fields || []);
+      const position = fields.find((field) => fieldKey(field) === "position");
+      if (position?.modifiers?.enabled) return Object.entries(position.modifiers.groups || {}).map(([groupKey, group]) => ({ ...group, id: `position-modifier:${groupKey}` }));
+      return fields.filter((field) => ["topImplements", "bottomImplements"].includes(fieldKey(field)));
+    },
     [draft],
   );
   const cardFields = useMemo(() => {
@@ -537,6 +537,16 @@ export default function EventSystemV2({
         ...(next.kioskPreview?.socialHandles || {}),
       },
     };
+    const legacyModifierFields = next.entryForm.rows.flatMap((row) => row.fields || []).filter((field) => ["topImplements", "bottomImplements"].includes(fieldKey(field)));
+    const positionField = next.entryForm.rows.flatMap((row) => row.fields || []).find((field) => fieldKey(field) === "position");
+    if (positionField && !positionField.modifiers && legacyModifierFields.length) {
+      const toGroup = (legacyKey, fallbackLabel) => {
+        const field = legacyModifierFields.find((item) => fieldKey(item) === legacyKey);
+        return { legacyKey, label: field?.label || fallbackLabel, helperText: field?.helperText || "Choose all that apply.", options: field?.options || [], customEntry: field?.customEntry || { enabled: false, label: "Other", placeholder: "Add your own answer", multiline: true } };
+      };
+      positionField.modifiers = { enabled: true, groups: { top: toGroup("topImplements", "As a top I like to use"), bottom: toGroup("bottomImplements", "As a bottom I like to receive") } };
+      next.entryForm.rows = next.entryForm.rows.map((row) => ({ ...row, fields: (row.fields || []).filter((field) => !["topImplements", "bottomImplements"].includes(fieldKey(field))) })).filter((row) => row.fields.length);
+    }
     next.entryForm.rows = next.entryForm.rows.map((row) => ({
       ...row,
       fields: row.fields.map((field) =>
@@ -583,7 +593,10 @@ export default function EventSystemV2({
       },
     }));
   const patchFieldById = (fieldId, patch) =>
-    setDraft((current) => ({
+    fieldId.startsWith("position-modifier:") ? setDraft((current) => {
+      const groupKey = fieldId.split(":")[1];
+      return { ...current, entryForm: { ...current.entryForm, rows: current.entryForm.rows.map((row) => ({ ...row, fields: row.fields.map((field) => fieldKey(field) === "position" ? { ...field, modifiers: { ...field.modifiers, groups: { ...field.modifiers.groups, [groupKey]: { ...field.modifiers.groups[groupKey], ...patch } } } } : field) })) } };
+    }) : setDraft((current) => ({
       ...current,
       entryForm: {
         ...current.entryForm,
@@ -667,21 +680,9 @@ export default function EventSystemV2({
       ...current,
       entryForm: {
         ...current.entryForm,
-        rows: [
-          ...current.entryForm.rows.map((row) =>
+        rows: current.entryForm.rows.map((row) =>
             row.id === rowId ? { ...row, fields: [...row.fields, field] } : row,
           ),
-          ...(block.modifierFields?.length
-            ? [{
-                id: crypto.randomUUID(),
-                layout: "50-50",
-                fields: block.modifierFields.map((modifierField) => ({
-                  ...clone(modifierField),
-                  id: crypto.randomUUID(),
-                })),
-              }]
-            : []),
-        ],
       },
     }));
     setSelectedFieldId(field.id);
@@ -1483,6 +1484,12 @@ export default function EventSystemV2({
                           disabledLabel="Optional"
                         />
                       </div>
+                      {fieldKey(selectedField) === "position" ? (
+                        <div className="flex items-center justify-between gap-3 rounded-xl border border-violet-400/40 bg-violet-500/10 p-3">
+                          <div><div className="text-xs font-black text-violet-100">Position modifiers</div><div className="mt-1 text-[11px] text-violet-100/60">Attach editable Top and Bottom preferences to this Position field.</div></div>
+                          <TogglePill enabled={selectedField.modifiers?.enabled === true} onChange={(enabled) => patchField({ modifiers: { enabled, groups: selectedField.modifiers?.groups || { top: { legacyKey: "topImplements", label: "As a top I like to use", helperText: "Choose all that apply.", options: [], customEntry: { enabled: false, label: "Other top preference", placeholder: "Type another top preference", multiline: true } }, bottom: { legacyKey: "bottomImplements", label: "As a bottom I like to receive", helperText: "Choose all that apply.", options: [], customEntry: { enabled: false, label: "Other bottom preference", placeholder: "Type another bottom preference", multiline: true } } } } })} enabledLabel="Modifiers enabled" disabledLabel="Enable modifiers" />
+                        </div>
+                      ) : null}
                       {fieldKey(selectedField) === "position" && positionModifierFields.length ? (
                         <div className="rounded-xl border border-violet-400/50 bg-violet-500/10 p-3">
                           <div className="text-xs font-black uppercase tracking-[0.12em] text-violet-100">Position modifier groups</div>
@@ -1525,7 +1532,12 @@ export default function EventSystemV2({
                             </option>
                           ))}
                         </select>
-                      </Input>
+                                  </Input>
+                                  <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-white/10 p-2">
+                                    <span className="text-[11px] font-bold text-slate-300">Custom entry field</span>
+                                    <TogglePill enabled={modifierField.customEntry?.enabled === true} onChange={(enabled) => patchFieldById(modifierField.id, { customEntry: { ...modifierField.customEntry, enabled } })} enabledLabel="Custom enabled" disabledLabel="Enable custom" />
+                                  </div>
+                                  {modifierField.customEntry?.enabled ? <div className="mt-2 space-y-2"><Input label="Custom field label"><input className={inputClass} value={modifierField.customEntry.label || ""} onChange={(e) => patchFieldById(modifierField.id, { customEntry: { ...modifierField.customEntry, label: e.target.value } })} /></Input><Input label="Custom field placeholder"><input className={inputClass} value={modifierField.customEntry.placeholder || ""} onChange={(e) => patchFieldById(modifierField.id, { customEntry: { ...modifierField.customEntry, placeholder: e.target.value } })} /></Input></div> : null}
                       <p className="text-[11px] leading-4 text-slate-500">
                         Name, photo, position, and orientation stay in the card header. All other fields appear below it in this form’s row and field order, using the assigned legend icon.
                       </p>
