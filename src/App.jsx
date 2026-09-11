@@ -2691,8 +2691,11 @@ export default function App() {
     : [];
   const builtInRuntimeFieldKeys = new Set([
     "name", "photo", "social", "position", "identity", "seeking",
-    "orientation", "intention", "sexual", "interests", "vibe",
-    "lookingFor", "topImplements", "bottomImplements", "limits", "experience",
+    "orientation", "sexual", "interests",
+    ...(isKrinklesEntryForm ? ["vibe", "lookingFor"] : ["intention"]),
+    ...(isMensSpankingEntryForm
+      ? ["topImplements", "bottomImplements", "limits", "experience"]
+      : []),
   ]);
   const customRuntimeFields = runtimeEventFields.filter(
     (field) => !builtInRuntimeFieldKeys.has(field.legacyKey || field.type),
@@ -6067,11 +6070,20 @@ export default function App() {
     for (const field of customRuntimeFields) {
       const key = field.legacyKey || field.id;
       const value = eventV2FieldValues[key];
-      const hasValue = Array.isArray(value)
+      const hasPrimaryValue = Array.isArray(value)
         ? value.length > 0
         : Boolean(String(value || "").trim());
-      if (field.required && !hasValue) {
+      const hasCustomValue = Boolean(
+        String(eventV2FieldValues[`${key}__custom`] || "").trim(),
+      );
+      if (field.required && !hasPrimaryValue && !hasCustomValue) {
         setMessage(`Please complete: ${field.label || "Required field"}.`);
+        return;
+      }
+      if (field.customEntry?.required && !hasCustomValue) {
+        setMessage(
+          `Please complete: ${field.customEntry.label || field.label || "Required field"}.`,
+        );
         return;
       }
     }
@@ -11057,6 +11069,8 @@ export default function App() {
                   const selectedValues = Array.isArray(value) ? value : [];
                   const isChoiceField = ["select", "multi-select", "checkbox"].includes(field.type);
                   const isSingleChoice = field.type === "select";
+                  const enabledOptions = (field.options || []).filter(Boolean);
+                  const isFillOnlyField = isChoiceField && enabledOptions.length === 0 && field.customEntry?.enabled;
                   const setFieldValue = (nextValue) =>
                     setEventV2FieldValues((current) => ({ ...current, [key]: nextValue }));
 
@@ -11064,7 +11078,7 @@ export default function App() {
                     <div
                       key={field.id}
                       style={getRuntimeFieldLayoutStyle(key)}
-                      className="eventV2FieldSurface rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4"
+                      className={`eventV2FieldSurface rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4 ${isFillOnlyField ? "eventV2FillOnlyField" : ""}`}
                     >
                       <div className="mb-3 border-b border-slate-800 pb-2">
                         <label className="block text-sm font-semibold text-slate-100">
@@ -11075,9 +11089,9 @@ export default function App() {
                         ) : null}
                       </div>
 
-                      {isChoiceField ? (
+                      {isChoiceField && enabledOptions.length > 0 ? (
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                          {(field.options || []).map((option) => {
+                          {enabledOptions.map((option) => {
                             const active = selectedValues.includes(option);
                             return (
                               <button
@@ -11103,7 +11117,7 @@ export default function App() {
                             );
                           })}
                         </div>
-                      ) : field.type === "textarea" ? (
+                      ) : !isChoiceField && field.type === "textarea" ? (
                         <textarea
                           value={String(value)}
                           onChange={(event) => setFieldValue(event.target.value)}
@@ -11111,7 +11125,7 @@ export default function App() {
                           rows={field.height === "tall" ? 5 : 3}
                           className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
                         />
-                      ) : (
+                      ) : !isChoiceField ? (
                         <input
                           type="text"
                           value={String(value)}
@@ -11119,23 +11133,40 @@ export default function App() {
                           placeholder={field.helperText || "Type your answer"}
                           className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
                         />
-                      )}
+                      ) : null}
 
                       {field.customEntry?.enabled && isChoiceField ? (
-                        <label className="mt-3 block text-sm font-semibold text-slate-200">
+                        <label className={`${enabledOptions.length > 0 ? "mt-3" : ""} block min-w-0 w-full text-sm font-semibold text-slate-200`}>
                           {field.customEntry.label || "Other"}
-                          <input
-                            type="text"
-                            value={eventV2FieldValues[`${key}__custom`] || ""}
-                            onChange={(event) =>
-                              setEventV2FieldValues((current) => ({
-                                ...current,
-                                [`${key}__custom`]: event.target.value,
-                              }))
-                            }
-                            placeholder={field.customEntry.placeholder || "Type your answer"}
-                            className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
-                          />
+                          {field.customEntry.multiline ? (
+                            <textarea
+                              value={eventV2FieldValues[`${key}__custom`] || ""}
+                              onChange={(event) =>
+                                setEventV2FieldValues((current) => ({
+                                  ...current,
+                                  [`${key}__custom`]: event.target.value,
+                                }))
+                              }
+                              placeholder={field.customEntry.placeholder || "Type your answer"}
+                              maxLength={field.customEntry.maxLength || 500}
+                              rows={field.height === "tall" ? 5 : 3}
+                              className="mt-2 block min-w-0 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              value={eventV2FieldValues[`${key}__custom`] || ""}
+                              onChange={(event) =>
+                                setEventV2FieldValues((current) => ({
+                                  ...current,
+                                  [`${key}__custom`]: event.target.value,
+                                }))
+                              }
+                              placeholder={field.customEntry.placeholder || "Type your answer"}
+                              maxLength={field.customEntry.maxLength || 160}
+                              className="mt-2 block min-w-0 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                            />
+                          )}
                         </label>
                       ) : null}
                     </div>

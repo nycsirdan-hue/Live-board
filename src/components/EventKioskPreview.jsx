@@ -96,6 +96,10 @@ function PreviewField({ field, preview, onChange }) {
   const accent = FIELD_COLORS[field.color] || FIELD_COLORS.blue;
   const options =
     field.options || (isPosition ? ["Top", "Bottom", "Switch"] : []);
+  const isFillOnlyField =
+    ["select", "multi-select", "checkbox"].includes(field.type) &&
+    options.length === 0 &&
+    field.customEntry?.enabled;
   const socialOptions =
     key === "social"
       ? field.customEntry?.enabled
@@ -120,7 +124,7 @@ function PreviewField({ field, preview, onChange }) {
 
   return (
     <div
-      className="eventKioskMockField"
+      className={`eventKioskMockField ${isFillOnlyField ? "eventKioskMockFillOnlyField" : ""}`}
       style={{ "--mock-field-accent": accent }}
     >
       <div className="eventKioskMockFieldLabel">
@@ -299,7 +303,7 @@ function PreviewField({ field, preview, onChange }) {
           </span>
         </div>
       ) : null}
-      {["select", "multi-select", "checkbox"].includes(field.type) ? (
+      {["select", "multi-select", "checkbox"].includes(field.type) && options.length > 0 ? (
         <div
           className={`eventKioskMockChoices eventKioskMockAllChoices ${isPosition ? "eventKioskMockPositionChoices" : ""}`}
         >

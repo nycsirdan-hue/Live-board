@@ -3322,6 +3322,13 @@ body:has(.displayBoardSurface) #root {
   box-shadow: 0 0 24px color-mix(in srgb, var(--event-field-accent) 10%, transparent) !important;
 }
 
+.eventV2RuntimeLayout .eventV2FillOnlyField > label,
+.eventV2RuntimeLayout .eventV2FillOnlyField input,
+.eventV2RuntimeLayout .eventV2FillOnlyField textarea {
+  width: 100% !important;
+  min-width: 0;
+}
+
 .eventV2RuntimeLayout .eventV2FieldSurface label,
 .eventV2RuntimeLayout .eventV2FieldSurface > div:first-child label {
   color: color-mix(in srgb, var(--event-field-accent) 32%, white) !important;

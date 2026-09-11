@@ -1032,6 +1032,12 @@ body,
   );
 }
 
+.eventKioskMockFillOnlyField .eventKioskMockCustomInput {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
 .eventKioskMockFieldLabel {
   color: #f8fafc;
   font-size: 11px;
