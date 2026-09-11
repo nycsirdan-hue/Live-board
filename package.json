@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "test:studio125": "node --test tests/studio125-sync.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

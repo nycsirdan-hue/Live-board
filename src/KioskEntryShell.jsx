@@ -3,6 +3,7 @@ import App from "./App";
 import KioskStartPage from "./components/KioskStartPage";
 import "./kiosk-success-return.css";
 import { getLiveboardPathMode, isLiveboardKioskPath } from "./liveboardRoutes";
+import Studio125StaffGate from "./Studio125StaffGate";
 
 export default function KioskEntryShell() {
   const params = new URLSearchParams(window.location.search);
@@ -44,28 +45,20 @@ export default function KioskEntryShell() {
     setShowKioskStart(false);
   };
 
-  const returnToStart = () => {
-    /*
-      Keep /liveboard/kiosk clean after a successful entry.
-      Legacy kiosk URLs still return using their query-string mode.
-    */
-    if (!cleanKioskPath) {
-      const nextParams = new URLSearchParams(window.location.search);
-      nextParams.set("mode", "kiosk");
-      nextParams.delete("kiosk");
-      window.history.replaceState(
-        {},
-        "",
-        `${window.location.pathname}?${nextParams.toString()}`
-      );
-    }
-
-    setShowSuccessOverlay(false);
-    setShowKioskStart(true);
-  };
-
   useEffect(() => {
     if (bypassKioskStart || showKioskStart) return;
+
+    const returnToStart = () => {
+      /* Keep the clean kiosk route while retaining legacy query-string mode. */
+      if (!cleanKioskPath) {
+        const nextParams = new URLSearchParams(window.location.search);
+        nextParams.set("mode", "kiosk");
+        nextParams.delete("kiosk");
+        window.history.replaceState({}, "", `${window.location.pathname}?${nextParams.toString()}`);
+      }
+      setShowSuccessOverlay(false);
+      setShowKioskStart(true);
+    };
 
     const detectSuccess = () => {
       const pageText = document.body.innerText || "";
@@ -105,10 +98,10 @@ export default function KioskEntryShell() {
         returnTimerRef.current = null;
       }
     };
-  }, [bypassKioskStart, showKioskStart]);
+  }, [bypassKioskStart, cleanKioskPath, showKioskStart]);
 
   if (bypassKioskStart) {
-    return <App />;
+    return mode === "admin" ? <Studio125StaffGate><App /></Studio125StaffGate> : <App />;
   }
 
   if (showKioskStart) {
