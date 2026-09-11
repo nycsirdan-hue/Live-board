@@ -72,6 +72,16 @@ function Input({ label, children }) {
 const inputClass =
   "w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400";
 const fieldKey = (field) => field.legacyKey || field.type || field.id;
+const CARD_HEADER_KEYS = new Set([
+  "name",
+  "identifierName",
+  "identifier-name",
+  "photo",
+  "position",
+  "identity",
+  "seeking",
+  "orientation",
+]);
 
 function LegendSwitchIcon() {
   return (
@@ -408,6 +418,7 @@ export default function EventSystemV2({
   onSave,
   onActivate,
   onDeactivate,
+  onDelete,
   onEditingChange,
 }) {
   const [open, setOpen] = useState(false);
@@ -419,6 +430,7 @@ export default function EventSystemV2({
   const [selectedRowId, setSelectedRowId] = useState("");
   const [draggedFieldId, setDraggedFieldId] = useState("");
   const [draggedLegendId, setDraggedLegendId] = useState("");
+  const [draggedCardFieldId, setDraggedCardFieldId] = useState("");
   const v2Events = useMemo(
     () => events.filter((event) => event.eventConfig?.version === 2),
     [events],
@@ -432,6 +444,59 @@ export default function EventSystemV2({
     }
     return null;
   }, [draft, selectedFieldId]);
+  const cardFields = useMemo(() => {
+    const eligible = draft.entryForm.rows
+      .flatMap((row) => row.fields || [])
+      .filter(
+        (field) =>
+          field.visible !== false &&
+          !CARD_HEADER_KEYS.has(fieldKey(field)) &&
+          field.legendKey,
+      );
+    const rank = new Map(
+      (draft.display?.cardFieldOrder || []).map((id, index) => [id, index]),
+    );
+    return eligible.sort(
+      (a, b) =>
+        (rank.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+        (rank.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+    );
+  }, [draft]);
+
+  const placeCardField = (targetId) => {
+    if (!draggedCardFieldId || draggedCardFieldId === targetId) return;
+    const ids = cardFields.map((field) => field.id);
+    const fromIndex = ids.indexOf(draggedCardFieldId);
+    const toIndex = ids.indexOf(targetId);
+    if (fromIndex < 0 || toIndex < 0) return;
+    const [moved] = ids.splice(fromIndex, 1);
+    ids.splice(toIndex, 0, moved);
+    setDraft((current) => {
+      const fieldById = new Map(
+        current.entryForm.rows
+          .flatMap((row) => row.fields || [])
+          .map((field) => [field.id, field]),
+      );
+      const orderedLegendKeys = Array.from(
+        new Set(ids.map((id) => fieldById.get(id)?.legendKey).filter(Boolean)),
+      );
+      const legendItems = current.legend.items || [];
+      return {
+        ...current,
+        display: { ...current.display, cardFieldOrder: ids },
+        legend: {
+          ...current.legend,
+          items: [
+            ...orderedLegendKeys.flatMap((key) =>
+              legendItems.filter((item) => item.key === key),
+            ),
+            ...legendItems.filter((item) => !orderedLegendKeys.includes(item.key)),
+          ],
+        },
+      };
+    });
+    setDraggedCardFieldId("");
+  };
 
   const startNew = () => {
     const next = createEventDefinition();
@@ -500,6 +565,30 @@ export default function EventSystemV2({
         })),
       },
     }));
+  const assignFieldLegend = (legendKey) =>
+    setDraft((current) => {
+      const libraryItem = LEGEND_LIBRARY.find((item) => item.key === legendKey);
+      const items = current.legend?.items || [];
+      return {
+        ...current,
+        entryForm: {
+          ...current.entryForm,
+          rows: current.entryForm.rows.map((row) => ({
+            ...row,
+            fields: row.fields.map((field) =>
+              field.id === selectedFieldId ? { ...field, legendKey } : field,
+            ),
+          })),
+        },
+        legend: {
+          ...current.legend,
+          items:
+            libraryItem && !items.some((item) => item.key === legendKey)
+              ? [...items, { ...libraryItem, id: crypto.randomUUID() }]
+              : items,
+        },
+      };
+    });
   const patchKioskPreview = (patch) =>
     setDraft((current) => ({
       ...current,
@@ -766,8 +855,9 @@ export default function EventSystemV2({
 
       {open ? (
         <div className="mt-5 rounded-2xl border border-cyan-300/30 bg-slate-950 p-4">
-          <div className="flex flex-wrap gap-2">
-            {STEPS.map((label, index) => (
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {STEPS.map((label, index) => (
               <button
                 key={label}
                 type="button"
@@ -776,7 +866,24 @@ export default function EventSystemV2({
               >
                 {index + 1}. {label}
               </button>
-            ))}
+              ))}
+            </div>
+            {editingId ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={async () => {
+                  const deleted = await onDelete?.(editingId);
+                  if (deleted === false) return;
+                  setOpen(false);
+                  setEditingId("");
+                  onEditingChange?.(false);
+                }}
+                className="shrink-0 rounded-xl border border-red-400/70 bg-red-600/20 px-4 py-2 text-xs font-black text-red-100 disabled:opacity-50"
+              >
+                Delete Event
+              </button>
+            ) : null}
           </div>
           <div className="mt-5">
             {step === 0 ? (
@@ -1211,6 +1318,12 @@ export default function EventSystemV2({
                                 {field.type} ·{" "}
                                 {field.required ? "required" : "optional"}
                               </div>
+                              {field.legendKey ? (
+                                <div className="mt-2 text-[10px] font-bold text-cyan-100">
+                                  {LEGEND_LIBRARY.find((item) => item.key === field.legendKey)?.icon || "•"}{" "}
+                                  {LEGEND_LIBRARY.find((item) => item.key === field.legendKey)?.label || "Legend category"}
+                                </div>
+                              ) : null}
                             </button>
                           ))}
                         </div>
@@ -1323,6 +1436,23 @@ export default function EventSystemV2({
                           disabledLabel="Optional"
                         />
                       </div>
+                      <Input label="Card legend category">
+                        <select
+                          className={inputClass}
+                          value={selectedField.legendKey || ""}
+                          onChange={(e) => assignFieldLegend(e.target.value)}
+                        >
+                          <option value="">No icon / header-only field</option>
+                          {LEGEND_LIBRARY.map((item) => (
+                            <option key={item.key} value={item.key}>
+                              {item.icon === "switch" ? "↻" : item.icon} {item.label}
+                            </option>
+                          ))}
+                        </select>
+                      </Input>
+                      <p className="text-[11px] leading-4 text-slate-500">
+                        Name, photo, position, and orientation stay in the card header. All other fields appear below it in this form’s row and field order, using the assigned legend icon.
+                      </p>
                       <div>
                         <div className="mb-2 text-xs font-semibold text-slate-300">
                           Section color
@@ -1441,7 +1571,7 @@ export default function EventSystemV2({
                           </div>
                         </div>
                       ) : null}
-                      {["select", "multi-select"].includes(
+                      {["select", "multi-select", "identifier-name"].includes(
                         selectedField.type,
                       ) ? (
                         <>

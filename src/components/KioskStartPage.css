@@ -1106,6 +1106,14 @@ body,
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.eventKioskMockIdentifierChoices {
+  align-items: center;
+}
+
+.eventKioskMockIdentifierChoices button:disabled {
+  opacity: 1;
+}
+
 .eventKioskMockAllChoices span,
 .eventKioskMockAllChoices button {
   display: grid;
@@ -1232,6 +1240,14 @@ body,
   border: 1px solid color-mix(in srgb, var(--mock-field-accent) 58%, #334155);
   border-radius: 12px;
   background: color-mix(in srgb, var(--mock-field-accent) 10%, #020617);
+}
+
+.eventKioskMockSocialBuilder.hasOtherPlatform {
+  grid-template-columns: minmax(260px, 1fr) minmax(150px, 0.5fr) minmax(220px, 1fr) auto;
+}
+
+.eventKioskMockOtherPlatform {
+  margin-top: 0;
 }
 
 .eventKioskMockControlLabel {

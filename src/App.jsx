@@ -2689,8 +2689,18 @@ export default function App() {
         (row.fields || []).filter((field) => field.visible !== false),
       )
     : [];
+  const identifierNameField = runtimeEventFields.find(
+    (field) => field.type === "identifier-name" || field.legacyKey === "identifierName",
+  );
+  const identifierNameKey = identifierNameField?.legacyKey || identifierNameField?.id || "identifierName";
+  const selectedEntryIdentifier = Array.isArray(eventV2FieldValues[identifierNameKey])
+    ? eventV2FieldValues[identifierNameKey][0] || ""
+    : String(eventV2FieldValues[identifierNameKey] || "");
+  const customEntryIdentifier = String(
+    eventV2FieldValues[`${identifierNameKey}__custom`] || "",
+  ).trim();
   const builtInRuntimeFieldKeys = new Set([
-    "name", "photo", "social", "position", "identity", "seeking",
+    "name", "identifierName", "identifier-name", "photo", "social", "position", "identity", "seeking",
     "orientation", "sexual", "interests",
     ...(isKrinklesEntryForm ? ["vibe", "lookingFor"] : ["intention"]),
     ...(isMensSpankingEntryForm
@@ -5435,7 +5445,7 @@ export default function App() {
   const deleteActiveEventDisplayPreset = async (selectedPresetId = activeEventDisplayId) => {
     if (!supabase) {
       setMessage("Supabase connection is missing.");
-      return;
+      return false;
     }
 
     const activeCustomPreset = savedEventDisplays.find(
@@ -5451,7 +5461,7 @@ export default function App() {
     if (!activePreset) {
       setMessage("No event display preset is selected.");
       setTimeout(() => setMessage(""), 2500);
-      return;
+      return false;
     }
 
     const isBuiltinPreset = Boolean(activeBuiltinPreset);
@@ -5460,7 +5470,7 @@ export default function App() {
       ? `Hide built-in preset "${activePreset.eventName}" from this browser?`
       : `Delete event display preset "${activePreset.eventName}" from Supabase?`;
 
-    if (!window.confirm(confirmMessage)) return;
+    if (!window.confirm(confirmMessage)) return false;
 
     if (isBuiltinPreset) {
       const nextHiddenIds = Array.from(
@@ -5482,7 +5492,7 @@ export default function App() {
 
       setMessage("Built-in sample preset hidden.");
       setTimeout(() => setMessage(""), 2500);
-      return;
+      return true;
     }
 
     const { error } = await supabase
@@ -5492,7 +5502,7 @@ export default function App() {
 
     if (error) {
       setMessage(`Could not delete event display preset: ${error.message}`);
-      return;
+      return false;
     }
 
     const remaining = savedEventDisplays.filter(
@@ -5529,6 +5539,7 @@ export default function App() {
 
     setMessage("Event display preset deleted from Supabase.");
     setTimeout(() => setMessage(""), 2500);
+    return true;
   };
 
 
@@ -6067,6 +6078,15 @@ export default function App() {
       return;
     }
 
+    if (
+      identifierNameField?.required &&
+      !selectedEntryIdentifier &&
+      !customEntryIdentifier
+    ) {
+      setMessage("Please choose or enter an identifier.");
+      return;
+    }
+
     for (const field of customRuntimeFields) {
       const key = field.legacyKey || field.id;
       const value = eventV2FieldValues[key];
@@ -6311,8 +6331,10 @@ export default function App() {
             : socialPlatform
           : null;
 
+    const identifierForDisplay = customEntryIdentifier || selectedEntryIdentifier;
+    const boardDisplayName = [identifierForDisplay, name.trim()].filter(Boolean).join(" ");
     const boardEntryPayload = {
-      name: name.trim() || (isMensSpankingEntryForm ? "Anonymous" : ""),
+      name: boardDisplayName || (isMensSpankingEntryForm ? "Anonymous" : ""),
       social_handle: handleValue || null,
       social_platform: platformValue || null,
       position: isConnectionEntryForm || getFormBuilderSection("position")?.enabled === false
@@ -6848,6 +6870,7 @@ export default function App() {
                     onSave={saveEventV2}
                     onActivate={(event) => updateActiveEventDisplayPreset(event.id)}
                     onDeactivate={deactivateActiveEventDisplayPreset}
+                    onDelete={deleteActiveEventDisplayPreset}
                     onEditingChange={setEventBuilderOpen}
                   />
 
@@ -10095,7 +10118,7 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div className={`stingKioskFormShell mx-auto max-w-[1500px] ${isKrinklesEntryForm ? "diaperGlowKiosk" : ""}`}>
+            <div className={`stingKioskFormShell mx-auto ${runtimeEventConfig?.version === 2 ? "max-w-[1900px]" : "max-w-[1500px]"} ${isKrinklesEntryForm ? "diaperGlowKiosk" : ""}`}>
 
               <div className={`stingKioskFormCard ${runtimeEventConfig?.version === 2 ? "eventV2RuntimeLayout" : ""} rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl md:p-6`}>
                 <h2 className="text-2xl font-semibold tracking-tight">
@@ -10120,13 +10143,71 @@ export default function App() {
                 </p>
 
                 <div className="stingKioskIdentityRow mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
-                  <div className="stingKioskNameField eventV2FieldSurface" style={getRuntimeFieldLayoutStyle("name")}>
-                    <label className="mb-2 block text-sm font-semibold">{isKrinklesEntryForm ? "Name / Scene Name" : "Display name"}</label>
+                  <div className="stingKioskNameField eventV2FieldSurface" style={getRuntimeFieldLayoutStyle(identifierNameField ? identifierNameKey : "name")}>
+                    <label className="mb-2 block text-sm font-semibold">
+                      {identifierNameField?.label || (isKrinklesEntryForm ? "Name / Scene Name" : "Display name")}
+                      {identifierNameField?.required ? " *" : ""}
+                    </label>
+                    {identifierNameField ? (
+                      <>
+                        {identifierNameField.helperText ? (
+                          <p className="mb-3 text-xs leading-5 text-slate-500">
+                            {identifierNameField.helperText}
+                          </p>
+                        ) : null}
+                        <div className="mb-3 flex flex-wrap gap-2" aria-label="Choose an identifier">
+                          {(identifierNameField.options || []).filter(Boolean).map((identifier) => {
+                            const active = selectedEntryIdentifier === identifier && !customEntryIdentifier;
+                            return (
+                              <button
+                                key={identifier}
+                                type="button"
+                                aria-pressed={active}
+                                onClick={() =>
+                                  setEventV2FieldValues((current) => ({
+                                    ...current,
+                                    [identifierNameKey]: active ? [] : [identifier],
+                                    [`${identifierNameKey}__custom`]: "",
+                                  }))
+                                }
+                                className={`rounded-full border px-4 py-2 text-sm font-bold ${
+                                  active
+                                    ? "border-fuchsia-300 bg-fuchsia-400/20 text-fuchsia-50"
+                                    : "border-slate-700 bg-slate-950 text-slate-200"
+                                }`}
+                              >
+                                {identifier}
+                              </button>
+                            );
+                          })}
+                          {identifierNameField.customEntry?.enabled ? (
+                            <button
+                              type="button"
+                              aria-pressed={Boolean(customEntryIdentifier)}
+                              onClick={() =>
+                                setEventV2FieldValues((current) => ({
+                                  ...current,
+                                  [identifierNameKey]: [],
+                                  [`${identifierNameKey}__custom`]: customEntryIdentifier ? "" : "Custom ID",
+                                }))
+                              }
+                              className={`rounded-full border px-4 py-2 text-sm font-bold ${
+                                customEntryIdentifier
+                                  ? "border-fuchsia-300 bg-fuchsia-400/20 text-fuchsia-50"
+                                  : "border-slate-700 bg-slate-950 text-slate-200"
+                              }`}
+                            >
+                              Custom ID
+                            </button>
+                          ) : null}
+                        </div>
+                      </>
+                    ) : null}
                     <input
                       name="connection-board-display-name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder='Example: "Real Name or Scene Name"'
+                      placeholder={identifierNameField ? 'Name (example: "Noah")' : 'Example: "Real Name or Scene Name"'}
                       autoComplete="off"
                       autoCorrect="off"
                       spellCheck={false}
@@ -10300,7 +10381,7 @@ export default function App() {
                       {usesMultipleSocialHandles ? (
                         <div className="krinklesSocialSection rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/10 p-3">
                           <p className="mb-3 text-xs leading-5 text-slate-400">{getFormBuilderSection("social")?.prompt}</p>
-                          <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
+                          <div className={`grid gap-3 ${socialHandleDraftPlatform === "Other" ? "md:grid-cols-[minmax(240px,1fr)_minmax(150px,.55fr)_minmax(220px,1fr)_auto]" : "md:grid-cols-[minmax(240px,1fr)_minmax(220px,1fr)_auto]"}`}>
                             <div>
                               <div className="krinklesSocialLabel mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
                                 Platform
@@ -10321,21 +10402,20 @@ export default function App() {
                                   </button>
                                 ))}
                               </div>
-                              {socialHandleDraftPlatform === "Other" ? (
-                                <div className="mt-2">
-                                  <label className="krinklesSocialLabel mb-1 block text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
-                                    Platform name
-                                  </label>
-                                  <input
-                                    value={socialOtherPlatform}
-                                    onChange={(e) => setSocialOtherPlatform(e.target.value)}
-                                    placeholder="Platform"
-                                    autoComplete="off"
-                                    className="w-full rounded-2xl border border-fuchsia-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-fuchsia-300"
-                                  />
-                                </div>
-                              ) : null}
                             </div>
+
+                            {socialHandleDraftPlatform === "Other" ? (
+                              <label>
+                                <span className="krinklesSocialLabel mb-1 block text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">Platform name</span>
+                                <input
+                                  value={socialOtherPlatform}
+                                  onChange={(e) => setSocialOtherPlatform(e.target.value)}
+                                  placeholder="Platform"
+                                  autoComplete="off"
+                                  className="w-full rounded-2xl border border-fuchsia-500/40 bg-slate-950 px-4 py-3 outline-none placeholder:text-slate-500 focus:border-fuchsia-300"
+                                />
+                              </label>
+                            ) : null}
 
                             <div>
                               <div className="krinklesSocialLabel mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-100/70">
@@ -10495,7 +10575,7 @@ export default function App() {
                   {isMensSpankingEntryForm ? (
                     <div className="stingKioskSpankingDetails mt-4 grid gap-4 xl:grid-cols-2">
                       {getFormBuilderSection("topImplements")?.enabled !== false && (position === "Top" || position === "Switch") ? (
-                        <div className="rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 shadow-[0_0_24px_rgba(225,29,72,0.12)]">
+                        <div style={getRuntimeFieldLayoutStyle("topImplements")} className="eventV2FieldSurface rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 shadow-[0_0_24px_rgba(225,29,72,0.12)]">
                           <div className="mb-3 border-b border-rose-900/40 pb-2">
                             <label className="block text-sm font-semibold text-rose-100">
                               {getFormBuilderSection("topImplements")?.label || "As a top I like to use"}
@@ -10538,7 +10618,7 @@ export default function App() {
                       ) : null}
 
                       {getFormBuilderSection("bottomImplements")?.enabled !== false && (position === "Bottom" || position === "Switch") ? (
-                        <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-4 shadow-[0_0_24px_rgba(16,185,129,0.12)]">
+                        <div style={getRuntimeFieldLayoutStyle("bottomImplements")} className="eventV2FieldSurface rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-4 shadow-[0_0_24px_rgba(16,185,129,0.12)]">
                           <div className="mb-3 border-b border-emerald-900/40 pb-2">
                             <label className="block text-sm font-semibold text-emerald-100">
                               {getFormBuilderSection("bottomImplements")?.label || "As a bottom I like to receive"}
@@ -10580,7 +10660,7 @@ export default function App() {
                         </div>
                       ) : null}
 
-                      <div className={`stingKioskLimitsCard ${getFormBuilderSection("limits")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2`}>
+                      <div style={getRuntimeFieldLayoutStyle("limits")} className={`stingKioskLimitsCard eventV2FieldSurface ${getFormBuilderSection("limits")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4`}>
                         <div className="mb-3 border-b border-zinc-700/70 pb-2">
                           <label className="block text-sm font-semibold text-zinc-100">
                             {getFormBuilderSection("limits")?.label || "My limits"}
@@ -10621,7 +10701,7 @@ export default function App() {
                         /></> : null}
                       </div>
 
-                      <div className={`stingKioskExperienceCard ${getFormBuilderSection("experience")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4 xl:col-span-2`}>
+                      <div style={getRuntimeFieldLayoutStyle("experience")} className={`stingKioskExperienceCard eventV2FieldSurface ${getFormBuilderSection("experience")?.enabled === false ? "hidden " : ""}rounded-2xl border border-zinc-700/70 bg-zinc-950/70 p-4`}>
                         <div className="mb-3 border-b border-zinc-700/70 pb-2">
                           <label className="block text-sm font-semibold text-zinc-100">
                             {getFormBuilderSection("experience")?.label || "Experience Level"}
@@ -10724,7 +10804,7 @@ export default function App() {
                 ) : null}
 
                 <div className={`stingKioskIntentionGrid mt-4 grid gap-4 ${isMenOnlyEntryForm || isKrinklesEntryForm ? "xl:grid-cols-1" : "xl:grid-cols-[1fr_0.85fr]"}`}>
-                  {!isMenOnlyEntryForm && !isKrinklesEntryForm && getFormBuilderSection("orientation")?.enabled !== false ? (
+                  {getFormBuilderSection("orientation")?.enabled !== false ? (
                   <div style={getRuntimeFieldLayoutStyle("orientation")} className="eventV2FieldSurface rounded-2xl border border-slate-700/70 bg-slate-950/60 p-4">
                     <div className="mb-3 border-b border-slate-800 pb-2">
                       <label className="block text-sm font-semibold">
@@ -10841,7 +10921,7 @@ export default function App() {
 
 
                 {isKrinklesEntryForm && getFormBuilderSection("lookingFor")?.enabled !== false ? (
-                  <div className="krinklesLookingForSection mt-4 rounded-2xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
+                  <div style={getRuntimeFieldLayoutStyle("lookingFor")} className="krinklesLookingForSection eventV2FieldSurface mt-4 rounded-2xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
                     <div className="krinklesLookingForHeader mb-3 border-b border-fuchsia-500/30 pb-2">
                       <label className="block text-sm font-semibold text-fuchsia-100">{getFormBuilderSection("lookingFor")?.label || "Looking For"}</label>
                       <p className="mt-1 text-xs leading-5 text-fuchsia-100/60">

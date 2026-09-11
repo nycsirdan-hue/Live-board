@@ -91,6 +91,8 @@ function PreviewField({ field, preview, onChange }) {
   const selected = preview?.selections?.[key] || [];
   const custom = preview?.customEntries?.[key] || [];
   const isPosition = key === "position";
+  const isIdentifierName =
+    key === "identifierName" || field.type === "identifier-name";
   const isEditable = typeof onChange === "function";
   const single = isPosition || field.type === "select";
   const accent = FIELD_COLORS[field.color] || FIELD_COLORS.blue;
@@ -140,8 +142,40 @@ function PreviewField({ field, preview, onChange }) {
       {field.helperText && !["name", "photo", "social"].includes(key) ? (
         <div className="eventKioskMockHelper">{field.helperText}</div>
       ) : null}
-      {key === "name" ? (
-        isEditable ? (
+      {key === "name" || isIdentifierName ? (
+        <>
+          {isIdentifierName ? (
+            <div className="eventKioskMockChoices eventKioskMockIdentifierChoices">
+              {options.map((option) => {
+                const active = selected.includes(option);
+                const Tag = isEditable ? "button" : "span";
+                return (
+                  <Tag
+                    key={option}
+                    type={isEditable ? "button" : undefined}
+                    className={active ? "isSelected" : ""}
+                    onClick={isEditable ? () => patchSelections(active ? [] : [option]) : undefined}
+                  >
+                    {option}
+                  </Tag>
+                );
+              })}
+              {field.customEntry?.enabled ? (
+                <button
+                  type="button"
+                  disabled={!isEditable}
+                  className={custom.length ? "isSelected" : ""}
+                  onClick={() => {
+                    patchSelections([]);
+                    patchCustom(custom.length ? "" : "Custom ID");
+                  }}
+                >
+                  Custom ID
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        {isEditable ? (
           <input
             className="eventKioskMockInput"
             value={preview?.name || ""}
@@ -150,10 +184,11 @@ function PreviewField({ field, preview, onChange }) {
           />
         ) : (
           <div className="eventKioskMockInput">{preview?.name || "Alex"}</div>
-        )
+        )}
+        </>
       ) : null}
       {key === "social" ? (
-        <div className="eventKioskMockSocialBuilder">
+        <div className={`eventKioskMockSocialBuilder ${activeSocialPlatform === "Other" ? "hasOtherPlatform" : ""}`}>
           <div className="eventKioskMockSocialPlatformColumn">
             <span className="eventKioskMockControlLabel">Platform</span>
             <div className="eventKioskMockSocialPlatforms">
@@ -180,25 +215,21 @@ function PreviewField({ field, preview, onChange }) {
                 );
               })}
             </div>
-            {activeSocialPlatform === "Other" ? (
-              <label className="eventKioskMockOtherPlatform">
-                <span className="eventKioskMockControlLabel">
-                  Platform name
-                </span>
-                {isEditable ? (
-                  <input
-                    value={preview?.socialOtherPlatform || ""}
-                    onChange={(event) =>
-                      onChange({ socialOtherPlatform: event.target.value })
-                    }
-                    placeholder="Platform"
-                  />
-                ) : (
-                  <strong>{preview?.socialOtherPlatform || "Platform"}</strong>
-                )}
-              </label>
-            ) : null}
           </div>
+          {activeSocialPlatform === "Other" ? (
+            <label className="eventKioskMockOtherPlatform">
+              <span className="eventKioskMockControlLabel">Platform name</span>
+              {isEditable ? (
+                <input
+                  value={preview?.socialOtherPlatform || ""}
+                  onChange={(event) => onChange({ socialOtherPlatform: event.target.value })}
+                  placeholder="Platform"
+                />
+              ) : (
+                <strong>{preview?.socialOtherPlatform || "Platform"}</strong>
+              )}
+            </label>
+          ) : null}
           <label className="eventKioskMockSocialHandleColumn">
             <span className="eventKioskMockControlLabel">Handle</span>
             {isEditable ? (
@@ -303,7 +334,7 @@ function PreviewField({ field, preview, onChange }) {
           </span>
         </div>
       ) : null}
-      {["select", "multi-select", "checkbox"].includes(field.type) && options.length > 0 ? (
+      {!isIdentifierName && ["select", "multi-select", "checkbox"].includes(field.type) && options.length > 0 ? (
         <div
           className={`eventKioskMockChoices eventKioskMockAllChoices ${isPosition ? "eventKioskMockPositionChoices" : ""}`}
         >
@@ -342,7 +373,7 @@ function PreviewField({ field, preview, onChange }) {
           })}
         </div>
       ) : null}
-      {field.customEntry?.enabled && key !== "social" ? (
+      {field.customEntry?.enabled && key !== "social" && !isIdentifierName ? (
         <label
           className={`eventKioskMockCustomInput ${custom.length ? "isFilled" : ""}`}
         >

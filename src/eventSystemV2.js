@@ -11,6 +11,7 @@ export const ROW_LAYOUTS = {
 
 export const FIELD_TYPES = [
   ["name", "Name / display name"],
+  ["identifier-name", "Identifier | Name"],
   ["position", "Role / position"],
   ["select", "Select buttons"],
   ["text", "Text field"],
@@ -130,6 +131,7 @@ const formPresetOptions = {
     "Roleplay",
     "Hanging Out",
   ],
+  identifiers: ["Baby", "Little", "Middle", "Big", "Mommy", "Daddy", "Caregiver"],
   diaperVibe: [
     "Little",
     "Middle",
@@ -173,6 +175,7 @@ const presetField = (
 ) => ({
   ...createEventField(type),
   legacyKey,
+  legendKey: FIELD_LEGEND_DEFAULTS[legacyKey] || "",
   label,
   helperText,
   options: [...options],
@@ -197,6 +200,22 @@ const attendeeCustom = (label, placeholder, multiline = true) => ({
 export function createEventFormFromPreset(presetKey = "standard") {
   const namePhoto = presetRow("50-50", [
     presetField("name", "name", "Name / display name", "Required"),
+    presetField(
+      "photo",
+      "photo",
+      "Profile photo",
+      "Add an optional profile photo.",
+    ),
+  ]);
+  const identifierNamePhoto = presetRow("50-50", [
+    presetField(
+      "identifierName",
+      "identifier-name",
+      "Identifier | Name",
+      "Choose the identifier that fits you, then enter your name.",
+      formPresetOptions.identifiers,
+      attendeeCustom("Custom identifier", "Type your identifier", false),
+    ),
     presetField(
       "photo",
       "photo",
@@ -366,7 +385,7 @@ export function createEventFormFromPreset(presetKey = "standard") {
     ];
   else if (presetKey === "krinkles_social_play")
     rows = [
-      namePhoto,
+      identifierNamePhoto,
       social,
       selectRow(
         "vibe",
@@ -393,7 +412,7 @@ export function createEventFormFromPreset(presetKey = "standard") {
     ];
   else
     rows = [
-      namePhoto,
+      identifierNamePhoto,
       social,
       selectRow(
         "vibe",
@@ -444,7 +463,14 @@ export function createEventBlockLibrary() {
         key: `${preset.key}:${field.legacyKey || field.type}`,
         presetKey: preset.key,
         presetLabel: preset.label,
-        label: field.label,
+        label:
+          (field.legacyKey || field.type) === "position"
+            ? "Position (Top / Bottom / Switch)"
+            : (field.legacyKey || field.type) === "topImplements"
+              ? "Position modifiers · Top"
+              : (field.legacyKey || field.type) === "bottomImplements"
+                ? "Position modifiers · Bottom"
+                : field.label,
         field,
       })),
     ),
@@ -474,6 +500,19 @@ export const LEGEND_LIBRARY = [
   { key: "limits", icon: "⛔", label: "Limits" },
   { key: "experience", icon: "%", label: "Experience" },
 ];
+
+export const FIELD_LEGEND_DEFAULTS = {
+  social: "social_handles",
+  intention: "intention",
+  vibe: "intention",
+  lookingFor: "looking_for",
+  interests: "interests",
+  sexual: "sexual_preferences",
+  topImplements: "likes_to_give",
+  bottomImplements: "likes_to_receive",
+  limits: "limits",
+  experience: "experience",
+};
 
 const createStandardPricing = () => [
   {
@@ -561,6 +600,7 @@ export function createEventDefinition() {
       sizingMode: "automatic",
       columns: 4,
       entryFillDirection: "row",
+      cardFieldOrder: [],
       sizing: {},
     },
   };
@@ -572,6 +612,8 @@ export function createEventField(type = "select") {
   const standardOptions =
     type === "position"
       ? [...formPresetOptions.position]
+      : type === "identifier-name"
+        ? [...formPresetOptions.identifiers]
       : type === "select" || type === "multi-select"
         ? ["Option 1", "Option 2"]
         : [];
@@ -581,10 +623,10 @@ export function createEventField(type = "select") {
     ...(type === "position" ? { legacyKey: "position" } : {}),
     label: typeLabel,
     helperText: "",
-    required: type === "name",
+    required: type === "name" || type === "identifier-name",
     visible: true,
     answerStyle:
-      type === "select" || type === "multi-select" ? "buttons" : "input",
+      type === "select" || type === "multi-select" || type === "identifier-name" ? "buttons" : "input",
     options: standardOptions,
     customEntry: {
       enabled: false,
@@ -594,6 +636,7 @@ export function createEventField(type = "select") {
       multiline: false,
     },
     displayBehavior: "card",
+    legendKey: FIELD_LEGEND_DEFAULTS[type] || "",
     color: "blue",
     height: "standard",
   };
@@ -621,7 +664,11 @@ export function eventConfigToLegacyFormConfig(config) {
   const result = {};
   for (const row of config?.entryForm?.rows || []) {
     for (const field of row.fields || []) {
-      if (field.visible === false || field.type === "name") continue;
+      if (
+        field.visible === false ||
+        field.type === "name" ||
+        field.type === "identifier-name"
+      ) continue;
       const keyMap = {
         position: "position",
         social: "social",
