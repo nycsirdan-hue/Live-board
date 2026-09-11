@@ -71,6 +71,7 @@ function Input({ label, children }) {
 }
 const inputClass =
   "w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400";
+const DEFAULT_MODIFIER_OPTIONS = ["Hands", "Belts", "Canes", "Paddles", "Straps", "Brushes"];
 const fieldKey = (field) => field.legacyKey || field.type || field.id;
 const CARD_HEADER_KEYS = new Set([
   "name",
@@ -1362,8 +1363,9 @@ export default function EventSystemV2({
                                 {field.required ? "required" : "optional"}
                               </div>
                               {fieldKey(field) === "position" && positionModifierFields.length ? (
-                                <div className="mt-2 rounded-lg border border-violet-300/60 bg-violet-400/20 px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-violet-50">
-                                  Position with modifiers · Top / Bottom / Switch
+                                <div className="mt-2 grid grid-cols-2 gap-1.5 text-[10px] font-black uppercase tracking-[0.08em]">
+                                  <div className="rounded-lg border border-red-300/60 bg-red-500/20 px-2 py-1.5 text-red-50">↑ Top · Red</div>
+                                  <div className="rounded-lg border border-emerald-300/60 bg-emerald-500/20 px-2 py-1.5 text-emerald-50">↓ Bottom · Green</div>
                                 </div>
                               ) : null}
                               {field.legendKey ? (
@@ -1484,41 +1486,6 @@ export default function EventSystemV2({
                           disabledLabel="Optional"
                         />
                       </div>
-                      {fieldKey(selectedField) === "position" ? (
-                        <div className="flex items-center justify-between gap-3 rounded-xl border border-violet-400/40 bg-violet-500/10 p-3">
-                          <div><div className="text-xs font-black text-violet-100">Position modifiers</div><div className="mt-1 text-[11px] text-violet-100/60">Attach editable Top and Bottom preferences to this Position field.</div></div>
-                          <TogglePill enabled={selectedField.modifiers?.enabled === true} onChange={(enabled) => patchField({ modifiers: { enabled, groups: selectedField.modifiers?.groups || { top: { legacyKey: "topImplements", label: "As a top I like to use", helperText: "Choose all that apply.", options: [], customEntry: { enabled: false, label: "Other top preference", placeholder: "Type another top preference", multiline: true } }, bottom: { legacyKey: "bottomImplements", label: "As a bottom I like to receive", helperText: "Choose all that apply.", options: [], customEntry: { enabled: false, label: "Other bottom preference", placeholder: "Type another bottom preference", multiline: true } } } } })} enabledLabel="Modifiers enabled" disabledLabel="Enable modifiers" />
-                        </div>
-                      ) : null}
-                      {fieldKey(selectedField) === "position" && positionModifierFields.length ? (
-                        <div className="rounded-xl border border-violet-400/50 bg-violet-500/10 p-3">
-                          <div className="text-xs font-black uppercase tracking-[0.12em] text-violet-100">Position modifier groups</div>
-                          <p className="mt-1 text-[11px] leading-4 text-violet-100/65">Top shows the red group, Bottom shows the green group, and Switch shows both on the entry kiosk.</p>
-                          <div className="mt-3 space-y-4">
-                            {positionModifierFields.map((modifierField) => {
-                              const isTopModifier = fieldKey(modifierField) === "topImplements";
-                              return (
-                                <div key={modifierField.id} className={`rounded-lg border p-3 ${isTopModifier ? "border-red-400/45 bg-red-500/10" : "border-emerald-400/45 bg-emerald-500/10"}`}>
-                                  <div className={`mb-2 text-xs font-black ${isTopModifier ? "text-red-100" : "text-emerald-100"}`}>{isTopModifier ? "↑ Top modifiers" : "↓ Bottom modifiers"}</div>
-                                  <Input label="Group label"><input className={inputClass} value={modifierField.label || ""} onChange={(e) => patchFieldById(modifierField.id, { label: e.target.value })} /></Input>
-                                  <div className="mt-2 space-y-1">
-                                    {(modifierField.options || []).map((option, optionIndex) => (
-                                      <div key={`${modifierField.id}-${optionIndex}`} className="flex gap-1">
-                                        <input className={inputClass} value={option} onChange={(e) => patchFieldById(modifierField.id, { options: modifierField.options.map((item, index) => index === optionIndex ? e.target.value : item) })} />
-                                        <button type="button" aria-label={`Remove ${option}`} onClick={() => patchFieldById(modifierField.id, { options: modifierField.options.filter((_, index) => index !== optionIndex) })} className="rounded-lg border border-red-500/40 px-2 text-red-200">×</button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <div className="mt-2 flex gap-1">
-                                    <input className={inputClass} value={modifierNewOptions[modifierField.id] || ""} onChange={(e) => setModifierNewOptions((current) => ({ ...current, [modifierField.id]: e.target.value }))} placeholder="New modifier option" />
-                                    <button type="button" onClick={() => { const value = (modifierNewOptions[modifierField.id] || "").trim(); if (!value) return; patchFieldById(modifierField.id, { options: [...(modifierField.options || []), value] }); setModifierNewOptions((current) => ({ ...current, [modifierField.id]: "" })); }} className="rounded-lg bg-violet-300 px-3 text-xs font-black text-slate-950">Add</button>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ) : null}
                       <Input label="Card legend category">
                         <select
                           className={inputClass}
@@ -1533,11 +1500,6 @@ export default function EventSystemV2({
                           ))}
                         </select>
                                   </Input>
-                                  <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-white/10 p-2">
-                                    <span className="text-[11px] font-bold text-slate-300">Custom entry field</span>
-                                    <TogglePill enabled={modifierField.customEntry?.enabled === true} onChange={(enabled) => patchFieldById(modifierField.id, { customEntry: { ...modifierField.customEntry, enabled } })} enabledLabel="Custom enabled" disabledLabel="Enable custom" />
-                                  </div>
-                                  {modifierField.customEntry?.enabled ? <div className="mt-2 space-y-2"><Input label="Custom field label"><input className={inputClass} value={modifierField.customEntry.label || ""} onChange={(e) => patchFieldById(modifierField.id, { customEntry: { ...modifierField.customEntry, label: e.target.value } })} /></Input><Input label="Custom field placeholder"><input className={inputClass} value={modifierField.customEntry.placeholder || ""} onChange={(e) => patchFieldById(modifierField.id, { customEntry: { ...modifierField.customEntry, placeholder: e.target.value } })} /></Input></div> : null}
                       <p className="text-[11px] leading-4 text-slate-500">
                         Name, photo, position, and orientation stay in the card header. All other fields appear below it in this form’s row and field order, using the assigned legend icon.
                       </p>
@@ -1860,6 +1822,48 @@ export default function EventSystemV2({
                             ) : null}
                           </div>
                         </>
+                      ) : null}
+                      {fieldKey(selectedField) === "position" ? (
+                        <div className="flex items-center justify-between gap-3 rounded-xl border border-violet-400/40 bg-violet-500/10 p-3">
+                          <div><div className="text-xs font-black text-violet-100">Position modifiers</div><div className="mt-1 text-[11px] text-violet-100/60">Attach editable Top and Bottom preferences to this Position field.</div></div>
+                          <TogglePill enabled={selectedField.modifiers?.enabled === true} onChange={(enabled) => patchField({ modifiers: { enabled, groups: selectedField.modifiers?.groups || { top: { legacyKey: "topImplements", label: "As a top I like to use", helperText: "Choose all that apply.", options: [...DEFAULT_MODIFIER_OPTIONS], customEntry: { enabled: false, label: "Other top preference", placeholder: "Type another top preference", multiline: true } }, bottom: { legacyKey: "bottomImplements", label: "As a bottom I like to receive", helperText: "Choose all that apply.", options: [...DEFAULT_MODIFIER_OPTIONS], customEntry: { enabled: false, label: "Other bottom preference", placeholder: "Type another bottom preference", multiline: true } } } } })} enabledLabel="Modifiers enabled" disabledLabel="Enable modifiers" />
+                        </div>
+                      ) : null}
+                      {fieldKey(selectedField) === "position" && positionModifierFields.length ? (
+                        <div className="rounded-xl border border-violet-400/50 bg-violet-500/10 p-3">
+                          <div className="text-xs font-black uppercase tracking-[0.12em] text-violet-100">Position modifier groups</div>
+                          <p className="mt-1 text-[11px] leading-4 text-violet-100/65">Top shows the red group, Bottom shows the green group, and Switch shows both on the entry kiosk.</p>
+                          <div className="mt-3 grid gap-3 xl:grid-cols-2">
+                            {positionModifierFields.map((modifierField) => {
+                              const isTopModifier = fieldKey(modifierField) === "topImplements";
+                              return (
+                                <div key={modifierField.id} className={`rounded-lg border p-3 ${isTopModifier ? "border-red-400/45 bg-red-500/10" : "border-emerald-400/45 bg-emerald-500/10"}`}>
+                                  <div className={`mb-2 text-xs font-black ${isTopModifier ? "text-red-100" : "text-emerald-100"}`}>{isTopModifier ? "↑ Top modifiers" : "↓ Bottom modifiers"}</div>
+                                  <Input label="Group label"><input className={inputClass} value={modifierField.label || ""} onChange={(e) => patchFieldById(modifierField.id, { label: e.target.value })} /></Input>
+                                  <div className="mt-2 space-y-1">
+                                    {(modifierField.options || []).map((option, optionIndex) => (
+                                      <div key={`${modifierField.id}-${optionIndex}`} className="flex gap-1">
+                                        <input className={inputClass} value={option} onChange={(e) => patchFieldById(modifierField.id, { options: modifierField.options.map((item, index) => index === optionIndex ? e.target.value : item) })} />
+                                        <button type="button" aria-label={`Remove ${option}`} onClick={() => patchFieldById(modifierField.id, { options: modifierField.options.filter((_, index) => index !== optionIndex) })} className="rounded-lg border border-red-500/40 px-2 text-red-200">×</button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div className="mt-2 flex gap-1">
+                                    <input className={inputClass} value={modifierNewOptions[modifierField.id] || ""} onChange={(e) => setModifierNewOptions((current) => ({ ...current, [modifierField.id]: e.target.value }))} placeholder="New modifier option" />
+                                    <button type="button" onClick={() => { const value = (modifierNewOptions[modifierField.id] || "").trim(); if (!value) return; patchFieldById(modifierField.id, { options: [...(modifierField.options || []), value] }); setModifierNewOptions((current) => ({ ...current, [modifierField.id]: "" })); }} className="rounded-lg bg-violet-300 px-3 text-xs font-black text-slate-950">Add</button>
+                                  </div>
+                                  <div className="mt-3 border-t border-white/10 pt-3">
+                                    <div className="flex items-center justify-between gap-2 rounded-lg border border-white/10 p-2">
+                                      <span className="text-[11px] font-bold text-slate-300">Custom entry field</span>
+                                      <TogglePill enabled={modifierField.customEntry?.enabled === true} onChange={(enabled) => patchFieldById(modifierField.id, { customEntry: { ...modifierField.customEntry, enabled } })} enabledLabel="Custom enabled" disabledLabel="Enable custom" />
+                                    </div>
+                                    {modifierField.customEntry?.enabled ? <div className="mt-2 space-y-2"><Input label="Custom field label"><input className={inputClass} value={modifierField.customEntry.label || ""} onChange={(e) => patchFieldById(modifierField.id, { customEntry: { ...modifierField.customEntry, label: e.target.value } })} /></Input><Input label="Custom field placeholder"><input className={inputClass} value={modifierField.customEntry.placeholder || ""} onChange={(e) => patchFieldById(modifierField.id, { customEntry: { ...modifierField.customEntry, placeholder: e.target.value } })} /></Input></div> : null}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       ) : null}
                       <Input label="Section height">
                         <select

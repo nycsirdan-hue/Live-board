@@ -87,7 +87,7 @@ const formPresetOptions = {
     "Open to Play",
     "Watching",
   ],
-  implements: ["Paddles", "Straps", "Belt", "Brushes", "Canes", "Hands"],
+  implements: ["Hands", "Belts", "Canes", "Paddles", "Straps", "Brushes"],
   limits: ["No wood", "No leather", "Domestic implements only"],
   experience: [
     "New - No Experience",
