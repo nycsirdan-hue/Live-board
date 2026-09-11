@@ -171,10 +171,20 @@ body,
   right: 0;
   bottom: 0;
   left: 0;
-  height: clamp(48px, 7vh, 88px);
+  height: clamp(28px, 4vh, 48px);
   background: linear-gradient(180deg, transparent, rgba(7, 8, 10, 0.98));
   content: "";
   pointer-events: none;
+}
+
+.presetKioskPreviewViewport .eventKioskMockFieldLabel {
+  font-size: clamp(12px, 0.78vw, 14px);
+}
+
+.presetKioskPreviewViewport .eventKioskMockHelper,
+.presetKioskPreviewViewport .eventKioskMockChoices span,
+.presetKioskPreviewViewport .eventKioskMockChoices button {
+  font-size: clamp(10px, 0.66vw, 12px);
 }
 
 .presetKioskScreenWatermark {
