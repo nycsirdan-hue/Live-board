@@ -15,7 +15,7 @@ import EventKioskPreview from "./EventKioskPreview";
 
 const STEPS = [
   "Event Basics",
-  "Pricing / Check-in",
+  "Pricing",
   "Event Media",
   "Event Entry Form",
   "Kiosk View",
