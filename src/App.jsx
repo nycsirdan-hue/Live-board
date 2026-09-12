@@ -10015,23 +10015,15 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => {
-                          setMobileEntryStart("saved");
-                          setSavedProfileError("");
+                          window.location.href = "/profiles";
                         }}
                         className="group rounded-full border border-blue-400/35 bg-[linear-gradient(90deg,rgba(59,130,246,0.08),rgba(255,255,255,0.02))] px-6 py-4 text-base font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_10px_30px_rgba(0,0,0,0.16)] transition hover:border-blue-300/55 hover:bg-[linear-gradient(90deg,rgba(59,130,246,0.12),rgba(255,255,255,0.03))] active:scale-[0.992]"
                       >
                         <span className="inline-flex items-center justify-center gap-3">
                           <span className="h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_12px_rgba(96,165,250,0.50)]" />
-                          Use a Saved Profile
+                          Create or Use a Saved Profile
                         </span>
                       </button>
-
-                      <a
-                        href="/profiles"
-                        className="group rounded-full border border-amber-300/45 bg-[linear-gradient(90deg,rgba(251,191,36,0.16),rgba(255,255,255,0.03))] px-6 py-4 text-center text-base font-bold text-amber-50 shadow-[0_10px_30px_rgba(0,0,0,0.16)] transition hover:border-amber-200/70 hover:bg-amber-400/20"
-                      >
-                        Create a New Profile
-                      </a>
                     </div>
                   </>
                 ) : (
