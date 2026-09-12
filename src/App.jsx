@@ -2640,6 +2640,7 @@ export default function App() {
   };
 
   const runtimeEventConfig = savedEventDisplays.find((event) => event.id === activeEventDisplayId)?.eventConfig || null;
+  const activeEventDisplayOverrideEnabled = runtimeEventConfig?.version === 2 && runtimeEventConfig.display?.overrideEnabled === true;
   const runtimeEntryFormPreset = runtimeEventConfig?.version === 2 ? runtimeEventConfig.display?.entryFormPreset || "standard" : entryFormPreset;
   const isMensSpankingEntryForm = runtimeEntryFormPreset === "mens_spanking";
   const isMenOnlyEntryForm = runtimeEntryFormPreset === "men_only" || isMensSpankingEntryForm;
@@ -4937,7 +4938,13 @@ export default function App() {
     }
     cleanConfig = {
       ...cleanConfig,
-      display: { ...cleanConfig.display, sizingMode: "automatic" },
+      display: {
+        ...cleanConfig.display,
+        overrideEnabled: cleanConfig.display?.overrideEnabled === true,
+        participantLayout: cleanConfig.display?.participantLayout === "tiles" ? "tiles" : "list",
+        sizingMode: cleanConfig.display?.sizingMode === "manual" ? "manual" : "automatic",
+        entryFillDirection: cleanConfig.display?.entryFillDirection === "row" ? "row" : "column",
+      },
       media: { ...cleanConfig.media, slides: uploadedSlides },
     };
     const eventDescription = serializeEventV2(
@@ -4989,6 +4996,53 @@ export default function App() {
     return saved;
   };
 
+  const saveActiveEventDisplayOverride = async (enabled) => {
+    const activePreset = savedEventDisplays.find(
+      (event) => event.id === activeEventDisplayId && event.eventConfig?.version === 2
+    );
+    if (!activePreset) {
+      setMessage("Activate a saved Event Builder event before saving a display override.");
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
+    const display = enabled
+      ? {
+          ...activePreset.eventConfig.display,
+          overrideEnabled: true,
+          participantLayout: participantDisplayLayout,
+          sizingMode: displaySizingMode,
+          columns: participantDisplayColumns,
+          entryFillDirection,
+          boardEntryTextSize: clampBoardEntryTextSize(boardEntryTextSize),
+          staffTextSize: clampStaffTextSize(staffTextSize),
+          sizing: { ...layoutSettings },
+        }
+      : {
+          ...activePreset.eventConfig.display,
+          overrideEnabled: false,
+          participantLayout: "list",
+          sizingMode: "automatic",
+          columns: 4,
+          entryFillDirection: "column",
+          boardEntryTextSize: 0,
+          staffTextSize: 0,
+          sizing: {},
+        };
+
+    const saved = await saveEventV2(
+      { ...activePreset.eventConfig, display },
+      activePreset.id
+    );
+    if (saved) {
+      setMessage(enabled
+        ? "Display override saved for this event."
+        : "Event display restored to List View, Top to Bottom, and Automatic sizing."
+      );
+      setTimeout(() => setMessage(""), 3000);
+    }
+  };
+
   const updateActiveEventDisplayPreset = async (presetId, selectedEventOverride = null) => {
     const selectedEventDisplay =
       selectedEventOverride ||
@@ -5011,6 +5065,19 @@ export default function App() {
     const eventV2 = selectedEventDisplay?.eventConfig?.version === 2
       ? selectedEventDisplay.eventConfig
       : null;
+    const eventDisplayOverrideEnabled = eventV2?.display?.overrideEnabled === true;
+    const nextParticipantLayout = eventDisplayOverrideEnabled && eventV2?.display?.participantLayout === "tiles"
+      ? "tiles"
+      : "list";
+    const nextSizingMode = eventDisplayOverrideEnabled && eventV2?.display?.sizingMode === "manual"
+      ? "manual"
+      : "automatic";
+    const nextEntryFillDirection = eventDisplayOverrideEnabled && eventV2?.display?.entryFillDirection === "row"
+      ? "row"
+      : "column";
+    const nextParticipantColumns = eventDisplayOverrideEnabled
+      ? clampParticipantColumns(eventV2?.display?.columns || 4)
+      : 4;
     const nextEntryPreset = eventV2?.display?.entryFormPreset || entryFormPreset;
     const nextFormBuilderConfigs = eventV2
       ? { ...formBuilderConfigs, [nextEntryPreset]: eventConfigToLegacyFormConfig(eventV2) }
@@ -5022,9 +5089,17 @@ export default function App() {
     if (eventV2) {
       setEntryFormPreset(nextEntryPreset);
       setFormBuilderConfigs(nextFormBuilderConfigs);
-      setParticipantDisplayColumns(clampParticipantColumns(eventV2.display?.columns || participantDisplayColumns));
-      setDisplaySizingMode(eventV2.display?.sizingMode || displaySizingMode);
-      setEntryFillDirection(eventV2.display?.entryFillDirection || entryFillDirection);
+      setParticipantDisplayColumns(nextParticipantColumns);
+      setDisplaySizingMode(nextSizingMode);
+      setEntryFillDirection(nextEntryFillDirection);
+      setBoardEntryTextSize(eventDisplayOverrideEnabled
+        ? clampBoardEntryTextSize(eventV2.display?.boardEntryTextSize || 0)
+        : 0
+      );
+      setStaffTextSize(eventDisplayOverrideEnabled
+        ? clampStaffTextSize(eventV2.display?.staffTextSize || 0)
+        : 0
+      );
       setLayoutSettings(nextLayoutSettings);
       setLegendPreset("event_v2");
     }
@@ -5066,12 +5141,12 @@ export default function App() {
       custom_interest_options: buildSettingsCustomInterestOptions(
         customInterestOptions,
         nextFormBuilderConfigs,
-        eventV2?.display?.columns || participantDisplayColumns,
-        eventV2?.display?.sizingMode || displaySizingMode,
+        eventV2 ? nextParticipantColumns : participantDisplayColumns,
+        eventV2 ? nextSizingMode : displaySizingMode,
         eventV2 ? "event_v2" : legendPreset
       ),
       active_event_display_preset_id: presetId || null,
-      participant_display_layout: eventV2?.display?.participantLayout || participantDisplayLayout,
+      participant_display_layout: eventV2 ? nextParticipantLayout : participantDisplayLayout,
       updated_at: new Date().toISOString(),
     };
 
@@ -7303,6 +7378,38 @@ export default function App() {
                     <p className="mt-2 text-sm leading-6 text-slate-400">
                       Control board readability from across the room.
                     </p>
+                    <div className="mt-4 rounded-xl border border-cyan-400/30 bg-cyan-400/5 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                          <div className="text-sm font-black text-white">
+                            {activeEventDisplayOverrideEnabled ? "Event display override active" : "Standard event display defaults active"}
+                          </div>
+                          <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-400">
+                            Events activate in List View, fill Top to Bottom, and use Automatic sizing and text size. Change the controls below, then save only when this event needs different settings.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {activeEventDisplayOverrideEnabled ? (
+                            <button
+                              type="button"
+                              disabled={settingsSaving}
+                              onClick={() => saveActiveEventDisplayOverride(false)}
+                              className="rounded-xl border border-slate-600 px-4 py-2 text-xs font-black text-slate-200 disabled:opacity-40"
+                            >
+                              Remove Override
+                            </button>
+                          ) : null}
+                          <button
+                            type="button"
+                            disabled={settingsSaving || runtimeEventConfig?.version !== 2}
+                            onClick={() => saveActiveEventDisplayOverride(true)}
+                            className="rounded-xl bg-cyan-300 px-4 py-2 text-xs font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Save Current Settings as Event Override
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="hidden rounded-2xl border border-violet-400/25 bg-slate-900/70 p-5">
