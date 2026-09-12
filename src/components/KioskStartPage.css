@@ -1594,3 +1594,71 @@ body,
     grid-column: 1;
   }
 }
+
+/* Shared restrained menu palette used by every saved-preset kiosk example. */
+.eventKioskMockField {
+  --mock-field-dark-accent: color-mix(in srgb, var(--mock-field-accent) 60%, black);
+  border: 2px solid color-mix(in srgb, var(--mock-field-dark-accent) 78%, #111827);
+  background: rgba(0, 0, 0, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 10px 28px rgba(0, 0, 0, 0.24);
+}
+
+.eventKioskMockFieldLabel { color: #fff; letter-spacing: 1pt; }
+.eventKioskMockHelper { color: #d1d5db; letter-spacing: 1pt; }
+
+.eventKioskMockChoices span,
+.eventKioskMockChoices button,
+.eventKioskMockSocialPlatforms button,
+.eventKioskMockSocialPlatforms > span {
+  border-color: #71717a;
+  background: #020617;
+  color: #fff;
+}
+
+.eventKioskMockChoices button:hover,
+.eventKioskMockChoices button:focus-visible,
+.eventKioskMockSocialPlatforms button:hover,
+.eventKioskMockSocialPlatforms button:focus-visible {
+  border-color: #a1a1aa;
+  background: #0f172a;
+}
+
+.eventKioskMockChoices span.isSelected,
+.eventKioskMockChoices button.isSelected,
+.eventKioskMockSocialPlatforms .isSelected {
+  border-color: color-mix(in srgb, var(--mock-field-dark-accent) 88%, white);
+  background: color-mix(in srgb, var(--mock-field-dark-accent) 30%, #050505);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 14px color-mix(in srgb, var(--mock-field-dark-accent) 24%, transparent);
+}
+
+.eventKioskMockSocialBuilder,
+.eventKioskMockInput,
+.eventKioskMockCustomInput input,
+.eventKioskMockCustomInput textarea,
+.eventKioskMockSocialHandleColumn input,
+.eventKioskMockSocialHandleColumn strong { background: #020617; }
+
+.presetPreviewTone-position { --preset-preview-accent: #71717a; }
+.presetPreviewTone-rose { --preset-preview-accent: #f43f5e; }
+.presetPreviewTone-green { --preset-preview-accent: #10b981; }
+.presetPreviewTone-blue { --preset-preview-accent: #3b82f6; }
+.presetPreviewTone-fuchsia { --preset-preview-accent: #ec4899; }
+.presetPreviewTone-cyan { --preset-preview-accent: #22d3ee; }
+.presetPreviewTone-violet { --preset-preview-accent: #a855f7; }
+.presetPreviewTone-gold { --preset-preview-accent: #f59e0b; }
+
+.presetPreviewSection {
+  --preset-preview-dark-accent: color-mix(in srgb, var(--preset-preview-accent, #71717a) 60%, black);
+  border: 2px solid color-mix(in srgb, var(--preset-preview-dark-accent) 78%, #111827);
+  background: rgba(0, 0, 0, 0.92);
+}
+
+.presetPreviewSectionTitle { color: #fff; letter-spacing: 1pt; }
+
+.presetPreviewChips span,
+.presetPreviewTone-position .presetPreviewChips span {
+  border: 1px solid #71717a;
+  background: #020617;
+  color: #fff;
+}
