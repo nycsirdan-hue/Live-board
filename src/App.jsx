@@ -10012,18 +10012,15 @@ export default function App() {
                         </span>
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          window.location.href = "/profiles";
-                        }}
+                      <a
+                        href="https://studio125nyc.com/profiles"
                         className="group rounded-full border border-blue-400/35 bg-[linear-gradient(90deg,rgba(59,130,246,0.08),rgba(255,255,255,0.02))] px-6 py-4 text-base font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_10px_30px_rgba(0,0,0,0.16)] transition hover:border-blue-300/55 hover:bg-[linear-gradient(90deg,rgba(59,130,246,0.12),rgba(255,255,255,0.03))] active:scale-[0.992]"
                       >
                         <span className="inline-flex items-center justify-center gap-3">
                           <span className="h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_12px_rgba(96,165,250,0.50)]" />
                           Create or Use a Saved Profile
                         </span>
-                      </button>
+                      </a>
                     </div>
                   </>
                 ) : (
