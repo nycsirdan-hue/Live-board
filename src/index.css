@@ -3397,6 +3397,80 @@ body:has(.displayBoardSurface) #root {
 
 /* Phone entry forms: keep every answer choice in one readable vertical list. */
 @media (max-width: 639px) {
+  .stingKioskOuterHeader .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  .stingKioskOuterHeader .min-w-max {
+    min-width: 0 !important;
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+  }
+
+  .stingKioskOuterHeader h1 {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .stingKioskFormShell,
+  .stingKioskFormCard,
+  .stingKioskIdentityRow,
+  .stingKioskChoiceGrid,
+  .stingKioskIntentionGrid,
+  .stingKioskDetailsGrid {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .eventV2RuntimeLayout {
+    display: block !important;
+  }
+
+  .stingKioskIdentityRow,
+  .stingKioskChoiceGrid,
+  .stingKioskIntentionGrid,
+  .stingKioskDetailsGrid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .eventV2RuntimeLayout .eventV2FieldSurface {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-top: 1rem;
+  }
+
+  .eventV2RuntimeLayout .eventV2FieldSurface input,
+  .eventV2RuntimeLayout .eventV2FieldSurface textarea,
+  .eventV2RuntimeLayout .eventV2FieldSurface select,
+  .eventV2RuntimeLayout .eventV2FieldSurface button,
+  .eventV2RuntimeLayout .eventV2FieldSurface > div {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .stingKioskPhotoControl {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .stingKioskPhotoControl > div:last-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .stingKioskActions {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .stingKioskActions > button {
+    width: 100% !important;
+  }
+
   .eventV2RuntimeLayout .eventV2FieldSurface .grid:has(> button) {
     grid-template-columns: minmax(0, 1fr) !important;
   }
